@@ -32,3 +32,4 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Place branch controls inside nodes to avoid standard Canvas edge and resize handles.
 - Deselect hidden descendants and incident edges when collapsing a branch.
 - Restore the session collapse state after returning to a Canvas in the same tab.
+- Allow visible alternative parents to reveal a branch hidden by another collapse.

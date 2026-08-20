@@ -9,8 +9,10 @@ export interface BranchControlModel {
 
 export function buildBranchControlModels(
   graph: CanvasGraph,
-  state: Pick<BranchCollapseState, "isCollapsed">,
+  state: Pick<BranchCollapseState, "getHiddenNodeIds">,
 ): readonly BranchControlModel[] {
+  const hiddenNodeIds = state.getHiddenNodeIds(graph);
+
   return graph.nodes.flatMap((node) => {
     const descendantIds = getDescendantIds(graph, node.id);
     if (descendantIds.length === 0) {
@@ -20,7 +22,9 @@ export function buildBranchControlModels(
     return [
       {
         nodeId: node.id,
-        collapsed: state.isCollapsed(node.id),
+        collapsed: (graph.childrenByNode.get(node.id) ?? []).some((childId) =>
+          hiddenNodeIds.has(childId),
+        ),
         descendantCount: descendantIds.length,
       },
     ];

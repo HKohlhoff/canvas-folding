@@ -235,7 +235,7 @@ export default class CanvasTreePlugin extends Plugin {
     }
 
     const state = this.getCollapseState(context.key);
-    if (state.isCollapsed(selectedNodeId)) {
+    if (state.isBranchCollapsed(graph, selectedNodeId)) {
       new Notice("The selected branch is already collapsed.");
       return;
     }
@@ -253,14 +253,18 @@ export default class CanvasTreePlugin extends Plugin {
       return;
     }
 
+    const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context.key);
-    if (!state.isCollapsed(selectedNodeId)) {
+    if (!state.isBranchCollapsed(graph, selectedNodeId)) {
       new Notice("The selected branch is not collapsed.");
       return;
     }
 
-    state.expand(selectedNodeId);
-    const graph = buildCanvasGraph(context.data);
+    if (state.isCollapsed(selectedNodeId)) {
+      state.expand(selectedNodeId);
+    } else {
+      state.revealBranch(graph, selectedNodeId);
+    }
     const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
     this.syncBranchControls(context, graph, state);
     this.debug("Expanded branch", { selectedNodeId, ...result });
@@ -352,9 +356,13 @@ export default class CanvasTreePlugin extends Plugin {
     }
 
     const state = this.getCollapseState(context.key);
-    const expanding = state.isCollapsed(nodeId);
+    const expanding = state.isBranchCollapsed(graph, nodeId);
     if (expanding) {
-      state.expand(nodeId);
+      if (state.isCollapsed(nodeId)) {
+        state.expand(nodeId);
+      } else {
+        state.revealBranch(graph, nodeId);
+      }
     } else {
       state.collapse(nodeId);
     }

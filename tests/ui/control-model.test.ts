@@ -27,12 +27,38 @@ void test("reflects collapsed state without changing graph structure", () => {
   ]);
 });
 
+void test("shows an expand control for a visible parent of a hidden shared branch", () => {
+  const graph = buildCanvasGraph(createSharedBranchData());
+  const state = new BranchCollapseState();
+  state.collapse("A1");
+
+  const models = buildBranchControlModels(graph, state);
+
+  assert.equal(models.find((model) => model.nodeId === "B")?.collapsed, true);
+});
+
 function createData(): CanvasGraphData {
   return {
     nodes: ["A", "B", "C", "D"].map((id) => ({ id, type: "text" })),
     edges: [
       { id: "AB", fromNode: "A", toNode: "B" },
       { id: "AC", fromNode: "A", toNode: "C" },
+      { id: "BD", fromNode: "B", toNode: "D" },
+    ],
+  };
+}
+
+function createSharedBranchData(): CanvasGraphData {
+  return {
+    nodes: ["R", "A1", "A2", "B", "D"].map((id) => ({
+      id,
+      type: "text",
+    })),
+    edges: [
+      { id: "RA1", fromNode: "R", toNode: "A1" },
+      { id: "RB", fromNode: "R", toNode: "B" },
+      { id: "A1A2", fromNode: "A1", toNode: "A2" },
+      { id: "A2D", fromNode: "A2", toNode: "D" },
       { id: "BD", fromNode: "B", toNode: "D" },
     ],
   };
