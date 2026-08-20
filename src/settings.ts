@@ -4,43 +4,24 @@ import {
   PluginSettingTab,
   type SettingDefinitionItem,
 } from "obsidian";
+import {
+  DEFAULT_SETTINGS,
+  type CanvasTreeSettings,
+} from "./settings-data";
 
-export interface CanvasTreeSettings {
-  debugLogging: boolean;
-  showBranchControls: boolean;
-  showStatusNotices: boolean;
-}
-
-export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
-  debugLogging: false,
-  showBranchControls: true,
-  showStatusNotices: true,
-};
-
-export function normalizeSettings(data: unknown): CanvasTreeSettings {
-  if (!isRecord(data)) {
-    return { ...DEFAULT_SETTINGS };
-  }
-
-  return {
-    debugLogging: readBoolean(data, "debugLogging", DEFAULT_SETTINGS.debugLogging),
-    showBranchControls: readBoolean(
-      data,
-      "showBranchControls",
-      DEFAULT_SETTINGS.showBranchControls,
-    ),
-    showStatusNotices: readBoolean(
-      data,
-      "showStatusNotices",
-      DEFAULT_SETTINGS.showStatusNotices,
-    ),
-  };
-}
+export {
+  DEFAULT_SETTINGS,
+  normalizeSettings,
+  type CanvasTreeSettings,
+} from "./settings-data";
 
 type CanvasTreeSettingKey = keyof CanvasTreeSettings;
 
 interface CanvasTreeSettingsHost extends Plugin {
   settings: CanvasTreeSettings;
+  cleanupSavedCanvasStates(): Promise<void>;
+  clearSavedCanvasStates(): Promise<void>;
+  hasSavedCanvasStates(): boolean;
   updateSettings(update: Partial<CanvasTreeSettings>): Promise<void>;
 }
 
@@ -65,12 +46,47 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
             },
           },
           {
+            name: "Remember canvas states",
+            desc: "Restore the last Canvas Tree visibility state when a canvas is reopened. Canvas files remain unchanged.",
+            control: {
+              type: "toggle",
+              key: "rememberCanvasStates",
+              defaultValue: DEFAULT_SETTINGS.rememberCanvasStates,
+            },
+          },
+          {
             name: "Show status notices",
             desc: "Show confirmations after canvas tree actions.",
             control: {
               type: "toggle",
               key: "showStatusNotices",
               defaultValue: DEFAULT_SETTINGS.showStatusNotices,
+            },
+          },
+        ],
+      },
+      {
+        type: "group",
+        heading: "Saved canvas states",
+        items: [
+          {
+            name: "Clean up saved canvas states",
+            desc: "Remove entries for canvas files that no longer exist.",
+            disabled: () => !this.plugin.hasSavedCanvasStates(),
+            action: () => {
+              void this.plugin.cleanupSavedCanvasStates().then(() => {
+                this.update();
+              });
+            },
+          },
+          {
+            name: "Clear all saved canvas states",
+            desc: "Delete every remembered canvas state. Current session visibility remains unchanged.",
+            disabled: () => !this.plugin.hasSavedCanvasStates(),
+            action: () => {
+              void this.plugin.clearSavedCanvasStates().then(() => {
+                this.update();
+              });
             },
           },
         ],
@@ -106,22 +122,10 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function readBoolean(
-  data: Record<string, unknown>,
-  key: string,
-  fallback: boolean,
-): boolean {
-  const value = data[key];
-  return typeof value === "boolean" ? value : fallback;
-}
-
 function isSettingKey(key: string): key is CanvasTreeSettingKey {
   return (
     key === "debugLogging" ||
+    key === "rememberCanvasStates" ||
     key === "showBranchControls" ||
     key === "showStatusNotices"
   );

@@ -97,6 +97,35 @@ void test("resets nested restrictions before applying an absolute depth", () => 
   assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E"]);
 });
 
+void test("round-trips persistent branch state", () => {
+  const graph = buildCanvasGraph(createSharedBranchData());
+  const state = new BranchCollapseState();
+  state.collapse("A1");
+  state.revealBranch(graph, "B");
+
+  const restored = BranchCollapseState.fromData(state.toData());
+
+  assert.deepEqual(restored.toData(), state.toData());
+  assert.deepEqual([...restored.getHiddenNodeIds(graph)], ["A2"]);
+});
+
+void test("normalizes and prunes stale persistent state", () => {
+  const graph = buildCanvasGraph(createSharedBranchData());
+  const state = BranchCollapseState.fromData({
+    visibleDepths: { A1: 1, missing: 0, invalid: -1 },
+    revealedBranches: {
+      A1: ["B", "missing", "B"],
+      missing: ["B"],
+    },
+  });
+
+  assert.equal(state.prune(graph), true);
+  assert.deepEqual(state.toData(), {
+    visibleDepths: { A1: 1 },
+    revealedBranches: { A1: ["B"] },
+  });
+});
+
 function createTreeData(): CanvasGraphData {
   return {
     nodes: ["A", "B", "C", "D", "E"].map((id) => ({ id, type: "text" })),

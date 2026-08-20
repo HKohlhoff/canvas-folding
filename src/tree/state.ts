@@ -4,12 +4,40 @@ import {
   type CanvasGraph,
 } from "./graph";
 
+export interface BranchCollapseStateData {
+  revealedBranches: Readonly<Record<string, readonly string[]>>;
+  visibleDepths: Readonly<Record<string, number>>;
+}
+
 export class BranchCollapseState {
   private readonly revealedNodeIdsByRestriction = new Map<
     string,
     Set<string>
   >();
   private readonly visibleDepthByNodeId = new Map<string, number>();
+
+  static fromData(data: unknown): BranchCollapseState {
+    const normalized = normalizeBranchCollapseStateData(data);
+    const state = new BranchCollapseState();
+
+    for (const [nodeId, visibleDepth] of Object.entries(
+      normalized.visibleDepths,
+    )) {
+      state.visibleDepthByNodeId.set(nodeId, visibleDepth);
+    }
+    for (const [restrictedNodeId, revealedNodeIds] of Object.entries(
+      normalized.revealedBranches,
+    )) {
+      if (state.visibleDepthByNodeId.has(restrictedNodeId)) {
+        state.revealedNodeIdsByRestriction.set(
+          restrictedNodeId,
+          new Set(revealedNodeIds),
+        );
+      }
+    }
+
+    return state;
+  }
 
   collapse(nodeId: string): void {
     this.setVisibleDepth(nodeId, 0);
@@ -32,6 +60,59 @@ export class BranchCollapseState {
   expandAll(): void {
     this.visibleDepthByNodeId.clear();
     this.revealedNodeIdsByRestriction.clear();
+  }
+
+  isEmpty(): boolean {
+    return this.visibleDepthByNodeId.size === 0;
+  }
+
+  toData(): BranchCollapseStateData {
+    return {
+      revealedBranches: Object.fromEntries(
+        [...this.revealedNodeIdsByRestriction].map(
+          ([restrictedNodeId, revealedNodeIds]) => [
+            restrictedNodeId,
+            [...revealedNodeIds],
+          ],
+        ),
+      ),
+      visibleDepths: Object.fromEntries(this.visibleDepthByNodeId),
+    };
+  }
+
+  prune(graph: CanvasGraph): boolean {
+    const validNodeIds = new Set(graph.nodes.map((node) => node.id));
+    let changed = false;
+
+    for (const nodeId of this.visibleDepthByNodeId.keys()) {
+      if (!validNodeIds.has(nodeId)) {
+        this.visibleDepthByNodeId.delete(nodeId);
+        this.revealedNodeIdsByRestriction.delete(nodeId);
+        changed = true;
+      }
+    }
+
+    for (const [restrictedNodeId, revealedNodeIds] of
+      this.revealedNodeIdsByRestriction) {
+      if (!this.visibleDepthByNodeId.has(restrictedNodeId)) {
+        this.revealedNodeIdsByRestriction.delete(restrictedNodeId);
+        changed = true;
+        continue;
+      }
+
+      for (const revealedNodeId of revealedNodeIds) {
+        if (!validNodeIds.has(revealedNodeId)) {
+          revealedNodeIds.delete(revealedNodeId);
+          changed = true;
+        }
+      }
+      if (revealedNodeIds.size === 0) {
+        this.revealedNodeIdsByRestriction.delete(restrictedNodeId);
+        changed = true;
+      }
+    }
+
+    return changed;
   }
 
   resetBranch(graph: CanvasGraph, nodeId: string): void {
@@ -156,4 +237,55 @@ export class BranchCollapseState {
     }
     return hiddenNodeIds;
   }
+}
+
+export function normalizeBranchCollapseStateData(
+  data: unknown,
+): BranchCollapseStateData {
+  if (!isRecord(data)) {
+    return { revealedBranches: {}, visibleDepths: {} };
+  }
+
+  const visibleDepths: Record<string, number> = {};
+  if (isRecord(data.visibleDepths)) {
+    for (const [nodeId, visibleDepth] of Object.entries(data.visibleDepths)) {
+      if (
+        nodeId.length > 0 &&
+        typeof visibleDepth === "number" &&
+        Number.isSafeInteger(visibleDepth) &&
+        visibleDepth >= 0
+      ) {
+        visibleDepths[nodeId] = visibleDepth;
+      }
+    }
+  }
+
+  const revealedBranches: Record<string, readonly string[]> = {};
+  if (isRecord(data.revealedBranches)) {
+    for (const [restrictedNodeId, value] of Object.entries(
+      data.revealedBranches,
+    )) {
+      if (!(restrictedNodeId in visibleDepths) || !Array.isArray(value)) {
+        continue;
+      }
+
+      const revealedNodeIds = [
+        ...new Set(
+          value.filter(
+            (nodeId): nodeId is string =>
+              typeof nodeId === "string" && nodeId.length > 0,
+          ),
+        ),
+      ];
+      if (revealedNodeIds.length > 0) {
+        revealedBranches[restrictedNodeId] = revealedNodeIds;
+      }
+    }
+  }
+
+  return { revealedBranches, visibleDepths };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

@@ -2,7 +2,7 @@
 
 Canvas Tree erweitert normale Obsidian-Canvases um hierarchische Funktionen. Das Plugin soll komplette Zweige rekursiv ein- und ausklappen, ohne Nodes, Kanten, Inhalte oder Positionen zu verändern.
 
-Das Projekt befindet sich in einer frühen Entwicklungsphase. Der aktuelle Prototyp enthält bereits die Plugin-, Settings- und Canvas-Integrationsbasis sowie sessionbasiertes Collapse/Expand.
+Das Projekt befindet sich in einer frühen Entwicklungsphase. Der aktuelle Prototyp enthält bereits die Plugin-, Settings- und Canvas-Integrationsbasis sowie optional dauerhaftes Collapse/Expand.
 
 ## Aktueller Prototyp
 
@@ -14,7 +14,9 @@ Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bere
 - `Show branch controls`, `Hide branch controls` und `Toggle branch controls` steuern die `+`/`−`-Buttons für die aktuelle Sitzung.
 - `Inspect active canvas graph` zeigt eine Zusammenfassung der erkannten Struktur und bei aktiviertem Debug-Logging weitere Details.
 
-Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wechselt er zu `+`. Ein Linksklick klappt weiterhin den vollständigen Zweig ein oder aus. Ein Rechtsklick öffnet ein Kontextmenü, das den Node allein, bis zu fünf sichtbare Ebenen oder den gesamten Zweig anzeigen kann. Bei gemeinsam genutzten Nachfahren kann ein weiterhin sichtbarer Parent den verdeckten Teilbaum über sein `+` wieder freigeben. Dabei bleiben andere ausgeblendete Parent-Nodes und ihre Kanten verborgen. Die Einstellung `Show branch controls` legt fest, ob die Buttons nach dem Laden standardmäßig sichtbar sind. Collapse-State, Sichttiefe und temporäre Freigaben existieren nur für die aktuelle Plugin-Sitzung. Das Plugin schreibt für diese Funktionen nichts in die `.canvas`-Datei.
+Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wechselt er zu `+`. Ein Linksklick klappt weiterhin den vollständigen Zweig ein oder aus. Ein Rechtsklick öffnet ein Kontextmenü, das den Node allein, bis zu fünf sichtbare Ebenen oder den gesamten Zweig anzeigen kann. Bei gemeinsam genutzten Nachfahren kann ein weiterhin sichtbarer Parent den verdeckten Teilbaum über sein `+` wieder freigeben. Dabei bleiben andere ausgeblendete Parent-Nodes und ihre Kanten verborgen. Die Einstellung `Show branch controls` legt fest, ob die Buttons nach dem Laden standardmäßig sichtbar sind.
+
+`Remember canvas states` speichert Collapse-State, Sichttiefe und temporäre Freigaben nach Canvas-Pfad in der Plugin-Datei `data.json`. Beim erneuten Öffnen wird der letzte Zustand wiederhergestellt. Gelöschte Dateien und veraltete Node-IDs werden automatisch bereinigt; in den Settings stehen zusätzlich Aktionen zum Aufräumen und vollständigen Löschen der gespeicherten Zustände bereit. Ist die Option ausgeschaltet, bleibt der Zustand auf die aktuelle Plugin-Sitzung begrenzt. Die `.canvas`-Datei wird in beiden Fällen nicht verändert.
 
 ## Geplanter Funktionsumfang
 
@@ -46,12 +48,12 @@ Der Build kopiert `main.js`, `manifest.json` und `styles.css` nach `canvas-tree`
 
 ## Datenschutz
 
-Canvas Tree verarbeitet Canvas-Daten lokal im Vault und sendet keine Daten an externe Dienste.
+Canvas Tree verarbeitet Canvas-Daten lokal im Vault und sendet keine Daten an externe Dienste. Bei aktivierter Zustandsspeicherung enthält die lokale Plugin-Datei `data.json` Canvas-Pfade, Node-IDs und Sichtbarkeitseinstellungen.
 
 ## Grenzen
 
 - Die Canvas-Ansicht besitzt derzeit nur teilweise öffentlich typisierte Erweiterungspunkte. Interne Zugriffe werden deshalb in einem Compatibility-Layer gekapselt.
-- Persistenter Collapse-State und automatische Layouts gehören noch nicht zu diesem Prototyp.
+- Automatische Layouts gehören noch nicht zu diesem Prototyp.
 
 ## Lizenz
 
