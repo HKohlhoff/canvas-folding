@@ -83,9 +83,10 @@ export default class CanvasTreePlugin extends Plugin {
     this.addCommand({
       id: "show-status",
       name: "Show current status",
-      callback: () => {
-        this.showCurrentStatus();
-      },
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.showCurrentStatus(context);
+        }),
     });
 
     this.addCommand({
@@ -791,8 +792,20 @@ export default class CanvasTreePlugin extends Plugin {
     }
   }
 
-  private showCurrentStatus(): void {
-    new Notice("Canvas tree branch prototype is active.");
+  private showCurrentStatus(context: ActiveCanvasContext): void {
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context, graph);
+    const hiddenNodeIds = state.getHiddenNodeIds(graph);
+    const dimmedNodeIds = new Set(
+      [...state.getDimmedNodeIds(graph)].filter(
+        (nodeId) => !hiddenNodeIds.has(nodeId),
+      ),
+    );
+    const activeNodeCount =
+      graph.nodes.length - hiddenNodeIds.size - dimmedNodeIds.size;
+    new Notice(
+      `Canvas tree: ${activeNodeCount} active, ${hiddenNodeIds.size} hidden, ${dimmedNodeIds.size} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"}.`,
+    );
   }
 
   private refreshActiveCanvasState(): void {
@@ -898,7 +911,7 @@ export default class CanvasTreePlugin extends Plugin {
         this.syncBranchControls(context);
         break;
       case "inspect-graph": this.logCanvasGraph(context.data); break;
-      case "show-status": this.showCurrentStatus(); break;
+      case "show-status": this.showCurrentStatus(context); break;
       case "hide-toolbar":
         this.canvasToolbarVisible = false;
         this.canvasToolbar.removeAll();
