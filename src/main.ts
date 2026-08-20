@@ -272,7 +272,7 @@ export default class CanvasTreePlugin extends Plugin {
   async clearSavedCanvasStates(): Promise<void> {
     this.savedCanvasStates.clear();
     await this.flushPluginDataSave();
-    new Notice("Canvas tree: cleared all saved canvas states.");
+    new Notice("Canvas tree: cleared all persisted canvas states.");
   }
 
   private async loadPluginData(): Promise<void> {
