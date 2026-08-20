@@ -75,3 +75,29 @@ export function describeCanvasGraph(graph: CanvasGraph): CanvasGraphSummary {
     childrenByNode: Object.fromEntries(graph.childrenByNode),
   };
 }
+
+export function getDescendantIds(
+  graph: Pick<CanvasGraph, "childrenByNode">,
+  nodeId: string,
+): readonly string[] {
+  if (!graph.childrenByNode.has(nodeId)) {
+    return [];
+  }
+
+  const descendants: string[] = [];
+  const visited = new Set([nodeId]);
+  const queue = [...(graph.childrenByNode.get(nodeId) ?? [])];
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const descendantId = queue[index];
+    if (descendantId === undefined || visited.has(descendantId)) {
+      continue;
+    }
+
+    visited.add(descendantId);
+    descendants.push(descendantId);
+    queue.push(...(graph.childrenByNode.get(descendantId) ?? []));
+  }
+
+  return descendants;
+}

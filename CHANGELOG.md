@@ -11,6 +11,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Canvas Tree project identity and local hot-reload deployment support.
 - A read-only active Canvas adapter and graph diagnostics command.
 - Pure graph analysis with focused unit tests for roots, cycles, isolated nodes and dangling edges.
+- Cycle-safe descendant traversal for directed Canvas branches.
 - Plugin lifecycle and a settings tab with normalized defaults.
 - Reproducible npm installs through `package-lock.json` and `npm ci` in CI.
 

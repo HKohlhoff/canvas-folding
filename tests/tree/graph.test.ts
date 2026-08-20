@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { CanvasGraphData } from "../../src/canvas/adapter";
-import { buildCanvasGraph, describeCanvasGraph } from "../../src/tree/graph";
+import {
+  buildCanvasGraph,
+  describeCanvasGraph,
+  getDescendantIds,
+} from "../../src/tree/graph";
 
 void test("builds directed adjacency and identifies roots", () => {
   const graph = buildCanvasGraph(
@@ -54,6 +58,56 @@ void test("separates edges that reference missing nodes", () => {
 
   assert.deepEqual(graph.danglingEdgeIds, ["edge-0"]);
   assert.deepEqual(graph.isolatedNodeIds, ["A"]);
+});
+
+void test("collects all descendants without including the parent", () => {
+  const graph = buildCanvasGraph(
+    createData(
+      ["A", "B", "C", "D", "E"],
+      [
+        ["A", "B"],
+        ["A", "C"],
+        ["B", "D"],
+        ["D", "E"],
+      ],
+    ),
+  );
+
+  assert.deepEqual(getDescendantIds(graph, "A"), ["B", "C", "D", "E"]);
+  assert.deepEqual(getDescendantIds(graph, "B"), ["D", "E"]);
+  assert.deepEqual(getDescendantIds(graph, "E"), []);
+});
+
+void test("stops descendant traversal at cycles", () => {
+  const graph = buildCanvasGraph(
+    createData(
+      ["A", "B", "C"],
+      [
+        ["A", "B"],
+        ["B", "C"],
+        ["C", "A"],
+      ],
+    ),
+  );
+
+  assert.deepEqual(getDescendantIds(graph, "A"), ["B", "C"]);
+});
+
+void test("visits a shared descendant only once", () => {
+  const graph = buildCanvasGraph(
+    createData(
+      ["A", "B", "C", "D"],
+      [
+        ["A", "B"],
+        ["A", "C"],
+        ["B", "D"],
+        ["C", "D"],
+      ],
+    ),
+  );
+
+  assert.deepEqual(getDescendantIds(graph, "A"), ["B", "C", "D"]);
+  assert.deepEqual(getDescendantIds(graph, "missing"), []);
 });
 
 function createData(
