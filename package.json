@@ -1,16 +1,14 @@
 {
-  "name": "obsidian-plugin-template",
+  "name": "canvas-tree",
   "version": "0.1.0",
-  "description": "Template for developing Obsidian plugins with TypeScript.",
+  "description": "Collapse and expand hierarchical branches in Obsidian Canvas.",
   "main": "main.js",
   "type": "module",
   "engines": {
     "node": ">=20.19.0"
   },
   "scripts": {
-    "create:plugin": "node scripts/create-plugin-project.mjs",
     "create:test-vault": "node scripts/create-test-vault.mjs",
-    "init:plugin": "node scripts/init-plugin.mjs",
     "lint": "eslint . --max-warnings=0",
     "build": "node build.mjs",
     "build:deploy": "node build.mjs --deploy",
@@ -39,12 +37,5 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.67.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HKohlhoff/obsidian-plugin-template.git"
-  },
-  "bugs": {
-    "url": "https://github.com/HKohlhoff/obsidian-plugin-template/issues"
-  },
-  "homepage": "https://github.com/HKohlhoff/obsidian-plugin-template#readme"
+  "private": true
 }

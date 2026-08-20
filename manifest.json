@@ -1,9 +1,9 @@
 {
-  "id": "plugin-template",
-  "name": "Plugin Template",
+  "id": "canvas-tree",
+  "name": "Canvas Tree",
   "version": "0.1.0",
   "minAppVersion": "1.13.0",
-  "description": "Template for developing Obsidian plugins with TypeScript.",
+  "description": "Collapse and expand hierarchical branches in Obsidian Canvas.",
   "author": "Holger Kohlhoff",
   "authorUrl": "https://github.com/HKohlhoff",
   "isDesktopOnly": false
