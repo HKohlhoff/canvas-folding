@@ -27,11 +27,25 @@ void test("extracts line, arrow and label wrapper elements from an edge", () => 
 
 void test("prefers the Canvas view file path for the persistence key", () => {
   assert.equal(
-    resolveCanvasKey("Folder/View.canvas", "Other.canvas"),
+    resolveCanvasKey(
+      "Folder/Runtime.canvas",
+      "Folder/View.canvas",
+      "Other.canvas",
+    ),
+    "Folder/Runtime.canvas",
+  );
+  assert.equal(
+    resolveCanvasKey(undefined, "Folder/View.canvas", "Other.canvas"),
     "Folder/View.canvas",
   );
-  assert.equal(resolveCanvasKey(undefined, "Fallback.canvas"), "Fallback.canvas");
-  assert.equal(resolveCanvasKey(undefined, null), "canvas-view:active");
+  assert.equal(
+    resolveCanvasKey(undefined, undefined, "Fallback.canvas"),
+    "Fallback.canvas",
+  );
+  assert.equal(
+    resolveCanvasKey(undefined, null, undefined),
+    "canvas-view:active",
+  );
 });
 
 function createElement(): CanvasElementHandle {

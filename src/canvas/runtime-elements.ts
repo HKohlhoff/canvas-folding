@@ -98,15 +98,11 @@ export function extractCanvasItemId(value: unknown): string | null {
   return isRecord(value) && typeof value.id === "string" ? value.id : null;
 }
 
-export function resolveCanvasKey(
-  viewFilePath: unknown,
-  activeFilePath: unknown,
-): string {
-  if (typeof viewFilePath === "string" && viewFilePath.length > 0) {
-    return viewFilePath;
-  }
-  if (typeof activeFilePath === "string" && activeFilePath.length > 0) {
-    return activeFilePath;
+export function resolveCanvasKey(...candidatePaths: unknown[]): string {
+  for (const candidatePath of candidatePaths) {
+    if (typeof candidatePath === "string" && candidatePath.length > 0) {
+      return candidatePath;
+    }
   }
   return "canvas-view:active";
 }

@@ -523,12 +523,26 @@ export default class CanvasTreePlugin extends Plugin {
       context,
       buildBranchControlModels(graph, state),
       (controlContext, nodeId) => {
-        this.toggleBranchFromControl(controlContext, nodeId);
+        this.toggleBranchFromControl(
+          this.refreshControlContext(controlContext),
+          nodeId,
+        );
       },
       (controlContext, nodeId, event) => {
-        this.showBranchDepthMenu(controlContext, nodeId, event);
+        this.showBranchDepthMenu(
+          this.refreshControlContext(controlContext),
+          nodeId,
+          event,
+        );
       },
     );
+  }
+
+  private refreshControlContext(
+    fallbackContext: ActiveCanvasContext,
+  ): ActiveCanvasContext {
+    const result = readActiveCanvasContext(this.app);
+    return result.ok ? result.context : fallbackContext;
   }
 
   private showBranchDepthMenu(

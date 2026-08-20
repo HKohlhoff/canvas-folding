@@ -63,6 +63,9 @@ export type ActiveCanvasContextResult =
 
 interface CanvasRuntime {
   getData(): unknown;
+  view?: {
+    file?: { path?: unknown } | null;
+  };
 }
 
 interface InteractiveCanvasRuntime extends CanvasRuntime, CanvasSelectionRuntime {
@@ -133,6 +136,7 @@ export function readActiveCanvasContext(
   const nodeViews = extractCanvasNodeViews(canvas.nodes.values());
   const edgeViews = extractCanvasEdgeViews(canvas.edges.values());
   const canvasKey = resolveCanvasKey(
+    canvas.view?.file?.path,
     canvasView?.file?.path,
     app.workspace.getActiveFile()?.path,
   );
