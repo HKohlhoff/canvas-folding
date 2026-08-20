@@ -71,7 +71,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         items: [
           {
             name: "Clean up persisted canvas states",
-            desc: "Remove persisted entries for canvas files that no longer exist. States in open tabs remain unchanged.",
+            desc: "Remove persisted entries for canvas files and nodes that no longer exist.",
             render: (setting) => {
               setting.addButton((button) => {
                 button

@@ -3,6 +3,7 @@ import { Menu, Notice, Plugin, TFile } from "obsidian";
 import {
   readActiveCanvasContext,
   readActiveCanvasSnapshot,
+  parseCanvasGraphData,
   type ActiveCanvasContext,
   type ActiveCanvasContextResult,
 } from "./canvas/adapter";
@@ -41,6 +42,7 @@ import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import { buildBranchControlModels } from "./ui/control-model";
 
 const MAX_DEPTH_MENU_LEVELS = 5;
+const CANVAS_STATE_PRUNE_DELAY_MS = 750;
 
 export default class CanvasTreePlugin extends Plugin {
   settings: CanvasTreeSettings = { ...DEFAULT_SETTINGS };
@@ -53,6 +55,7 @@ export default class CanvasTreePlugin extends Plugin {
   >();
   private dataSaveChain: Promise<void> = Promise.resolve();
   private dataSaveTimer: number | null = null;
+  private readonly nodePruneTimers = new Map<string, number>();
   private readonly savedCanvasStates = new Map<
     string,
     BranchCollapseStateData
@@ -62,6 +65,7 @@ export default class CanvasTreePlugin extends Plugin {
   async onload(): Promise<void> {
     await this.loadPluginData();
     this.cleanupMissingCanvasStates();
+    await this.pruneAllSavedCanvasNodeStates();
     await this.writePluginData();
     this.branchControlsVisible = this.settings.showBranchControls;
     this.rememberOpenedCanvas(this.app.workspace.getActiveFile());
@@ -134,6 +138,13 @@ export default class CanvasTreePlugin extends Plugin {
       },
     });
 
+    this.registerEvent(
+      this.app.vault.on("modify", (file) => {
+        if (file instanceof TFile && file.extension.toLowerCase() === "canvas") {
+          this.scheduleCanvasNodeStatePrune(file);
+        }
+      }),
+    );
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
         this.refreshActiveCanvasState();
@@ -219,6 +230,10 @@ export default class CanvasTreePlugin extends Plugin {
       this.dataSaveTimer = null;
       void this.writePluginData();
     }
+    for (const timer of this.nodePruneTimers.values()) {
+      window.clearTimeout(timer);
+    }
+    this.nodePruneTimers.clear();
     this.branchControls.removeAll();
     this.visibility.restoreAll();
     this.collapseStates.clear();
@@ -264,14 +279,16 @@ export default class CanvasTreePlugin extends Plugin {
   }
 
   async cleanupSavedCanvasStates(): Promise<void> {
-    const removedCount = this.cleanupMissingCanvasStates();
+    const removedCount =
+      this.cleanupMissingCanvasStates() +
+      (await this.pruneAllSavedCanvasNodeStates());
     if (removedCount > 0) {
       await this.flushPluginDataSave();
     }
     new Notice(
       removedCount === 0
         ? "Canvas Tree: no stale saved states found."
-        : `Canvas Tree: removed ${removedCount} stale saved state${removedCount === 1 ? "" : "s"}.`,
+        : `Canvas Tree: cleaned ${removedCount} saved canvas state${removedCount === 1 ? "" : "s"}.`,
     );
   }
 
@@ -303,6 +320,75 @@ export default class CanvasTreePlugin extends Plugin {
       }
     }
     return removedCount;
+  }
+
+  private async pruneAllSavedCanvasNodeStates(): Promise<number> {
+    let changedCanvasCount = 0;
+    for (const canvasPath of [...this.savedCanvasStates.keys()]) {
+      const file = this.app.vault.getAbstractFileByPath(canvasPath);
+      if (
+        file instanceof TFile &&
+        file.extension.toLowerCase() === "canvas" &&
+        (await this.pruneCanvasNodeStates(file))
+      ) {
+        changedCanvasCount += 1;
+      }
+    }
+    return changedCanvasCount;
+  }
+
+  private scheduleCanvasNodeStatePrune(file: TFile): void {
+    const existing = this.nodePruneTimers.get(file.path);
+    if (existing !== undefined) {
+      window.clearTimeout(existing);
+    }
+    const timer = window.setTimeout(() => {
+      this.nodePruneTimers.delete(file.path);
+      void this.pruneCanvasNodeStates(file).then((changed) => {
+        if (changed) this.schedulePluginDataSave();
+      });
+    }, CANVAS_STATE_PRUNE_DELAY_MS);
+    this.nodePruneTimers.set(file.path, timer);
+  }
+
+  private async pruneCanvasNodeStates(file: TFile): Promise<boolean> {
+    let graphData: ReturnType<typeof parseCanvasGraphData>;
+    try {
+      graphData = parseCanvasGraphData(JSON.parse(await this.app.vault.cachedRead(file)));
+    } catch (error: unknown) {
+      this.debug("Skipped node-state cleanup for unreadable canvas", {
+        error,
+        path: file.path,
+      });
+      return false;
+    }
+    if (graphData === null) {
+      this.debug("Skipped node-state cleanup for invalid canvas data", {
+        path: file.path,
+      });
+      return false;
+    }
+
+    const graph = buildCanvasGraph(graphData);
+    let persistedChanged = false;
+    const savedData = this.savedCanvasStates.get(file.path);
+    if (savedData !== undefined) {
+      const savedState = BranchCollapseState.fromData(savedData);
+      if (savedState.prune(graph)) {
+        persistedChanged = true;
+        if (savedState.isEmpty()) {
+          this.savedCanvasStates.delete(file.path);
+        } else {
+          this.savedCanvasStates.set(file.path, savedState.toData());
+        }
+      }
+    }
+
+    for (const statesByPath of this.collapseStates.values()) {
+      const sessionState = statesByPath.get(file.path);
+      sessionState?.prune(graph);
+    }
+    return persistedChanged;
   }
 
   private removeCanvasStatePath(path: string): void {

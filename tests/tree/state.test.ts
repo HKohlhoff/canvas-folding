@@ -197,6 +197,19 @@ void test("normalizes and prunes stale persistent state", () => {
   });
 });
 
+void test("prunes stale globally revealed node ids", () => {
+  const graph = buildCanvasGraph(createTreeData());
+  const state = BranchCollapseState.fromData({
+    globalVisibleDepth: 1,
+    globalRevealedBranches: ["B", "missing"],
+    revealedBranches: {},
+    visibleDepths: {},
+  });
+
+  assert.equal(state.prune(graph), true);
+  assert.deepEqual(state.toData().globalRevealedBranches, ["B"]);
+});
+
 function createTreeData(): CanvasGraphData {
   return {
     nodes: ["A", "B", "C", "D", "E"].map((id) => ({ id, type: "text" })),

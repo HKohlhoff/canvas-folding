@@ -141,6 +141,13 @@ export class BranchCollapseState {
       }
     }
 
+    for (const nodeId of this.globallyRevealedNodeIds) {
+      if (!validNodeIds.has(nodeId)) {
+        this.globallyRevealedNodeIds.delete(nodeId);
+        changed = true;
+      }
+    }
+
     for (const [restrictedNodeId, revealedNodeIds] of
       this.revealedNodeIdsByRestriction) {
       if (!this.visibleDepthByNodeId.has(restrictedNodeId)) {
