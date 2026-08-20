@@ -21,6 +21,11 @@ export interface CanvasEdgeView {
   elements: readonly CanvasElementHandle[];
 }
 
+export interface CanvasSelectionRuntime {
+  selection: Set<unknown>;
+  updateSelection(update: () => void): void;
+}
+
 export function extractCanvasNodeViews(
   values: Iterable<unknown>,
 ): CanvasNodeView[] {
@@ -72,6 +77,30 @@ export function extractSelectedNodeIds(selection: Iterable<unknown>): string[] {
     }
   }
   return nodeIds;
+}
+
+export function removeSelectionByIds(
+  canvas: CanvasSelectionRuntime,
+  itemIds: ReadonlySet<string>,
+): number {
+  const retainedItems = new Set<unknown>();
+  let removedCount = 0;
+
+  for (const item of canvas.selection) {
+    if (isRecord(item) && typeof item.id === "string" && itemIds.has(item.id)) {
+      removedCount += 1;
+    } else {
+      retainedItems.add(item);
+    }
+  }
+
+  if (removedCount > 0) {
+    canvas.updateSelection(() => {
+      canvas.selection = retainedItems;
+    });
+  }
+
+  return removedCount;
 }
 
 function asCanvasNodeElement(value: unknown): CanvasNodeElementHandle | null {

@@ -6,7 +6,10 @@ import type {
   CanvasElementHandle,
   CanvasNodeElementHandle,
 } from "../../src/canvas/adapter";
-import { CanvasVisibilityManager } from "../../src/canvas/visibility";
+import {
+  CanvasVisibilityManager,
+  getHiddenEdgeIds,
+} from "../../src/canvas/visibility";
 
 void test("hides descendant nodes and every incident edge", () => {
   const elements = createContext();
@@ -31,6 +34,12 @@ void test("restores only the class managed by Canvas Tree", () => {
 
   assert.equal(elements.nodeB.has("canvas-tree-hidden"), false);
   assert.equal(elements.nodeB.has("existing-class"), true);
+});
+
+void test("identifies every edge incident to a hidden node", () => {
+  const { context } = createContext();
+
+  assert.deepEqual([...getHiddenEdgeIds(context, new Set(["B"]))], ["AB", "BC"]);
 });
 
 function createContext(): {
@@ -61,6 +70,7 @@ function createContext(): {
           { id: "BC", fromNode: "B", toNode: "C" },
         ],
       },
+      deselectItems: () => 0,
       selectedNodeIds: [],
       nodeViews: [
         { id: "A", element: createNodeElement(nodeA) },

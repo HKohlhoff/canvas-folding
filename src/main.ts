@@ -5,7 +5,11 @@ import {
   readActiveCanvasSnapshot,
   type ActiveCanvasContext,
 } from "./canvas/adapter";
-import { CanvasVisibilityManager } from "./canvas/visibility";
+import {
+  CanvasVisibilityManager,
+  getHiddenEdgeIds,
+  type VisibilityResult,
+} from "./canvas/visibility";
 import {
   CanvasTreeSettingTab,
   DEFAULT_SETTINGS,
@@ -232,7 +236,7 @@ export default class CanvasTreePlugin extends Plugin {
     }
 
     state.collapse(selectedNodeId);
-    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    const result = this.applyCollapsedState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Collapsed branch", { selectedNodeId, ...result });
     this.notifySuccess(`Collapsed branch with ${descendants.length} descendants.`);
@@ -344,7 +348,9 @@ export default class CanvasTreePlugin extends Plugin {
       state.collapse(nodeId);
     }
 
-    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    const result = expanding
+      ? this.visibility.apply(context, state.getHiddenNodeIds(graph))
+      : this.applyCollapsedState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug(expanding ? "Expanded branch control" : "Collapsed branch control", {
       nodeId,
@@ -355,5 +361,23 @@ export default class CanvasTreePlugin extends Plugin {
         ? "Expanded selected branch."
         : `Collapsed branch with ${descendants.length} descendants.`,
     );
+  }
+
+  private applyCollapsedState(
+    context: ActiveCanvasContext,
+    graph: ReturnType<typeof buildCanvasGraph>,
+    state: BranchCollapseState,
+  ): VisibilityResult & { deselectedItemCount: number } {
+    const hiddenNodeIds = state.getHiddenNodeIds(graph);
+    const hiddenItemIds = new Set([
+      ...hiddenNodeIds,
+      ...getHiddenEdgeIds(context, hiddenNodeIds),
+    ]);
+    const deselectedItemCount = context.deselectItems(hiddenItemIds);
+
+    return {
+      ...this.visibility.apply(context, hiddenNodeIds),
+      deselectedItemCount,
+    };
   }
 }

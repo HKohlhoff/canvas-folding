@@ -10,6 +10,20 @@ export interface VisibilityResult {
   hiddenNodeCount: number;
 }
 
+export function getHiddenEdgeIds(
+  context: Pick<ActiveCanvasContext, "data">,
+  hiddenNodeIds: ReadonlySet<string>,
+): ReadonlySet<string> {
+  return new Set(
+    context.data.edges
+      .filter(
+        (edge) =>
+          hiddenNodeIds.has(edge.fromNode) || hiddenNodeIds.has(edge.toNode),
+      )
+      .map((edge) => edge.id),
+  );
+}
+
 export class CanvasVisibilityManager {
   private readonly managedElements = new Set<CanvasElementHandle>();
 

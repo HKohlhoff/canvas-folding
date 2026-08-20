@@ -4,8 +4,10 @@ import {
   extractCanvasEdgeViews,
   extractCanvasNodeViews,
   extractSelectedNodeIds,
+  removeSelectionByIds,
   type CanvasEdgeView,
   type CanvasNodeView,
+  type CanvasSelectionRuntime,
 } from "./runtime-elements";
 
 export type {
@@ -34,6 +36,7 @@ export interface CanvasGraphData {
 export interface ActiveCanvasContext {
   key: string;
   data: CanvasGraphData;
+  deselectItems(itemIds: ReadonlySet<string>): number;
   selectedNodeIds: readonly string[];
   nodeViews: readonly CanvasNodeView[];
   edgeViews: readonly CanvasEdgeView[];
@@ -57,10 +60,9 @@ interface CanvasRuntime {
   getData(): unknown;
 }
 
-interface InteractiveCanvasRuntime extends CanvasRuntime {
+interface InteractiveCanvasRuntime extends CanvasRuntime, CanvasSelectionRuntime {
   edges: RuntimeValueCollection;
   nodes: RuntimeValueCollection;
-  selection: Iterable<unknown>;
 }
 
 interface RuntimeValueCollection {
@@ -127,6 +129,7 @@ export function readActiveCanvasContext(
     context: {
       key: filePath ?? "canvas-view:active",
       data: snapshot.data,
+      deselectItems: (itemIds) => removeSelectionByIds(canvas, itemIds),
       selectedNodeIds: extractSelectedNodeIds(canvas.selection),
       nodeViews,
       edgeViews,
@@ -187,20 +190,13 @@ function isInteractiveCanvasRuntime(
   return (
     isRuntimeValueCollection(candidate.nodes) &&
     isRuntimeValueCollection(candidate.edges) &&
-    isIterable(candidate.selection)
+    candidate.selection instanceof Set &&
+    typeof candidate.updateSelection === "function"
   );
 }
 
 function isRuntimeValueCollection(value: unknown): value is RuntimeValueCollection {
   return isRecord(value) && typeof value.values === "function";
-}
-
-function isIterable(value: unknown): value is Iterable<unknown> {
-  if ((typeof value !== "object" && typeof value !== "function") || value === null) {
-    return false;
-  }
-
-  return typeof (value as { [Symbol.iterator]?: unknown })[Symbol.iterator] === "function";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
