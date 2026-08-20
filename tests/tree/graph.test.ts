@@ -5,6 +5,7 @@ import type { CanvasGraphData } from "../../src/canvas/adapter";
 import {
   buildCanvasGraph,
   describeCanvasGraph,
+  getDescendantDepths,
   getDescendantIds,
 } from "../../src/tree/graph";
 
@@ -107,6 +108,11 @@ void test("visits a shared descendant only once", () => {
   );
 
   assert.deepEqual(getDescendantIds(graph, "A"), ["B", "C", "D"]);
+  assert.deepEqual([...getDescendantDepths(graph, "A")], [
+    ["B", 1],
+    ["C", 1],
+    ["D", 2],
+  ]);
   assert.deepEqual(getDescendantIds(graph, "missing"), []);
 });
 

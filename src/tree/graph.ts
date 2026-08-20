@@ -80,24 +80,39 @@ export function getDescendantIds(
   graph: Pick<CanvasGraph, "childrenByNode">,
   nodeId: string,
 ): readonly string[] {
+  return [...getDescendantDepths(graph, nodeId).keys()];
+}
+
+export function getDescendantDepths(
+  graph: Pick<CanvasGraph, "childrenByNode">,
+  nodeId: string,
+): ReadonlyMap<string, number> {
   if (!graph.childrenByNode.has(nodeId)) {
-    return [];
+    return new Map();
   }
 
-  const descendants: string[] = [];
+  const descendantDepths = new Map<string, number>();
   const visited = new Set([nodeId]);
-  const queue = [...(graph.childrenByNode.get(nodeId) ?? [])];
+  const queue = (graph.childrenByNode.get(nodeId) ?? []).map((childId) => ({
+    depth: 1,
+    nodeId: childId,
+  }));
 
   for (let index = 0; index < queue.length; index += 1) {
-    const descendantId = queue[index];
-    if (descendantId === undefined || visited.has(descendantId)) {
+    const entry = queue[index];
+    if (entry === undefined || visited.has(entry.nodeId)) {
       continue;
     }
 
-    visited.add(descendantId);
-    descendants.push(descendantId);
-    queue.push(...(graph.childrenByNode.get(descendantId) ?? []));
+    visited.add(entry.nodeId);
+    descendantDepths.set(entry.nodeId, entry.depth);
+    queue.push(
+      ...(graph.childrenByNode.get(entry.nodeId) ?? []).map((childId) => ({
+        depth: entry.depth + 1,
+        nodeId: childId,
+      })),
+    );
   }
 
-  return descendants;
+  return descendantDepths;
 }

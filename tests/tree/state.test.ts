@@ -74,6 +74,29 @@ void test("preserves a nested collapse inside a revealed shared branch", () => {
   assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E", "A2"]);
 });
 
+void test("limits a branch to an absolute visible depth", () => {
+  const graph = buildCanvasGraph(createSharedBranchData());
+  const state = new BranchCollapseState();
+
+  state.setVisibleDepth("A1", 1);
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["D", "E"]);
+
+  state.setVisibleDepth("A1", 2);
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E"]);
+});
+
+void test("resets nested restrictions before applying an absolute depth", () => {
+  const graph = buildCanvasGraph(createSharedBranchData());
+  const state = new BranchCollapseState();
+
+  state.collapse("D");
+  state.resetBranch(graph, "A1");
+  state.revealEntireBranch(graph, "A1");
+  state.setVisibleDepth("A1", 2);
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E"]);
+});
+
 function createTreeData(): CanvasGraphData {
   return {
     nodes: ["A", "B", "C", "D", "E"].map((id) => ({ id, type: "text" })),

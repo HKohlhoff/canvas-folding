@@ -8,6 +8,7 @@ interface ControlEntry {
   activate: () => void;
   button: HTMLButtonElement;
   canvasKey: string;
+  openContextMenu: (event: MouseEvent) => void;
 }
 
 export class CanvasBranchControlManager {
@@ -17,6 +18,11 @@ export class CanvasBranchControlManager {
     context: ActiveCanvasContext,
     models: readonly BranchControlModel[],
     onToggle: (context: ActiveCanvasContext, nodeId: string) => void,
+    onContextMenu: (
+      context: ActiveCanvasContext,
+      nodeId: string,
+      event: MouseEvent,
+    ) => void,
   ): void {
     const modelsByNodeId = new Map(models.map((model) => [model.nodeId, model]));
     const currentHosts = new Set(context.nodeViews.map((view) => view.element));
@@ -40,6 +46,9 @@ export class CanvasBranchControlManager {
       const entry = this.getOrCreateEntry(nodeView.element, context.key);
       entry.activate = () => {
         onToggle(context, nodeView.id);
+      };
+      entry.openContextMenu = (event) => {
+        onContextMenu(context, nodeView.id, event);
       };
       updateButton(entry.button, model);
     }
@@ -69,11 +78,16 @@ export class CanvasBranchControlManager {
       activate: () => undefined,
       button,
       canvasKey,
+      openContextMenu: () => undefined,
     };
     button.addEventListener("pointerdown", blockCanvasInteraction);
     button.addEventListener("click", (event) => {
       blockCanvasInteraction(event);
       entry.activate();
+    });
+    button.addEventListener("contextmenu", (event) => {
+      blockCanvasInteraction(event);
+      entry.openContextMenu(event);
     });
 
     this.entries.set(host, entry);
@@ -87,10 +101,11 @@ function updateButton(
 ): void {
   const action = model.collapsed ? "Expand" : "Collapse";
   const label = `${action} branch with ${model.descendantCount} descendants`;
+  const title = `${label}. Right-click to choose visible levels.`;
 
   button.textContent = model.collapsed ? "+" : "−";
-  button.title = label;
-  button.setAttribute("aria-label", label);
+  button.title = title;
+  button.setAttribute("aria-label", title);
   button.setAttribute("aria-expanded", String(!model.collapsed));
 }
 

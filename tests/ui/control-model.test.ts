@@ -37,6 +37,17 @@ void test("shows an expand control for a visible parent of a hidden shared branc
   assert.equal(models.find((model) => model.nodeId === "B")?.collapsed, true);
 });
 
+void test("shows expand controls at the boundary of a visible depth", () => {
+  const graph = buildCanvasGraph(createData());
+  const state = new BranchCollapseState();
+  state.setVisibleDepth("A", 1);
+
+  const models = buildBranchControlModels(graph, state);
+
+  assert.equal(models.find((model) => model.nodeId === "A")?.collapsed, false);
+  assert.equal(models.find((model) => model.nodeId === "B")?.collapsed, true);
+});
+
 function createData(): CanvasGraphData {
   return {
     nodes: ["A", "B", "C", "D"].map((id) => ({ id, type: "text" })),

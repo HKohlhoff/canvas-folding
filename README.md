@@ -14,7 +14,7 @@ Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bere
 - `Show branch controls`, `Hide branch controls` und `Toggle branch controls` steuern die `+`/`−`-Buttons für die aktuelle Sitzung.
 - `Inspect active canvas graph` zeigt eine Zusammenfassung der erkannten Struktur und bei aktiviertem Debug-Logging weitere Details.
 
-Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wechselt er zu `+`. Bei gemeinsam genutzten Nachfahren kann ein weiterhin sichtbarer Parent den verdeckten Teilbaum über sein `+` wieder freigeben. Dabei bleiben andere ausgeblendete Parent-Nodes und ihre Kanten verborgen. Die Einstellung `Show branch controls` legt fest, ob die Buttons nach dem Laden standardmäßig sichtbar sind. Collapse-State und temporäre Freigaben existieren nur für die aktuelle Plugin-Sitzung. Das Plugin schreibt für diese Funktionen nichts in die `.canvas`-Datei.
+Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wechselt er zu `+`. Ein Linksklick klappt weiterhin den vollständigen Zweig ein oder aus. Ein Rechtsklick öffnet ein Kontextmenü, das den Node allein, bis zu fünf sichtbare Ebenen oder den gesamten Zweig anzeigen kann. Bei gemeinsam genutzten Nachfahren kann ein weiterhin sichtbarer Parent den verdeckten Teilbaum über sein `+` wieder freigeben. Dabei bleiben andere ausgeblendete Parent-Nodes und ihre Kanten verborgen. Die Einstellung `Show branch controls` legt fest, ob die Buttons nach dem Laden standardmäßig sichtbar sind. Collapse-State, Sichttiefe und temporäre Freigaben existieren nur für die aktuelle Plugin-Sitzung. Das Plugin schreibt für diese Funktionen nichts in die `.canvas`-Datei.
 
 ## Geplanter Funktionsumfang
 

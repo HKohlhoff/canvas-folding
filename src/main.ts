@@ -1,4 +1,4 @@
-import { Notice, Plugin } from "obsidian";
+import { Menu, Notice, Plugin } from "obsidian";
 
 import {
   readActiveCanvasContext,
@@ -19,11 +19,14 @@ import {
 import {
   buildCanvasGraph,
   describeCanvasGraph,
+  getDescendantDepths,
   getDescendantIds,
 } from "./tree/graph";
 import { BranchCollapseState } from "./tree/state";
 import { CanvasBranchControlManager } from "./ui/branch-controls";
 import { buildBranchControlModels } from "./ui/control-model";
+
+const MAX_DEPTH_MENU_LEVELS = 5;
 
 export default class CanvasTreePlugin extends Plugin {
   settings: CanvasTreeSettings = { ...DEFAULT_SETTINGS };
@@ -341,7 +344,87 @@ export default class CanvasTreePlugin extends Plugin {
       (controlContext, nodeId) => {
         this.toggleBranchFromControl(controlContext, nodeId);
       },
+      (controlContext, nodeId, event) => {
+        this.showBranchDepthMenu(controlContext, nodeId, event);
+      },
     );
+  }
+
+  private showBranchDepthMenu(
+    context: ActiveCanvasContext,
+    nodeId: string,
+    event: MouseEvent,
+  ): void {
+    const graph = buildCanvasGraph(context.data);
+    const descendantDepths = getDescendantDepths(graph, nodeId);
+    let maximumDepth = 0;
+    for (const depth of descendantDepths.values()) {
+      maximumDepth = Math.max(maximumDepth, depth);
+    }
+    if (maximumDepth === 0) {
+      return;
+    }
+
+    const menu = new Menu();
+    menu.addItem((item) =>
+      item.setTitle("Show node only").onClick(() => {
+        this.setBranchVisibleDepth(context, nodeId, 0);
+      }),
+    );
+    menu.addSeparator();
+
+    const listedDepth = Math.min(maximumDepth, MAX_DEPTH_MENU_LEVELS);
+    for (let depth = 1; depth <= listedDepth; depth += 1) {
+      menu.addItem((item) =>
+        item.setTitle(`Show through level ${depth}`).onClick(() => {
+          this.setBranchVisibleDepth(context, nodeId, depth);
+        }),
+      );
+    }
+
+    menu.addSeparator();
+    menu.addItem((item) =>
+      item.setTitle("Show entire branch").onClick(() => {
+        this.showEntireBranch(context, nodeId);
+      }),
+    );
+    menu.showAtMouseEvent(event);
+  }
+
+  private setBranchVisibleDepth(
+    context: ActiveCanvasContext,
+    nodeId: string,
+    visibleDepth: number,
+  ): void {
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context.key);
+    state.resetBranch(graph, nodeId);
+    state.revealEntireBranch(graph, nodeId);
+    state.setVisibleDepth(nodeId, visibleDepth);
+
+    const result = this.applyCollapsedState(context, graph, state);
+    this.syncBranchControls(context, graph, state);
+    this.debug("Set visible branch depth", { nodeId, visibleDepth, ...result });
+    this.notifySuccess(
+      visibleDepth === 0
+        ? "Collapsed selected branch."
+        : `Showing branch through level ${visibleDepth}.`,
+    );
+  }
+
+  private showEntireBranch(
+    context: ActiveCanvasContext,
+    nodeId: string,
+  ): void {
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context.key);
+    state.resetBranch(graph, nodeId);
+    state.revealEntireBranch(graph, nodeId);
+
+    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    this.syncBranchControls(context, graph, state);
+    this.debug("Showed entire branch", { nodeId, ...result });
+    this.notifySuccess("Showing entire branch.");
   }
 
   private toggleBranchFromControl(
