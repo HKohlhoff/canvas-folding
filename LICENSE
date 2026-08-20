@@ -1,0 +1,6 @@
+License placeholder
+
+Choose and add the license for the new plugin before publishing it.
+
+For Obsidian community plugins, make sure the license in this file matches
+the `license` field in `package.json` and the repository metadata.

@@ -1,0 +1,10 @@
+{
+  "id": "plugin-template",
+  "name": "Plugin Template",
+  "version": "0.1.0",
+  "minAppVersion": "1.13.0",
+  "description": "Template for developing Obsidian plugins with TypeScript.",
+  "author": "Holger Kohlhoff",
+  "authorUrl": "https://github.com/HKohlhoff",
+  "isDesktopOnly": false
+}

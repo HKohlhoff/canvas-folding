@@ -1,0 +1,50 @@
+{
+  "name": "obsidian-plugin-template",
+  "version": "0.1.0",
+  "description": "Template for developing Obsidian plugins with TypeScript.",
+  "main": "main.js",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "create:plugin": "node scripts/create-plugin-project.mjs",
+    "create:test-vault": "node scripts/create-test-vault.mjs",
+    "init:plugin": "node scripts/init-plugin.mjs",
+    "lint": "eslint . --max-warnings=0",
+    "build": "node build.mjs",
+    "build:deploy": "node build.mjs --deploy",
+    "test": "npm run lint && npm run typecheck",
+    "typecheck": "tsc --noEmit",
+    "dev": "node build.mjs --watch",
+    "dev:deploy": "node build.mjs --watch --deploy",
+    "build:prod": "node build.mjs --production",
+    "build:prod:deploy": "node build.mjs --production --deploy",
+    "dev:prod": "node build.mjs --watch --production",
+    "dev:prod:deploy": "node build.mjs --watch --production --deploy",
+    "version": "node version-bump.mjs && git add manifest.json versions.json"
+  },
+  "keywords": [],
+  "author": "Holger Kohlhoff",
+  "license": "UNLICENSED",
+  "dependencies": {},
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.8.1",
+    "eslint-plugin-obsidianmd": "^0.4.0",
+    "globals": "^17.6.0",
+    "obsidian": "^1.13.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HKohlhoff/obsidian-plugin-template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HKohlhoff/obsidian-plugin-template/issues"
+  },
+  "homepage": "https://github.com/HKohlhoff/obsidian-plugin-template#readme"
+}
