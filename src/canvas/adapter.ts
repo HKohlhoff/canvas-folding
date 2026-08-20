@@ -1,5 +1,19 @@
 import { App, ItemView } from "obsidian";
 
+import {
+  extractCanvasEdgeViews,
+  extractCanvasNodeViews,
+  extractSelectedNodeIds,
+  type CanvasEdgeView,
+  type CanvasNodeView,
+} from "./runtime-elements";
+
+export type {
+  CanvasEdgeView,
+  CanvasElementHandle,
+  CanvasNodeView,
+} from "./runtime-elements";
+
 export interface CanvasGraphNodeData {
   id: string;
   type: string;
@@ -14,23 +28,6 @@ export interface CanvasGraphEdgeData {
 export interface CanvasGraphData {
   nodes: readonly CanvasGraphNodeData[];
   edges: readonly CanvasGraphEdgeData[];
-}
-
-export interface CanvasElementHandle {
-  classList: {
-    remove(...tokens: string[]): void;
-    toggle(token: string, force?: boolean): boolean;
-  };
-}
-
-export interface CanvasNodeView {
-  id: string;
-  element: CanvasElementHandle;
-}
-
-export interface CanvasEdgeView {
-  id: string;
-  elements: readonly CanvasElementHandle[];
 }
 
 export interface ActiveCanvasContext {
@@ -120,8 +117,8 @@ export function readActiveCanvasContext(
     };
   }
 
-  const nodeViews = readNodeViews(canvas.nodes.values());
-  const edgeViews = readEdgeViews(canvas.edges.values());
+  const nodeViews = extractCanvasNodeViews(canvas.nodes.values());
+  const edgeViews = extractCanvasEdgeViews(canvas.edges.values());
   const filePath = app.workspace.getActiveFile()?.path;
 
   return {
@@ -129,7 +126,7 @@ export function readActiveCanvasContext(
     context: {
       key: filePath ?? "canvas-view:active",
       data: snapshot.data,
-      selectedNodeIds: readSelectedNodeIds(canvas.selection),
+      selectedNodeIds: extractSelectedNodeIds(canvas.selection),
       nodeViews,
       edgeViews,
     },
@@ -203,65 +200,6 @@ function isIterable(value: unknown): value is Iterable<unknown> {
   }
 
   return typeof (value as { [Symbol.iterator]?: unknown })[Symbol.iterator] === "function";
-}
-
-function readNodeViews(values: Iterable<unknown>): CanvasNodeView[] {
-  const nodeViews: CanvasNodeView[] = [];
-  for (const value of values) {
-    if (!isRecord(value) || typeof value.id !== "string") {
-      continue;
-    }
-
-    const element = asCanvasElement(value.nodeEl);
-    if (element !== null) {
-      nodeViews.push({ id: value.id, element });
-    }
-  }
-  return nodeViews;
-}
-
-function readEdgeViews(values: Iterable<unknown>): CanvasEdgeView[] {
-  const edgeViews: CanvasEdgeView[] = [];
-  for (const value of values) {
-    if (!isRecord(value) || typeof value.id !== "string") {
-      continue;
-    }
-
-    const elements = [value.lineGroupEl, value.lineEndGroupEl]
-      .map(asCanvasElement)
-      .filter((element): element is CanvasElementHandle => element !== null);
-    if (elements.length > 0) {
-      edgeViews.push({ id: value.id, elements });
-    }
-  }
-  return edgeViews;
-}
-
-function readSelectedNodeIds(selection: Iterable<unknown>): string[] {
-  const nodeIds: string[] = [];
-  for (const value of selection) {
-    if (
-      isRecord(value) &&
-      typeof value.id === "string" &&
-      asCanvasElement(value.nodeEl) !== null
-    ) {
-      nodeIds.push(value.id);
-    }
-  }
-  return nodeIds;
-}
-
-function asCanvasElement(value: unknown): CanvasElementHandle | null {
-  if (!isRecord(value) || !isRecord(value.classList)) {
-    return null;
-  }
-
-  const { classList } = value;
-  if (typeof classList.remove !== "function" || typeof classList.toggle !== "function") {
-    return null;
-  }
-
-  return value as unknown as CanvasElementHandle;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

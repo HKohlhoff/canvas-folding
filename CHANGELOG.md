@@ -26,4 +26,4 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
-- None yet.
+- Hide edge labels together with collapsed Canvas branches.
