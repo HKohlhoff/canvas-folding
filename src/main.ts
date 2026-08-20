@@ -290,6 +290,9 @@ export default class CanvasTreePlugin extends Plugin {
     if (typeof update.rememberCanvasStates === "boolean") {
       this.refreshActiveCanvasState();
     }
+    if (typeof update.focusBackgroundOpacity === "number") {
+      this.refreshActiveCanvasState();
+    }
   }
 
   hasSavedCanvasStates(): boolean {
@@ -578,7 +581,7 @@ export default class CanvasTreePlugin extends Plugin {
       state.revealBranch(graph, selectedNodeId);
     }
     this.storeCanvasState(context.key, state);
-    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    const result = this.applyVisibilityState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Expanded branch", { selectedNodeId, ...result });
     this.notifySuccess("Expanded selected branch.");
@@ -589,20 +592,15 @@ export default class CanvasTreePlugin extends Plugin {
     if (selectedNodeId === null) return;
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
-    state.focusBranch(selectedNodeId, this.settings.focusIncludesAncestors);
+    state.focusBranch(selectedNodeId);
     this.storeCanvasState(context.key, state);
     const result = this.applyCollapsedState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Focused selected branch", {
-      includeAncestors: this.settings.focusIncludesAncestors,
       selectedNodeId,
       ...result,
     });
-    this.notifySuccess(
-      this.settings.focusIncludesAncestors
-        ? "Focused selected branch with ancestors."
-        : "Focused selected branch.",
-    );
+    this.notifySuccess("Focused selected branch.");
   }
 
   private exitBranchFocus(context: ActiveCanvasContext): void {
@@ -613,7 +611,7 @@ export default class CanvasTreePlugin extends Plugin {
       return;
     }
     this.storeCanvasState(context.key, state);
-    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    const result = this.applyVisibilityState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Exited branch focus", result);
     this.notifySuccess("Exited branch focus.");
@@ -625,7 +623,7 @@ export default class CanvasTreePlugin extends Plugin {
     state.expandAll();
     this.storeCanvasState(context.key, state);
 
-    const result = this.visibility.apply(context, new Set());
+    const result = this.applyVisibilityState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Expanded all branches", result);
     this.notifySuccess("Expanded all branches.");
@@ -740,10 +738,7 @@ export default class CanvasTreePlugin extends Plugin {
     const { context } = result;
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
-    const visibility = this.visibility.apply(
-      context,
-      state.getHiddenNodeIds(graph),
-    );
+    const visibility = this.applyVisibilityState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Refreshed active canvas state", visibility);
   }
@@ -882,7 +877,7 @@ export default class CanvasTreePlugin extends Plugin {
     state.revealEntireBranch(graph, nodeId);
     this.storeCanvasState(context.key, state);
 
-    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    const result = this.applyVisibilityState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Showed entire branch", { nodeId, ...result });
     this.notifySuccess("Showing entire branch.");
@@ -914,7 +909,7 @@ export default class CanvasTreePlugin extends Plugin {
     this.storeCanvasState(context.key, state);
 
     const result = expanding
-      ? this.visibility.apply(context, state.getHiddenNodeIds(graph))
+      ? this.applyVisibilityState(context, graph, state)
       : this.applyCollapsedState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug(expanding ? "Expanded branch control" : "Collapsed branch control", {
@@ -934,15 +929,36 @@ export default class CanvasTreePlugin extends Plugin {
     state: BranchCollapseState,
   ): VisibilityResult & { deselectedItemCount: number } {
     const hiddenNodeIds = state.getHiddenNodeIds(graph);
+    const dimmedNodeIds = state.getDimmedNodeIds(graph);
     const hiddenItemIds = new Set([
       ...hiddenNodeIds,
+      ...dimmedNodeIds,
       ...getHiddenEdgeIds(context, hiddenNodeIds),
+      ...getHiddenEdgeIds(context, dimmedNodeIds),
     ]);
     const deselectedItemCount = context.deselectItems(hiddenItemIds);
 
     return {
-      ...this.visibility.apply(context, hiddenNodeIds),
+      ...this.visibility.apply(
+        context,
+        hiddenNodeIds,
+        dimmedNodeIds,
+        this.settings.focusBackgroundOpacity,
+      ),
       deselectedItemCount,
     };
+  }
+
+  private applyVisibilityState(
+    context: ActiveCanvasContext,
+    graph: ReturnType<typeof buildCanvasGraph>,
+    state: BranchCollapseState,
+  ): VisibilityResult {
+    return this.visibility.apply(
+      context,
+      state.getHiddenNodeIds(graph),
+      state.getDimmedNodeIds(graph),
+      this.settings.focusBackgroundOpacity,
+    );
   }
 }

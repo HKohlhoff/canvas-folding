@@ -57,7 +57,6 @@ void test("retains a persisted branch focus without collapse restrictions", () =
     canvasStates: {
       "Folder/Test.canvas": {
         focusedNodeId: "node-a",
-        focusIncludesAncestors: true,
         revealedBranches: {},
         visibleDepths: {},
       },

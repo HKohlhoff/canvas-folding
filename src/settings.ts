@@ -37,12 +37,16 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         heading: "Behavior",
         items: [
           {
-            name: "Include ancestors in branch focus",
-            desc: "Keep every ancestor path visible when focusing a selected branch. Disabled by default, so only the selected node and its descendants remain visible.",
+            name: "Background opacity during branch focus",
+            desc: "Set the opacity of nodes and edges outside the focused branch.",
             control: {
-              type: "toggle",
-              key: "focusIncludesAncestors",
-              defaultValue: DEFAULT_SETTINGS.focusIncludesAncestors,
+              type: "slider",
+              key: "focusBackgroundOpacity",
+              defaultValue: DEFAULT_SETTINGS.focusBackgroundOpacity,
+              min: 5,
+              max: 60,
+              step: 5,
+              displayFormat: (value) => `${value}%`,
             },
           },
           {
@@ -134,9 +138,17 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
   }
 
   async setControlValue(key: string, value: unknown): Promise<void> {
-    if (!isSettingKey(key) || typeof value !== "boolean") {
+    if (!isSettingKey(key)) {
       return;
     }
+
+    if (key === "focusBackgroundOpacity") {
+      if (typeof value === "number") {
+        await this.plugin.updateSettings({ [key]: value });
+      }
+      return;
+    }
+    if (typeof value !== "boolean") return;
 
     await this.plugin.updateSettings({ [key]: value });
   }
@@ -145,7 +157,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
 function isSettingKey(key: string): key is CanvasTreeSettingKey {
   return (
     key === "debugLogging" ||
-    key === "focusIncludesAncestors" ||
+    key === "focusBackgroundOpacity" ||
     key === "rememberCanvasStates" ||
     key === "showBranchControls" ||
     key === "showStatusNotices"

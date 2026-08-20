@@ -3,6 +3,10 @@ export interface CanvasElementHandle {
     remove(...tokens: string[]): void;
     toggle(token: string, force?: boolean): boolean;
   };
+  style: {
+    removeProperty(property: string): string;
+    setProperty(property: string, value: string): void;
+  };
 }
 
 export interface CanvasNodeView {

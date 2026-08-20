@@ -1,5 +1,4 @@
 import {
-  getAncestorIds,
   getDescendantDepths,
   getDescendantIds,
   getRootDepths,
@@ -7,7 +6,6 @@ import {
 } from "./graph";
 
 export interface BranchCollapseStateData {
-  focusIncludesAncestors?: boolean;
   focusedNodeId?: string;
   globalRevealedBranches?: readonly string[];
   globalVisibleDepth?: number;
@@ -16,7 +14,6 @@ export interface BranchCollapseStateData {
 }
 
 export class BranchCollapseState {
-  private focusIncludesAncestors = false;
   private focusedNodeId: string | null = null;
   private readonly globallyRevealedNodeIds = new Set<string>();
   private globalVisibleDepth: number | null = null;
@@ -30,7 +27,6 @@ export class BranchCollapseState {
     const normalized = normalizeBranchCollapseStateData(data);
     const state = new BranchCollapseState();
     state.focusedNodeId = normalized.focusedNodeId ?? null;
-    state.focusIncludesAncestors = normalized.focusIncludesAncestors ?? false;
     state.globalVisibleDepth = normalized.globalVisibleDepth ?? null;
     for (const nodeId of normalized.globalRevealedBranches ?? []) {
       state.globallyRevealedNodeIds.add(nodeId);
@@ -109,15 +105,13 @@ export class BranchCollapseState {
     return count;
   }
 
-  focusBranch(nodeId: string, includeAncestors: boolean): void {
+  focusBranch(nodeId: string): void {
     this.focusedNodeId = nodeId;
-    this.focusIncludesAncestors = includeAncestors;
   }
 
   exitFocus(): boolean {
     if (this.focusedNodeId === null) return false;
     this.focusedNodeId = null;
-    this.focusIncludesAncestors = false;
     return true;
   }
 
@@ -160,9 +154,6 @@ export class BranchCollapseState {
       : {
           ...globalData,
           focusedNodeId: this.focusedNodeId,
-          ...(this.focusIncludesAncestors
-            ? { focusIncludesAncestors: true }
-            : {}),
         };
   }
 
@@ -172,7 +163,6 @@ export class BranchCollapseState {
 
     if (this.focusedNodeId !== null && !validNodeIds.has(this.focusedNodeId)) {
       this.focusedNodeId = null;
-      this.focusIncludesAncestors = false;
       changed = true;
     }
 
@@ -317,18 +307,6 @@ export class BranchCollapseState {
 
   getHiddenNodeIds(graph: CanvasGraph): ReadonlySet<string> {
     const hiddenNodeIds = this.getGloballyHiddenNodeIds(graph);
-    if (this.focusedNodeId !== null) {
-      const visibleNodeIds = new Set([
-        this.focusedNodeId,
-        ...getDescendantIds(graph, this.focusedNodeId),
-        ...(this.focusIncludesAncestors
-          ? getAncestorIds(graph, this.focusedNodeId)
-          : []),
-      ]);
-      for (const node of graph.nodes) {
-        if (!visibleNodeIds.has(node.id)) hiddenNodeIds.add(node.id);
-      }
-    }
     for (const restrictedNodeId of this.visibleDepthByNodeId.keys()) {
       for (const descendantId of this.getHiddenNodeIdsForRestriction(
         graph,
@@ -338,6 +316,19 @@ export class BranchCollapseState {
       }
     }
     return hiddenNodeIds;
+  }
+
+  getDimmedNodeIds(graph: CanvasGraph): ReadonlySet<string> {
+    if (this.focusedNodeId === null) return new Set();
+    const focusedNodeIds = new Set([
+      this.focusedNodeId,
+      ...getDescendantIds(graph, this.focusedNodeId),
+    ]);
+    return new Set(
+      graph.nodes
+        .filter((node) => !focusedNodeIds.has(node.id))
+        .map((node) => node.id),
+    );
   }
 
   private getGloballyHiddenNodeIds(graph: CanvasGraph): Set<string> {
@@ -392,8 +383,6 @@ export function normalizeBranchCollapseStateData(
     typeof data.focusedNodeId === "string" && data.focusedNodeId.length > 0
       ? data.focusedNodeId
       : undefined;
-  const focusIncludesAncestors =
-    focusedNodeId !== undefined && data.focusIncludesAncestors === true;
   const globalVisibleDepth =
     typeof data.globalVisibleDepth === "number" &&
     Number.isSafeInteger(data.globalVisibleDepth) &&
@@ -446,7 +435,6 @@ export function normalizeBranchCollapseStateData(
     revealedBranches,
     visibleDepths,
     ...(focusedNodeId === undefined ? {} : { focusedNodeId }),
-    ...(focusIncludesAncestors ? { focusIncludesAncestors: true } : {}),
     ...(globalVisibleDepth === undefined ? {} : { globalVisibleDepth }),
     ...(globalRevealedBranches.length === 0 ? {} : { globalRevealedBranches }),
   };

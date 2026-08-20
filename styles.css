@@ -2,6 +2,11 @@
   display: none !important;
 }
 
+.canvas-tree-dimmed {
+  opacity: var(--canvas-tree-focus-opacity, 0.2) !important;
+  pointer-events: none !important;
+}
+
 .canvas-tree-branch-control {
   align-items: center;
   background: var(--background-primary);

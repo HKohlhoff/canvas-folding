@@ -6,10 +6,14 @@ import type {
 import { extractCanvasItemId } from "./runtime-elements";
 
 const HIDDEN_CLASS = "canvas-tree-hidden";
+const DIMMED_CLASS = "canvas-tree-dimmed";
+const FOCUS_OPACITY_PROPERTY = "--canvas-tree-focus-opacity";
 
 export interface VisibilityResult {
   hiddenEdgeCount: number;
   hiddenNodeCount: number;
+  dimmedEdgeCount: number;
+  dimmedNodeCount: number;
 }
 
 export function getHiddenEdgeIds(
@@ -36,40 +40,56 @@ export class CanvasVisibilityManager {
   apply(
     context: ActiveCanvasContext,
     hiddenNodeIds: ReadonlySet<string>,
+    dimmedNodeIds: ReadonlySet<string> = new Set(),
+    focusOpacity = 20,
   ): VisibilityResult {
-    this.updateInteractionLayer(context.nodeInteractionLayer, hiddenNodeIds);
+    const inactiveNodeIds = new Set([...hiddenNodeIds, ...dimmedNodeIds]);
+    this.updateInteractionLayer(context.nodeInteractionLayer, inactiveNodeIds);
 
     let hiddenNodeCount = 0;
+    let dimmedNodeCount = 0;
     for (const nodeView of context.nodeViews) {
       const hidden = hiddenNodeIds.has(nodeView.id);
+      const dimmed = !hidden && dimmedNodeIds.has(nodeView.id);
       this.setHidden(nodeView.element, hidden);
+      this.setDimmed(nodeView.element, dimmed, focusOpacity);
       if (hidden) {
         hiddenNodeCount += 1;
       }
+      if (dimmed) dimmedNodeCount += 1;
     }
 
     const edgesById = new Map(context.data.edges.map((edge) => [edge.id, edge]));
     let hiddenEdgeCount = 0;
+    let dimmedEdgeCount = 0;
     for (const edgeView of context.edgeViews) {
       const edge = edgesById.get(edgeView.id);
       const hidden =
         edge !== undefined &&
         (hiddenNodeIds.has(edge.fromNode) || hiddenNodeIds.has(edge.toNode));
+      const dimmed =
+        !hidden &&
+        edge !== undefined &&
+        (dimmedNodeIds.has(edge.fromNode) || dimmedNodeIds.has(edge.toNode));
 
       for (const element of edgeView.elements) {
         this.setHidden(element, hidden);
+        this.setDimmed(element, dimmed, focusOpacity);
       }
       if (hidden) {
         hiddenEdgeCount += 1;
       }
+      if (dimmed) dimmedEdgeCount += 1;
     }
 
-    return { hiddenEdgeCount, hiddenNodeCount };
+    return { dimmedEdgeCount, dimmedNodeCount, hiddenEdgeCount, hiddenNodeCount };
   }
 
   restoreAll(): void {
     for (const element of this.managedElements) {
       element.classList.remove(HIDDEN_CLASS);
+      element.classList.remove(DIMMED_CLASS);
+      element.style.removeProperty(FOCUS_OPACITY_PROPERTY);
     }
     this.managedElements.clear();
 
@@ -129,6 +149,20 @@ export class CanvasVisibilityManager {
       this.managedElements.add(element);
     } else {
       this.managedElements.delete(element);
+    }
+  }
+
+  private setDimmed(
+    element: CanvasElementHandle,
+    dimmed: boolean,
+    focusOpacity: number,
+  ): void {
+    element.classList.toggle(DIMMED_CLASS, dimmed);
+    if (dimmed) {
+      element.style.setProperty(FOCUS_OPACITY_PROPERTY, String(focusOpacity / 100));
+      this.managedElements.add(element);
+    } else {
+      element.style.removeProperty(FOCUS_OPACITY_PROPERTY);
     }
   }
 }

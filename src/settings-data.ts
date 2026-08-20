@@ -1,6 +1,6 @@
 export interface CanvasTreeSettings {
   debugLogging: boolean;
-  focusIncludesAncestors: boolean;
+  focusBackgroundOpacity: number;
   rememberCanvasStates: boolean;
   showBranchControls: boolean;
   showStatusNotices: boolean;
@@ -8,7 +8,7 @@ export interface CanvasTreeSettings {
 
 export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
   debugLogging: false,
-  focusIncludesAncestors: false,
+  focusBackgroundOpacity: 20,
   rememberCanvasStates: false,
   showBranchControls: true,
   showStatusNotices: true,
@@ -21,10 +21,12 @@ export function normalizeSettings(data: unknown): CanvasTreeSettings {
 
   return {
     debugLogging: readBoolean(data, "debugLogging", DEFAULT_SETTINGS.debugLogging),
-    focusIncludesAncestors: readBoolean(
+    focusBackgroundOpacity: readNumber(
       data,
-      "focusIncludesAncestors",
-      DEFAULT_SETTINGS.focusIncludesAncestors,
+      "focusBackgroundOpacity",
+      DEFAULT_SETTINGS.focusBackgroundOpacity,
+      5,
+      60,
     ),
     rememberCanvasStates: readBoolean(
       data,
@@ -42,6 +44,19 @@ export function normalizeSettings(data: unknown): CanvasTreeSettings {
       DEFAULT_SETTINGS.showStatusNotices,
     ),
   };
+}
+
+function readNumber(
+  data: Record<string, unknown>,
+  key: string,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const value = data[key];
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.min(maximum, Math.max(minimum, value))
+    : fallback;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

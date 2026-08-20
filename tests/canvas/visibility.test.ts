@@ -17,7 +17,12 @@ void test("hides descendant nodes and every incident edge", () => {
 
   const result = manager.apply(elements.context, new Set(["B"]));
 
-  assert.deepEqual(result, { hiddenEdgeCount: 2, hiddenNodeCount: 1 });
+  assert.deepEqual(result, {
+    dimmedEdgeCount: 0,
+    dimmedNodeCount: 0,
+    hiddenEdgeCount: 2,
+    hiddenNodeCount: 1,
+  });
   assert.equal(elements.nodeB.has("canvas-tree-hidden"), true);
   assert.equal(elements.edgeAB.has("canvas-tree-hidden"), true);
   assert.equal(elements.edgeABLabel.has("canvas-tree-hidden"), true);
@@ -68,11 +73,28 @@ void test("blocks the interaction layer from targeting hidden nodes", () => {
   assert.equal(interactionLayer.target, targetNode);
 });
 
+void test("dims and blocks nodes outside branch focus", () => {
+  const elements = createContext();
+  const manager = new CanvasVisibilityManager();
+
+  const result = manager.apply(
+    elements.context,
+    new Set(),
+    new Set(["A"]),
+    35,
+  );
+
+  assert.equal(result.dimmedNodeCount, 1);
+  assert.equal(result.dimmedEdgeCount, 1);
+  assert.equal(elements.nodeA.has("canvas-tree-dimmed"), true);
+});
+
 function createContext(): {
   context: ActiveCanvasContext;
   edgeAB: FakeClassList;
   edgeABLabel: FakeClassList;
   edgeBC: FakeClassList;
+  nodeA: FakeClassList;
   nodeB: FakeClassList;
 } {
   const nodeA = new FakeClassList();
@@ -83,6 +105,7 @@ function createContext(): {
   const edgeBC = new FakeClassList();
 
   return {
+    nodeA,
     nodeB,
     edgeAB,
     edgeABLabel,
@@ -117,17 +140,25 @@ function createContext(): {
 }
 
 function createElement(classList: FakeClassList): CanvasElementHandle {
-  return { classList };
+  return { classList, style: createStyle() };
 }
 
 function createNodeElement(classList: FakeClassList): CanvasNodeElementHandle {
   return {
     classList,
+    style: createStyle(),
     createEl: <K extends keyof HTMLElementTagNameMap>(
       _tag: K,
     ): HTMLElementTagNameMap[K] => {
       throw new Error("Node creation is not used by this visibility test.");
     },
+  };
+}
+
+function createStyle(): CanvasElementHandle["style"] {
+  return {
+    removeProperty: () => "",
+    setProperty: () => undefined,
   };
 }
 

@@ -63,5 +63,9 @@ function createElement(): CanvasElementHandle {
       remove: () => undefined,
       toggle: (_token, force) => force ?? false,
     },
+    style: {
+      removeProperty: () => "",
+      setProperty: () => undefined,
+    },
   };
 }
