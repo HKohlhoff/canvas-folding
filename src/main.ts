@@ -178,6 +178,15 @@ export default class CanvasTreePlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "collapse-all-branches",
+      name: "Collapse all branches",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.collapseAllBranches(context);
+        }),
+    });
+
+    this.addCommand({
       id: "expand-all-branches",
       name: "Expand all branches",
       checkCallback: (checking) =>
@@ -460,6 +469,24 @@ export default class CanvasTreePlugin extends Plugin {
     this.syncBranchControls(context, graph, state);
     this.debug("Expanded all branches", result);
     this.notifySuccess("Expanded all branches.");
+  }
+
+  private collapseAllBranches(context: ActiveCanvasContext): void {
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context.key, graph);
+    const collapsedRootCount = state.collapseAllRootBranches(graph);
+    if (collapsedRootCount === 0) {
+      new Notice("The canvas has no rooted branches to collapse.");
+      return;
+    }
+
+    this.storeCanvasState(context.key, state);
+    const result = this.applyCollapsedState(context, graph, state);
+    this.syncBranchControls(context, graph, state);
+    this.debug("Collapsed all branches", { collapsedRootCount, ...result });
+    this.notifySuccess(
+      `Collapsed ${collapsedRootCount} root branch${collapsedRootCount === 1 ? "" : "es"}.`,
+    );
   }
 
   private getSingleSelectedNodeId(context: ActiveCanvasContext): string | null {

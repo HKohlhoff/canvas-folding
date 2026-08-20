@@ -37,6 +37,51 @@ void test("expand all clears every collapsed branch", () => {
   assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
 });
 
+void test("collapse all keeps roots visible and hides their descendants", () => {
+  const graph = buildCanvasGraph(createTreeData());
+  const state = new BranchCollapseState();
+
+  assert.equal(state.collapseAllRootBranches(graph), 1);
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["B", "C", "D", "E"]);
+  assert.deepEqual(state.toData().visibleDepths, { A: 0 });
+});
+
+void test("collapse all handles multiple roots and leaves isolated nodes visible", () => {
+  const graph = buildCanvasGraph({
+    nodes: ["R1", "R2", "A", "B", "I"].map((id) => ({
+      id,
+      type: "text",
+    })),
+    edges: [
+      { id: "R1A", fromNode: "R1", toNode: "A" },
+      { id: "R2B", fromNode: "R2", toNode: "B" },
+    ],
+  });
+  const state = new BranchCollapseState();
+  state.collapse("A");
+
+  assert.equal(state.collapseAllRootBranches(graph), 2);
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["A", "B"]);
+  assert.deepEqual(state.toData().visibleDepths, { R1: 0, R2: 0 });
+});
+
+void test("collapse all leaves state unchanged when a graph has no roots", () => {
+  const graph = buildCanvasGraph({
+    nodes: ["A", "B"].map((id) => ({ id, type: "text" })),
+    edges: [
+      { id: "AB", fromNode: "A", toNode: "B" },
+      { id: "BA", fromNode: "B", toNode: "A" },
+    ],
+  });
+  const state = new BranchCollapseState();
+  state.collapse("A");
+
+  assert.equal(state.collapseAllRootBranches(graph), 0);
+  assert.deepEqual(state.toData().visibleDepths, { A: 0 });
+});
+
 void test("reveals a shared branch without restoring its hidden parent", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();

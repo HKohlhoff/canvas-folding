@@ -10,6 +10,7 @@ Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bere
 
 - `Collapse selected branch` blendet alle gerichteten Nachfahren des einzelnen ausgewählten Nodes aus.
 - `Expand selected branch` blendet den an diesem Node effektiv ausgeblendeten Zweig wieder ein.
+- `Collapse all branches` lässt alle Root-Nodes sichtbar und klappt ihre vollständigen Teilbäume ein.
 - `Expand all branches` hebt alle Collapse-Zustände des aktiven Canvas auf.
 - `Show branch controls`, `Hide branch controls` und `Toggle branch controls` steuern die `+`/`−`-Buttons für die aktuelle Sitzung.
 - `Inspect active canvas graph` zeigt eine Zusammenfassung der erkannten Struktur und bei aktiviertem Debug-Logging weitere Details.

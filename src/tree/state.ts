@@ -62,6 +62,21 @@ export class BranchCollapseState {
     this.revealedNodeIdsByRestriction.clear();
   }
 
+  collapseAllRootBranches(graph: CanvasGraph): number {
+    const collapsibleRootIds = graph.rootIds.filter(
+      (rootId) => (graph.childrenByNode.get(rootId) ?? []).length > 0,
+    );
+    if (collapsibleRootIds.length === 0) {
+      return 0;
+    }
+
+    this.expandAll();
+    for (const rootId of collapsibleRootIds) {
+      this.collapse(rootId);
+    }
+    return collapsibleRootIds.length;
+  }
+
   isEmpty(): boolean {
     return this.visibleDepthByNodeId.size === 0;
   }
