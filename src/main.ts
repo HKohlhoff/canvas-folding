@@ -4,6 +4,7 @@ import {
   readActiveCanvasContext,
   readActiveCanvasSnapshot,
   type ActiveCanvasContext,
+  type ActiveCanvasContextResult,
 } from "./canvas/adapter";
 import {
   CanvasVisibilityManager,
@@ -43,6 +44,7 @@ const PERSISTENCE_SAVE_DELAY_MS = 250;
 export default class CanvasTreePlugin extends Plugin {
   settings: CanvasTreeSettings = { ...DEFAULT_SETTINGS };
   private readonly branchControls = new CanvasBranchControlManager();
+  private activeCanvasPath: string | null = null;
   private branchControlsVisible = DEFAULT_SETTINGS.showBranchControls;
   private readonly collapseStates = new Map<string, BranchCollapseState>();
   private dataSaveChain: Promise<void> = Promise.resolve();
@@ -58,6 +60,7 @@ export default class CanvasTreePlugin extends Plugin {
     this.cleanupMissingCanvasStates();
     await this.writePluginData();
     this.branchControlsVisible = this.settings.showBranchControls;
+    this.rememberOpenedCanvas(this.app.workspace.getActiveFile());
 
     this.addSettingTab(new CanvasTreeSettingTab(this.app, this));
 
@@ -143,7 +146,8 @@ export default class CanvasTreePlugin extends Plugin {
       }),
     );
     this.registerEvent(
-      this.app.workspace.on("file-open", () => {
+      this.app.workspace.on("file-open", (file) => {
+        this.rememberOpenedCanvas(file);
         this.refreshActiveCanvasState();
       }),
     );
@@ -381,7 +385,7 @@ export default class CanvasTreePlugin extends Plugin {
     checking: boolean,
     action: (context: ActiveCanvasContext) => void,
   ): boolean {
-    const result = readActiveCanvasContext(this.app);
+    const result = this.readActiveCanvasContext();
     if (!result.ok) {
       if (!checking) {
         new Notice(result.message);
@@ -498,7 +502,7 @@ export default class CanvasTreePlugin extends Plugin {
   }
 
   private refreshActiveCanvasState(): void {
-    const result = readActiveCanvasContext(this.app);
+    const result = this.readActiveCanvasContext();
     if (!result.ok) {
       this.branchControls.removeAll();
       return;
@@ -547,8 +551,33 @@ export default class CanvasTreePlugin extends Plugin {
   private refreshControlContext(
     fallbackContext: ActiveCanvasContext,
   ): ActiveCanvasContext {
-    const result = readActiveCanvasContext(this.app);
+    const result = this.readActiveCanvasContext();
     return result.ok ? result.context : fallbackContext;
+  }
+
+  private readActiveCanvasContext(): ActiveCanvasContextResult {
+    const result = readActiveCanvasContext(this.app);
+    if (!result.ok) {
+      return result;
+    }
+    if (isCanvasPath(result.context.key)) {
+      this.activeCanvasPath = result.context.key;
+      return result;
+    }
+    if (this.activeCanvasPath !== null) {
+      return {
+        ok: true,
+        context: { ...result.context, key: this.activeCanvasPath },
+      };
+    }
+    return result;
+  }
+
+  private rememberOpenedCanvas(file: TFile | null): void {
+    this.activeCanvasPath =
+      file !== null && file.extension.toLowerCase() === "canvas"
+        ? file.path
+        : null;
   }
 
   private showBranchDepthMenu(
