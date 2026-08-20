@@ -37,21 +37,12 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         heading: "Behavior",
         items: [
           {
-            name: "Show branch controls",
-            desc: "Show +/− buttons on canvas nodes that have descendants.",
+            name: "Show branch controls initially",
+            desc: "Set the initial visibility of +/− controls when Canvas Tree loads. Use the command palette at any time to show, hide, or toggle them.",
             control: {
               type: "toggle",
               key: "showBranchControls",
               defaultValue: DEFAULT_SETTINGS.showBranchControls,
-            },
-          },
-          {
-            name: "Remember canvas states",
-            desc: "Restore the last Canvas Tree visibility state when a canvas is reopened. Canvas files remain unchanged.",
-            control: {
-              type: "toggle",
-              key: "rememberCanvasStates",
-              defaultValue: DEFAULT_SETTINGS.rememberCanvasStates,
             },
           },
           {
@@ -63,6 +54,15 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
               defaultValue: DEFAULT_SETTINGS.showStatusNotices,
             },
           },
+          {
+            name: "Remember canvas states",
+            desc: "Restore the last Canvas Tree visibility state when a canvas is reopened. Canvas files remain unchanged.",
+            control: {
+              type: "toggle",
+              key: "rememberCanvasStates",
+              defaultValue: DEFAULT_SETTINGS.rememberCanvasStates,
+            },
+          },
         ],
       },
       {
@@ -72,20 +72,31 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
           {
             name: "Clean up saved canvas states",
             desc: "Remove entries for canvas files that no longer exist.",
-            disabled: () => !this.plugin.hasSavedCanvasStates(),
-            action: () => {
-              void this.plugin.cleanupSavedCanvasStates().then(() => {
-                this.update();
+            render: (setting) => {
+              setting.addButton((button) => {
+                button
+                  .setButtonText("Clean up")
+                  .setDisabled(!this.plugin.hasSavedCanvasStates())
+                  .onClick(async () => {
+                    await this.plugin.cleanupSavedCanvasStates();
+                    this.update();
+                  });
               });
             },
           },
           {
             name: "Clear all saved canvas states",
             desc: "Delete every remembered canvas state. Current session visibility remains unchanged.",
-            disabled: () => !this.plugin.hasSavedCanvasStates(),
-            action: () => {
-              void this.plugin.clearSavedCanvasStates().then(() => {
-                this.update();
+            render: (setting) => {
+              setting.addButton((button) => {
+                button
+                  .setButtonText("Clear all")
+                  .setDestructive()
+                  .setDisabled(!this.plugin.hasSavedCanvasStates())
+                  .onClick(async () => {
+                    await this.plugin.clearSavedCanvasStates();
+                    this.update();
+                  });
               });
             },
           },

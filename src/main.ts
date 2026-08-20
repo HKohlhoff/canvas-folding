@@ -39,7 +39,6 @@ import { CanvasBranchControlManager } from "./ui/branch-controls";
 import { buildBranchControlModels } from "./ui/control-model";
 
 const MAX_DEPTH_MENU_LEVELS = 5;
-const PERSISTENCE_SAVE_DELAY_MS = 250;
 
 export default class CanvasTreePlugin extends Plugin {
   settings: CanvasTreeSettings = { ...DEFAULT_SETTINGS };
@@ -319,7 +318,7 @@ export default class CanvasTreePlugin extends Plugin {
     } else {
       this.savedCanvasStates.set(canvasPath, state.toData());
     }
-    this.schedulePluginDataSave();
+    void this.writePluginData().catch(() => undefined);
   }
 
   private schedulePluginDataSave(): void {
@@ -329,7 +328,7 @@ export default class CanvasTreePlugin extends Plugin {
     this.dataSaveTimer = window.setTimeout(() => {
       this.dataSaveTimer = null;
       void this.writePluginData();
-    }, PERSISTENCE_SAVE_DELAY_MS);
+    }, 250);
   }
 
   private async flushPluginDataSave(): Promise<void> {
@@ -474,13 +473,10 @@ export default class CanvasTreePlugin extends Plugin {
 
   private getCollapseState(
     canvasKey: string,
-    graph: ReturnType<typeof buildCanvasGraph>,
+    _graph: ReturnType<typeof buildCanvasGraph>,
   ): BranchCollapseState {
     const existing = this.collapseStates.get(canvasKey);
     if (existing !== undefined) {
-      if (existing.prune(graph)) {
-        this.storeCanvasState(canvasKey, existing);
-      }
       return existing;
     }
 
@@ -488,9 +484,6 @@ export default class CanvasTreePlugin extends Plugin {
       ? this.savedCanvasStates.get(canvasKey)
       : undefined;
     const state = BranchCollapseState.fromData(savedState);
-    if (state.prune(graph)) {
-      this.storeCanvasState(canvasKey, state);
-    }
     this.collapseStates.set(canvasKey, state);
     return state;
   }
