@@ -56,7 +56,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
           },
           {
             name: "Remember canvas states between sessions",
-            desc: "Canvas Tree always remembers states while the plugin is running. Enable this to restore them after Obsidian or the plugin restarts. Canvas files remain unchanged.",
+            desc: "Canvas Tree remembers states in each open tab for back navigation. Enable this to also restore them in newly opened tabs and after Obsidian or the plugin restarts. Canvas files remain unchanged.",
             control: {
               type: "toggle",
               key: "rememberCanvasStates",
@@ -71,7 +71,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         items: [
           {
             name: "Clean up persisted canvas states",
-            desc: "Remove persisted entries for canvas files that no longer exist. Session states remain unchanged.",
+            desc: "Remove persisted entries for canvas files that no longer exist. States in open tabs remain unchanged.",
             render: (setting) => {
               setting.addButton((button) => {
                 button
@@ -86,7 +86,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
           },
           {
             name: "Clear all persisted canvas states",
-            desc: "Delete all states stored between sessions. Current session states and visibility remain unchanged.",
+            desc: "Delete all states stored between sessions. States and visibility in currently open tabs remain unchanged.",
             render: (setting) => {
               setting.addButton((button) => {
                 button

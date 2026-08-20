@@ -40,6 +40,7 @@ export interface CanvasGraphData {
 
 export interface ActiveCanvasContext {
   key: string;
+  leaf: object;
   data: CanvasGraphData;
   deselectItems(itemIds: ReadonlySet<string>): number;
   selectedNodeIds: readonly string[];
@@ -126,7 +127,7 @@ export function readActiveCanvasContext(
   const view = app.workspace.getActiveViewOfType(ItemView);
   const canvasView: CanvasItemView | null = view;
   const canvas = canvasView?.canvas;
-  if (!isInteractiveCanvasRuntime(canvas)) {
+  if (canvasView === null || !isInteractiveCanvasRuntime(canvas)) {
     return {
       ok: false,
       reason: "canvas-api-unavailable",
@@ -148,6 +149,7 @@ export function readActiveCanvasContext(
     ok: true,
     context: {
       key: canvasKey,
+      leaf: canvasView.leaf,
       data: snapshot.data,
       deselectItems: (itemIds) => removeSelectionByIds(canvas, itemIds),
       selectedNodeIds: extractSelectedNodeIds(canvas.selection),

@@ -88,7 +88,8 @@ function createContext(): {
     edgeABLabel,
     edgeBC,
     context: {
-      key: "test.canvas",
+    key: "test.canvas",
+    leaf: {},
       data: {
         nodes: ["A", "B", "C"].map((id) => ({ id, type: "text" })),
         edges: [

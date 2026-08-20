@@ -47,7 +47,10 @@ export default class CanvasTreePlugin extends Plugin {
   private readonly branchControls = new CanvasBranchControlManager();
   private activeCanvasPath: string | null = null;
   private branchControlsVisible = DEFAULT_SETTINGS.showBranchControls;
-  private readonly collapseStates = new Map<string, BranchCollapseState>();
+  private readonly collapseStates = new Map<
+    object,
+    Map<string, BranchCollapseState>
+  >();
   private dataSaveChain: Promise<void> = Promise.resolve();
   private dataSaveTimer: number | null = null;
   private readonly savedCanvasStates = new Map<
@@ -154,6 +157,7 @@ export default class CanvasTreePlugin extends Plugin {
     );
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
+        this.cleanupDetachedSessionStates();
         this.refreshActiveCanvasState();
       }),
     );
@@ -228,12 +232,14 @@ export default class CanvasTreePlugin extends Plugin {
       !wasRememberingCanvasStates &&
       this.settings.rememberCanvasStates
     ) {
-      for (const [canvasPath, state] of [...this.collapseStates]) {
-        if (state.isEmpty() && this.savedCanvasStates.has(canvasPath)) {
-          this.collapseStates.delete(canvasPath);
-          continue;
+      for (const statesByPath of this.collapseStates.values()) {
+        for (const [canvasPath, state] of [...statesByPath]) {
+          if (state.isEmpty() && this.savedCanvasStates.has(canvasPath)) {
+            statesByPath.delete(canvasPath);
+            continue;
+          }
+          this.storeCanvasState(canvasPath, state);
         }
-        this.storeCanvasState(canvasPath, state);
       }
     }
 
@@ -301,7 +307,9 @@ export default class CanvasTreePlugin extends Plugin {
 
   private removeCanvasStatePath(path: string): void {
     const removedSavedCount = removePathEntries(this.savedCanvasStates, path);
-    removePathEntries(this.collapseStates, path);
+    for (const statesByPath of this.collapseStates.values()) {
+      removePathEntries(statesByPath, path);
+    }
     if (removedSavedCount > 0) {
       this.schedulePluginDataSave();
     }
@@ -313,7 +321,9 @@ export default class CanvasTreePlugin extends Plugin {
       oldPath,
       newPath,
     );
-    renamePathEntries(this.collapseStates, oldPath, newPath);
+    for (const statesByPath of this.collapseStates.values()) {
+      renamePathEntries(statesByPath, oldPath, newPath);
+    }
     if (renamedSavedCount > 0) {
       this.schedulePluginDataSave();
     }
@@ -431,7 +441,7 @@ export default class CanvasTreePlugin extends Plugin {
       return;
     }
 
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     if (state.isBranchCollapsed(graph, selectedNodeId)) {
       new Notice("The selected branch is already collapsed.");
       return;
@@ -452,7 +462,7 @@ export default class CanvasTreePlugin extends Plugin {
     }
 
     const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     if (!state.isBranchCollapsed(graph, selectedNodeId)) {
       new Notice("The selected branch is not collapsed.");
       return;
@@ -472,7 +482,7 @@ export default class CanvasTreePlugin extends Plugin {
 
   private expandAllBranches(context: ActiveCanvasContext): void {
     const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     state.expandAll();
     this.storeCanvasState(context.key, state);
 
@@ -484,7 +494,7 @@ export default class CanvasTreePlugin extends Plugin {
 
   private collapseAllBranches(context: ActiveCanvasContext): void {
     const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     const collapsedRootCount = state.collapseAllRootBranches(graph);
     if (collapsedRootCount === 0) {
       new Notice("The canvas has no rooted branches to collapse.");
@@ -523,7 +533,7 @@ export default class CanvasTreePlugin extends Plugin {
     depth: number,
   ): void {
     const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     state.showAllRootBranchesThroughDepth(graph, depth);
     this.storeCanvasState(context.key, state);
     const result = this.applyCollapsedState(context, graph, state);
@@ -542,20 +552,37 @@ export default class CanvasTreePlugin extends Plugin {
   }
 
   private getCollapseState(
-    canvasKey: string,
+    context: ActiveCanvasContext,
     _graph: ReturnType<typeof buildCanvasGraph>,
   ): BranchCollapseState {
-    const existing = this.collapseStates.get(canvasKey);
+    let statesByPath = this.collapseStates.get(context.leaf);
+    if (statesByPath === undefined) {
+      statesByPath = new Map();
+      this.collapseStates.set(context.leaf, statesByPath);
+    }
+    const existing = statesByPath.get(context.key);
     if (existing !== undefined) {
       return existing;
     }
 
     const savedState = this.settings.rememberCanvasStates
-      ? this.savedCanvasStates.get(canvasKey)
+      ? this.savedCanvasStates.get(context.key)
       : undefined;
     const state = BranchCollapseState.fromData(savedState);
-    this.collapseStates.set(canvasKey, state);
+    statesByPath.set(context.key, state);
     return state;
+  }
+
+  private cleanupDetachedSessionStates(): void {
+    const attachedLeaves = new Set<object>();
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      attachedLeaves.add(leaf);
+    });
+    for (const leaf of this.collapseStates.keys()) {
+      if (!attachedLeaves.has(leaf)) {
+        this.collapseStates.delete(leaf);
+      }
+    }
   }
 
   private notifySuccess(message: string): void {
@@ -573,7 +600,7 @@ export default class CanvasTreePlugin extends Plugin {
 
     const { context } = result;
     const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     const visibility = this.visibility.apply(
       context,
       state.getHiddenNodeIds(graph),
@@ -585,7 +612,7 @@ export default class CanvasTreePlugin extends Plugin {
   private syncBranchControls(
     context: ActiveCanvasContext,
     graph = buildCanvasGraph(context.data),
-    state = this.getCollapseState(context.key, graph),
+    state = this.getCollapseState(context, graph),
   ): void {
     if (!this.branchControlsVisible) {
       this.branchControls.removeAll();
@@ -690,7 +717,7 @@ export default class CanvasTreePlugin extends Plugin {
     visibleDepth: number,
   ): void {
     const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     state.resetBranch(graph, nodeId);
     state.revealEntireBranch(graph, nodeId);
     state.setVisibleDepth(nodeId, visibleDepth);
@@ -711,7 +738,7 @@ export default class CanvasTreePlugin extends Plugin {
     nodeId: string,
   ): void {
     const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     state.resetBranch(graph, nodeId);
     state.revealEntireBranch(graph, nodeId);
     this.storeCanvasState(context.key, state);
@@ -733,7 +760,7 @@ export default class CanvasTreePlugin extends Plugin {
       return;
     }
 
-    const state = this.getCollapseState(context.key, graph);
+    const state = this.getCollapseState(context, graph);
     const expanding = state.isBranchCollapsed(graph, nodeId);
     if (expanding) {
       if (state.isCollapsed(nodeId)) {
