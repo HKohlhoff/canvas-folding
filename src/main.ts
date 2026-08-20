@@ -803,8 +803,15 @@ export default class CanvasTreePlugin extends Plugin {
     );
     const activeNodeCount =
       graph.nodes.length - hiddenNodeIds.size - dimmedNodeIds.size;
+    const persistenceStatus = !this.settings.rememberCanvasStates
+      ? "storage tab only"
+      : state.isEmpty()
+        ? "storage default state (persistence on)"
+        : this.savedCanvasStates.has(context.key)
+          ? "storage saved between sessions"
+          : "storage save pending";
     new Notice(
-      `Canvas tree: ${activeNodeCount} active, ${hiddenNodeIds.size} hidden, ${dimmedNodeIds.size} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"}.`,
+      `Canvas tree: ${activeNodeCount} active, ${hiddenNodeIds.size} hidden, ${dimmedNodeIds.size} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"} · ${persistenceStatus}.`,
     );
   }
 

@@ -18,6 +18,7 @@ Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bere
 - `Show branch controls`, `Hide branch controls` und `Toggle branch controls` steuern die `+`/`−`-Buttons für die aktuelle Sitzung.
 - `Show canvas toolbar`, `Hide canvas toolbar` und `Toggle canvas toolbar` steuern die Befehlsleiste am oberen Canvas-Rand.
 - `Reset canvas toolbar position` setzt eine verschobene Toolbar wieder an den oberen Standardplatz.
+- `Show current status` meldet zusätzlich, ob der aktuelle Zustand nur im offenen Tab gilt, dauerhaft gespeichert ist oder bei aktivierter Persistenz dem Standardzustand entspricht.
 - `Inspect active canvas graph` zeigt eine Zusammenfassung der erkannten Struktur und bei aktiviertem Debug-Logging weitere Details.
 
 Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wechselt er zu `+`. Ein Linksklick klappt weiterhin den vollständigen Zweig ein oder aus. Ein Rechtsklick öffnet ein Kontextmenü, das den Node allein, bis zu fünf sichtbare Ebenen oder den gesamten Zweig anzeigen kann. Bei gemeinsam genutzten Nachfahren kann ein weiterhin sichtbarer Parent den verdeckten Teilbaum über sein `+` wieder freigeben. Dabei bleiben andere ausgeblendete Parent-Nodes und ihre Kanten verborgen. Die Einstellung `Show branch controls initially` legt den Zustand nach dem Laden fest; über die Befehlspalette lassen sich die Controls jederzeit anzeigen, ausblenden oder umschalten.
