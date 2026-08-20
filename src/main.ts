@@ -195,6 +195,24 @@ export default class CanvasTreePlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "focus-selected-branch",
+      name: "Focus selected branch",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.focusSelectedBranch(context);
+        }),
+    });
+
+    this.addCommand({
+      id: "exit-branch-focus",
+      name: "Exit branch focus",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.exitBranchFocus(context);
+        }),
+    });
+
+    this.addCommand({
       id: "collapse-all-branches",
       name: "Collapse all branches",
       checkCallback: (checking) =>
@@ -564,6 +582,41 @@ export default class CanvasTreePlugin extends Plugin {
     this.syncBranchControls(context, graph, state);
     this.debug("Expanded branch", { selectedNodeId, ...result });
     this.notifySuccess("Expanded selected branch.");
+  }
+
+  private focusSelectedBranch(context: ActiveCanvasContext): void {
+    const selectedNodeId = this.getSingleSelectedNodeId(context);
+    if (selectedNodeId === null) return;
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context, graph);
+    state.focusBranch(selectedNodeId, this.settings.focusIncludesAncestors);
+    this.storeCanvasState(context.key, state);
+    const result = this.applyCollapsedState(context, graph, state);
+    this.syncBranchControls(context, graph, state);
+    this.debug("Focused selected branch", {
+      includeAncestors: this.settings.focusIncludesAncestors,
+      selectedNodeId,
+      ...result,
+    });
+    this.notifySuccess(
+      this.settings.focusIncludesAncestors
+        ? "Focused selected branch with ancestors."
+        : "Focused selected branch.",
+    );
+  }
+
+  private exitBranchFocus(context: ActiveCanvasContext): void {
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context, graph);
+    if (!state.exitFocus()) {
+      new Notice("Branch focus is not active.");
+      return;
+    }
+    this.storeCanvasState(context.key, state);
+    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    this.syncBranchControls(context, graph, state);
+    this.debug("Exited branch focus", result);
+    this.notifySuccess("Exited branch focus.");
   }
 
   private expandAllBranches(context: ActiveCanvasContext): void {

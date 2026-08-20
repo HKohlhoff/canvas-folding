@@ -108,6 +108,44 @@ void test("global depth uses the shortest path from any root", () => {
   assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E"]);
 });
 
+void test("focuses only a selected node and its descendants by default", () => {
+  const graph = buildCanvasGraph(createTreeData());
+  const state = new BranchCollapseState();
+
+  state.focusBranch("B", false);
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["A", "C"]);
+});
+
+void test("optionally keeps every ancestor path in branch focus", () => {
+  const graph = buildCanvasGraph(createSharedBranchData());
+  const state = new BranchCollapseState();
+
+  state.focusBranch("D", true);
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
+  assert.equal(state.exitFocus(), true);
+  assert.equal(state.isFocusActive(), false);
+});
+
+void test("round-trips and prunes a focused branch", () => {
+  const graph = buildCanvasGraph(createTreeData());
+  const restored = BranchCollapseState.fromData({
+    focusedNodeId: "B",
+    focusIncludesAncestors: true,
+    revealedBranches: {},
+    visibleDepths: {},
+  });
+
+  assert.equal(restored.isFocusActive(), true);
+  assert.equal(restored.prune(graph), false);
+  assert.equal(restored.toData().focusedNodeId, "B");
+
+  const smallerGraph = buildCanvasGraph({ nodes: [], edges: [] });
+  assert.equal(restored.prune(smallerGraph), true);
+  assert.equal(restored.isFocusActive(), false);
+});
+
 void test("reveals a shared branch without restoring its hidden parent", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();

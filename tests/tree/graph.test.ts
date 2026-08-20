@@ -7,6 +7,7 @@ import {
   describeCanvasGraph,
   getDescendantDepths,
   getDescendantIds,
+  getAncestorIds,
 } from "../../src/tree/graph";
 
 void test("builds directed adjacency and identifies roots", () => {
@@ -114,6 +115,18 @@ void test("visits a shared descendant only once", () => {
     ["D", 2],
   ]);
   assert.deepEqual(getDescendantIds(graph, "missing"), []);
+});
+
+void test("collects every ancestor path without looping", () => {
+  const graph = buildCanvasGraph(
+    createData(
+      ["A", "B", "C", "D"],
+      [["A", "B"], ["A", "C"], ["B", "D"], ["C", "D"]],
+    ),
+  );
+
+  assert.deepEqual(getAncestorIds(graph, "D"), ["B", "C", "A"]);
+  assert.deepEqual(getAncestorIds(graph, "A"), []);
 });
 
 function createData(

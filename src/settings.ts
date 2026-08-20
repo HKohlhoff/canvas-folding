@@ -37,6 +37,15 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         heading: "Behavior",
         items: [
           {
+            name: "Include ancestors in branch focus",
+            desc: "Keep every ancestor path visible when focusing a selected branch. Disabled by default, so only the selected node and its descendants remain visible.",
+            control: {
+              type: "toggle",
+              key: "focusIncludesAncestors",
+              defaultValue: DEFAULT_SETTINGS.focusIncludesAncestors,
+            },
+          },
+          {
             name: "Show branch controls initially",
             desc: "Set the initial visibility of +/− controls when Canvas Tree loads. Use the command palette at any time to show, hide, or toggle them.",
             control: {
@@ -136,6 +145,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
 function isSettingKey(key: string): key is CanvasTreeSettingKey {
   return (
     key === "debugLogging" ||
+    key === "focusIncludesAncestors" ||
     key === "rememberCanvasStates" ||
     key === "showBranchControls" ||
     key === "showStatusNotices"

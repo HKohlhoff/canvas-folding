@@ -10,6 +10,8 @@ Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bere
 
 - `Collapse selected branch` blendet alle gerichteten Nachfahren des einzelnen ausgewählten Nodes aus.
 - `Expand selected branch` blendet den an diesem Node effektiv ausgeblendeten Zweig wieder ein.
+- `Focus selected branch` zeigt nur den ausgewählten Node und seine gerichteten Nachfolger; optional bleiben zusätzlich alle Ahnenpfade sichtbar.
+- `Exit branch focus` beendet den Fokus und stellt den darunterliegenden Collapse-/Ebenenzustand wieder her.
 - `Collapse all branches` lässt alle Root-Nodes sichtbar und klappt ihre vollständigen Teilbäume ein.
 - `Expand all branches` hebt alle Collapse-Zustände des aktiven Canvas auf.
 - `Show canvas through level…` zeigt alle Root-Zweige bis zu einer gemeinsam gewählten Ebene.
@@ -17,6 +19,8 @@ Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bere
 - `Inspect active canvas graph` zeigt eine Zusammenfassung der erkannten Struktur und bei aktiviertem Debug-Logging weitere Details.
 
 Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wechselt er zu `+`. Ein Linksklick klappt weiterhin den vollständigen Zweig ein oder aus. Ein Rechtsklick öffnet ein Kontextmenü, das den Node allein, bis zu fünf sichtbare Ebenen oder den gesamten Zweig anzeigen kann. Bei gemeinsam genutzten Nachfahren kann ein weiterhin sichtbarer Parent den verdeckten Teilbaum über sein `+` wieder freigeben. Dabei bleiben andere ausgeblendete Parent-Nodes und ihre Kanten verborgen. Die Einstellung `Show branch controls initially` legt den Zustand nach dem Laden fest; über die Befehlspalette lassen sich die Controls jederzeit anzeigen, ausblenden oder umschalten.
+
+Der Branch-Fokus wirkt als zusätzlicher Sichtbarkeitsfilter und verändert bestehende Collapse-Zustände nicht. Standardmäßig bleiben der ausgewählte Node und seine Nachfolger sichtbar. Mit `Include ancestors in branch focus` werden zusätzlich sämtliche gerichteten Ahnenpfade eingeblendet. Der Fokus gehört zum flüchtigen beziehungsweise optional persistenten Canvas-Zustand.
 
 Canvas Tree merkt sich Collapse-State, Sichttiefe und temporäre Freigaben flüchtig pro geöffnetem Tab. So wird der letzte Zustand wiederhergestellt, wenn man in diesem Tab zu anderen Dateien und anschließend zum Canvas zurücknavigiert. Beim Schließen des Tabs wird dieser flüchtige Zustand verworfen. `Remember canvas states between sessions` speichert den Zustand zusätzlich nach Canvas-Pfad in der Plugin-Datei `data.json`, sodass er in neu geöffneten Tabs und nach einem Neustart von Obsidian oder des Plugins verfügbar ist. Einträge gelöschter Canvas-Dateien werden automatisch entfernt. Nicht mehr vorhandene Node-IDs werden beim Plugin-Start, nach Änderungen einer Canvas-Datei und beim manuellen Aufräumen gegen die tatsächliche Canvas-JSON geprüft. Ungültige oder vorübergehend nicht lesbare Canvas-Daten führen zu keiner Löschung. Die `.canvas`-Datei selbst wird nicht verändert.
 

@@ -52,6 +52,21 @@ void test("retains a persisted global canvas depth without local restrictions", 
   assert.equal(data.canvasStates["Folder/Test.canvas"]?.globalVisibleDepth, 2);
 });
 
+void test("retains a persisted branch focus without collapse restrictions", () => {
+  const data = normalizePluginData({
+    canvasStates: {
+      "Folder/Test.canvas": {
+        focusedNodeId: "node-a",
+        focusIncludesAncestors: true,
+        revealedBranches: {},
+        visibleDepths: {},
+      },
+    },
+  });
+
+  assert.equal(data.canvasStates["Folder/Test.canvas"]?.focusedNodeId, "node-a");
+});
+
 void test("removes saved states for deleted files and folders", () => {
   const states = new Map([
     ["Folder/A.canvas", 1],

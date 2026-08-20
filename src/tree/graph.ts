@@ -8,6 +8,7 @@ export interface CanvasGraph {
   nodes: readonly CanvasGraphNodeData[];
   edges: readonly CanvasGraphEdgeData[];
   childrenByNode: ReadonlyMap<string, readonly string[]>;
+  parentsByNode: ReadonlyMap<string, readonly string[]>;
   rootIds: readonly string[];
   isolatedNodeIds: readonly string[];
   danglingEdgeIds: readonly string[];
@@ -25,12 +26,14 @@ export interface CanvasGraphSummary {
 export function buildCanvasGraph(data: CanvasGraphData): CanvasGraph {
   const nodeIds = new Set(data.nodes.map((node) => node.id));
   const children = new Map<string, Set<string>>();
+  const parents = new Map<string, Set<string>>();
   const incomingCount = new Map<string, number>();
   const connectedNodeIds = new Set<string>();
   const danglingEdgeIds: string[] = [];
 
   for (const nodeId of nodeIds) {
     children.set(nodeId, new Set());
+    parents.set(nodeId, new Set());
     incomingCount.set(nodeId, 0);
   }
 
@@ -46,6 +49,7 @@ export function buildCanvasGraph(data: CanvasGraphData): CanvasGraph {
     const nodeChildren = children.get(edge.fromNode);
     if (nodeChildren !== undefined && !nodeChildren.has(edge.toNode)) {
       nodeChildren.add(edge.toNode);
+      parents.get(edge.toNode)?.add(edge.fromNode);
       incomingCount.set(edge.toNode, (incomingCount.get(edge.toNode) ?? 0) + 1);
     }
   }
@@ -54,15 +58,38 @@ export function buildCanvasGraph(data: CanvasGraphData): CanvasGraph {
   for (const [nodeId, nodeChildren] of children) {
     childrenByNode.set(nodeId, [...nodeChildren]);
   }
+  const parentsByNode = new Map<string, readonly string[]>();
+  for (const [nodeId, nodeParents] of parents) {
+    parentsByNode.set(nodeId, [...nodeParents]);
+  }
 
   return {
     nodes: data.nodes,
     edges: data.edges,
     childrenByNode,
+    parentsByNode,
     rootIds: [...nodeIds].filter((nodeId) => incomingCount.get(nodeId) === 0),
     isolatedNodeIds: [...nodeIds].filter((nodeId) => !connectedNodeIds.has(nodeId)),
     danglingEdgeIds,
   };
+}
+
+export function getAncestorIds(
+  graph: Pick<CanvasGraph, "parentsByNode">,
+  nodeId: string,
+): readonly string[] {
+  if (!graph.parentsByNode.has(nodeId)) return [];
+  const ancestors: string[] = [];
+  const visited = new Set([nodeId]);
+  const queue = [...(graph.parentsByNode.get(nodeId) ?? [])];
+  for (let index = 0; index < queue.length; index += 1) {
+    const ancestorId = queue[index];
+    if (ancestorId === undefined || visited.has(ancestorId)) continue;
+    visited.add(ancestorId);
+    ancestors.push(ancestorId);
+    queue.push(...(graph.parentsByNode.get(ancestorId) ?? []));
+  }
+  return ancestors;
 }
 
 export function describeCanvasGraph(graph: CanvasGraph): CanvasGraphSummary {

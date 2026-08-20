@@ -1,5 +1,6 @@
 export interface CanvasTreeSettings {
   debugLogging: boolean;
+  focusIncludesAncestors: boolean;
   rememberCanvasStates: boolean;
   showBranchControls: boolean;
   showStatusNotices: boolean;
@@ -7,6 +8,7 @@ export interface CanvasTreeSettings {
 
 export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
   debugLogging: false,
+  focusIncludesAncestors: false,
   rememberCanvasStates: false,
   showBranchControls: true,
   showStatusNotices: true,
@@ -19,6 +21,11 @@ export function normalizeSettings(data: unknown): CanvasTreeSettings {
 
   return {
     debugLogging: readBoolean(data, "debugLogging", DEFAULT_SETTINGS.debugLogging),
+    focusIncludesAncestors: readBoolean(
+      data,
+      "focusIncludesAncestors",
+      DEFAULT_SETTINGS.focusIncludesAncestors,
+    ),
     rememberCanvasStates: readBoolean(
       data,
       "rememberCanvasStates",
