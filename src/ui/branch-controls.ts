@@ -87,7 +87,7 @@ export class CanvasBranchControlManager {
     });
     button.addEventListener("contextmenu", (event) => {
       blockCanvasInteraction(event);
-      entry.openContextMenu(event);
+      openContextMenuAfterPointerRelease(event, entry.openContextMenu);
     });
 
     this.entries.set(host, entry);
@@ -112,6 +112,42 @@ function updateButton(
 function blockCanvasInteraction(event: Event): void {
   event.preventDefault();
   event.stopPropagation();
+}
+
+function openContextMenuAfterPointerRelease(
+  event: MouseEvent,
+  openContextMenu: (event: MouseEvent) => void,
+): void {
+  const button = event.currentTarget as HTMLButtonElement | null;
+  if (button === null || event.buttons === 0) {
+    openContextMenu(event);
+    return;
+  }
+
+  const { ownerDocument } = button;
+  const finishPointerInteraction = (): void => {
+    ownerDocument.removeEventListener("pointerup", finishPointerInteraction, true);
+    ownerDocument.removeEventListener(
+      "pointercancel",
+      finishPointerInteraction,
+      true,
+    );
+    const ownerWindow = ownerDocument.defaultView;
+    if (ownerWindow === null) {
+      openContextMenu(event);
+    } else {
+      ownerWindow.setTimeout(() => {
+        openContextMenu(event);
+      }, 0);
+    }
+  };
+
+  ownerDocument.addEventListener("pointerup", finishPointerInteraction, true);
+  ownerDocument.addEventListener(
+    "pointercancel",
+    finishPointerInteraction,
+    true,
+  );
 }
 
 function hasModelForHost(

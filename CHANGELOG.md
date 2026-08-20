@@ -35,3 +35,4 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Restore the session collapse state after returning to a Canvas in the same tab.
 - Allow visible alternative parents to reveal a branch hidden by another collapse.
 - Prevent standard Canvas connection and resize handles for hidden nodes.
+- Wait for pointer release before opening the branch-depth context menu.
