@@ -106,16 +106,21 @@ export default class CanvasTreePlugin extends Plugin {
 
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
-        this.refreshActiveBranchControls();
+        this.refreshActiveCanvasState();
+      }),
+    );
+    this.registerEvent(
+      this.app.workspace.on("file-open", () => {
+        this.refreshActiveCanvasState();
       }),
     );
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
-        this.refreshActiveBranchControls();
+        this.refreshActiveCanvasState();
       }),
     );
     this.app.workspace.onLayoutReady(() => {
-      this.refreshActiveBranchControls();
+      this.refreshActiveCanvasState();
     });
 
     this.addCommand({
@@ -161,7 +166,7 @@ export default class CanvasTreePlugin extends Plugin {
     if (typeof update.showBranchControls === "boolean") {
       this.branchControlsVisible = update.showBranchControls;
       if (this.branchControlsVisible) {
-        this.refreshActiveBranchControls();
+        this.refreshActiveCanvasState();
       } else {
         this.branchControls.removeAll();
       }
@@ -298,16 +303,22 @@ export default class CanvasTreePlugin extends Plugin {
     }
   }
 
-  private refreshActiveBranchControls(): void {
-    if (!this.branchControlsVisible) {
+  private refreshActiveCanvasState(): void {
+    const result = readActiveCanvasContext(this.app);
+    if (!result.ok) {
       this.branchControls.removeAll();
       return;
     }
 
-    const result = readActiveCanvasContext(this.app);
-    if (result.ok) {
-      this.syncBranchControls(result.context);
-    }
+    const { context } = result;
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context.key);
+    const visibility = this.visibility.apply(
+      context,
+      state.getHiddenNodeIds(graph),
+    );
+    this.syncBranchControls(context, graph, state);
+    this.debug("Refreshed active canvas state", visibility);
   }
 
   private syncBranchControls(
