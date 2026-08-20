@@ -2,6 +2,7 @@ import { App, ItemView } from "obsidian";
 
 import {
   extractCanvasEdgeViews,
+  extractCanvasPathFromViewState,
   extractCanvasNodeInteractionLayer,
   extractCanvasNodeViews,
   extractSelectedNodeIds,
@@ -138,6 +139,8 @@ export function readActiveCanvasContext(
   const canvasKey = resolveCanvasKey(
     canvas.view?.file?.path,
     canvasView?.file?.path,
+    extractCanvasPathFromViewState(canvasView?.getState()),
+    extractCanvasPathFromViewState(canvasView?.leaf.getViewState().state),
     app.workspace.getActiveFile()?.path,
   );
 

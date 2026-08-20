@@ -300,7 +300,13 @@ export default class CanvasTreePlugin extends Plugin {
     canvasPath: string,
     state: BranchCollapseState,
   ): void {
-    if (!this.settings.rememberCanvasStates || !isCanvasPath(canvasPath)) {
+    if (!this.settings.rememberCanvasStates) {
+      return;
+    }
+    if (!isCanvasPath(canvasPath)) {
+      console.warn("[Canvas Tree] Skipped state persistence: invalid canvas path", {
+        canvasPath,
+      });
       return;
     }
 

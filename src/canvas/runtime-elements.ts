@@ -107,6 +107,10 @@ export function resolveCanvasKey(...candidatePaths: unknown[]): string {
   return "canvas-view:active";
 }
 
+export function extractCanvasPathFromViewState(value: unknown): unknown {
+  return isRecord(value) ? value.file : undefined;
+}
+
 export function removeSelectionByIds(
   canvas: CanvasSelectionRuntime,
   itemIds: ReadonlySet<string>,

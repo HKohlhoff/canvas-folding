@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   extractCanvasEdgeViews,
+  extractCanvasPathFromViewState,
   resolveCanvasKey,
   type CanvasElementHandle,
 } from "../../src/canvas/runtime-elements";
@@ -23,6 +24,14 @@ void test("extracts line, arrow and label wrapper elements from an edge", () => 
 
   assert.equal(edgeViews.length, 1);
   assert.deepEqual(edgeViews[0]?.elements, [line, arrow, label]);
+});
+
+void test("extracts a canvas path from an Obsidian view state", () => {
+  assert.equal(
+    extractCanvasPathFromViewState({ file: "Folder/Test.canvas" }),
+    "Folder/Test.canvas",
+  );
+  assert.equal(extractCanvasPathFromViewState(null), undefined);
 });
 
 void test("prefers the Canvas view file path for the persistence key", () => {
