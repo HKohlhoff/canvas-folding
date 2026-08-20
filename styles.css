@@ -1,4 +1,3 @@
-/*
- * Add plugin styles here when the plugin needs custom UI.
- * Keep selectors scoped to the plugin to avoid affecting the Obsidian UI.
- */
+.canvas-tree-hidden {
+  display: none !important;
+}

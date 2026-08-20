@@ -12,6 +12,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - A read-only active Canvas adapter and graph diagnostics command.
 - Pure graph analysis with focused unit tests for roots, cycles, isolated nodes and dangling edges.
 - Cycle-safe descendant traversal for directed Canvas branches.
+- Session-only collapsed-branch state and non-destructive Canvas visibility handling.
 - Plugin lifecycle and a settings tab with normalized defaults.
 - Reproducible npm installs through `package-lock.json` and `npm ci` in CI.
 
