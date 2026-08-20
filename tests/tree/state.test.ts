@@ -82,6 +82,32 @@ void test("collapse all leaves state unchanged when a graph has no roots", () =>
   assert.deepEqual(state.toData().visibleDepths, { A: 0 });
 });
 
+void test("shows a canvas through a global root depth", () => {
+  const graph = buildCanvasGraph(createTreeData());
+  const state = new BranchCollapseState();
+
+  assert.equal(state.showAllRootBranchesThroughDepth(graph, 1), 1);
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["D", "E"]);
+  assert.deepEqual(state.toData(), {
+    globalVisibleDepth: 1,
+    revealedBranches: {},
+    visibleDepths: {},
+  });
+});
+
+void test("global depth uses the shortest path from any root", () => {
+  const data = createSharedBranchData();
+  const graph = buildCanvasGraph({
+    nodes: data.nodes.filter((node) => node.id !== "R"),
+    edges: data.edges.filter((edge) => edge.fromNode !== "R"),
+  });
+  const state = new BranchCollapseState();
+
+  state.showAllRootBranchesThroughDepth(graph, 1);
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E"]);
+});
+
 void test("reveals a shared branch without restoring its hidden parent", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();

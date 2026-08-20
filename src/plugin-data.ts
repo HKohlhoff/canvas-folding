@@ -30,7 +30,10 @@ export function normalizePluginData(data: unknown): CanvasTreePluginData {
       }
 
       const state = normalizeBranchCollapseStateData(value);
-      if (Object.keys(state.visibleDepths).length > 0) {
+      if (
+        Object.keys(state.visibleDepths).length > 0 ||
+        state.globalVisibleDepth !== undefined
+      ) {
         canvasStates[canvasPath] = state;
       }
     }

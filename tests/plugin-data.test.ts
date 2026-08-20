@@ -38,6 +38,20 @@ void test("normalizes saved canvas states defensively", () => {
   );
 });
 
+void test("retains a persisted global canvas depth without local restrictions", () => {
+  const data = normalizePluginData({
+    canvasStates: {
+      "Folder/Test.canvas": {
+        globalVisibleDepth: 2,
+        revealedBranches: {},
+        visibleDepths: {},
+      },
+    },
+  });
+
+  assert.equal(data.canvasStates["Folder/Test.canvas"]?.globalVisibleDepth, 2);
+});
+
 void test("removes saved states for deleted files and folders", () => {
   const states = new Map([
     ["Folder/A.canvas", 1],

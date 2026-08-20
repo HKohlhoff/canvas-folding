@@ -116,3 +116,20 @@ export function getDescendantDepths(
 
   return descendantDepths;
 }
+
+export function getRootDepths(
+  graph: Pick<CanvasGraph, "childrenByNode" | "rootIds">,
+): ReadonlyMap<string, number> {
+  const depths = new Map<string, number>();
+  const queue = graph.rootIds.map((nodeId) => ({ depth: 0, nodeId }));
+  for (let index = 0; index < queue.length; index += 1) {
+    const entry = queue[index];
+    if (entry === undefined || depths.has(entry.nodeId)) continue;
+    depths.set(entry.nodeId, entry.depth);
+    queue.push(...(graph.childrenByNode.get(entry.nodeId) ?? []).map((nodeId) => ({
+      depth: entry.depth + 1,
+      nodeId,
+    })));
+  }
+  return depths;
+}

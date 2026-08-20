@@ -30,12 +30,14 @@ import {
   describeCanvasGraph,
   getDescendantDepths,
   getDescendantIds,
+  getRootDepths,
 } from "./tree/graph";
 import {
   BranchCollapseState,
   type BranchCollapseStateData,
 } from "./tree/state";
 import { CanvasBranchControlManager } from "./ui/branch-controls";
+import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import { buildBranchControlModels } from "./ui/control-model";
 
 const MAX_DEPTH_MENU_LEVELS = 5;
@@ -192,6 +194,15 @@ export default class CanvasTreePlugin extends Plugin {
       checkCallback: (checking) =>
         this.runActiveCanvasCommand(checking, (context) => {
           this.expandAllBranches(context);
+        }),
+    });
+
+    this.addCommand({
+      id: "show-canvas-through-level",
+      name: "Show canvas through level…",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.openCanvasDepthModal(context);
         }),
     });
 
@@ -489,6 +500,38 @@ export default class CanvasTreePlugin extends Plugin {
     );
   }
 
+  private openCanvasDepthModal(context: ActiveCanvasContext): void {
+    const graph = buildCanvasGraph(context.data);
+    const maximumDepth = Math.max(0, ...getRootDepths(graph).values());
+    if (maximumDepth === 0) {
+      new Notice("The canvas has no rooted levels to show.");
+      return;
+    }
+    const canvasKey = context.key;
+    new CanvasDepthModal(this.app, maximumDepth, (depth) => {
+      const current = this.readActiveCanvasContext();
+      if (!current.ok || current.context.key !== canvasKey) {
+        new Notice("Reopen the canvas and choose a level again.");
+        return;
+      }
+      this.showCanvasThroughDepth(current.context, depth);
+    }).open();
+  }
+
+  private showCanvasThroughDepth(
+    context: ActiveCanvasContext,
+    depth: number,
+  ): void {
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context.key, graph);
+    state.showAllRootBranchesThroughDepth(graph, depth);
+    this.storeCanvasState(context.key, state);
+    const result = this.applyCollapsedState(context, graph, state);
+    this.syncBranchControls(context, graph, state);
+    this.debug("Set global canvas depth", { depth, ...result });
+    this.notifySuccess(`Showing canvas through level ${depth}.`);
+  }
+
   private getSingleSelectedNodeId(context: ActiveCanvasContext): string | null {
     if (context.selectedNodeIds.length !== 1) {
       new Notice("Select exactly one canvas node first.");
@@ -695,7 +738,8 @@ export default class CanvasTreePlugin extends Plugin {
     if (expanding) {
       if (state.isCollapsed(nodeId)) {
         state.expand(nodeId);
-      } else {
+      }
+      if (state.isBranchCollapsed(graph, nodeId)) {
         state.revealBranch(graph, nodeId);
       }
     } else {
