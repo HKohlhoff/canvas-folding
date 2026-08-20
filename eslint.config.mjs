@@ -22,7 +22,7 @@ export default defineConfig(
   },
   ...obsidianmd.configs.recommended,
   {
-    files: ["src/**/*.ts"],
+    files: ["src/**/*.ts", "tests/**/*.ts"],
     languageOptions: {
       globals: globals.browser,
       parser: tseslint.parser,
@@ -38,6 +38,12 @@ export default defineConfig(
       "obsidianmd/hardcoded-config-path": "off",
       "obsidianmd/no-nodejs-modules": "off",
       "obsidianmd/rule-custom-message": "off",
+    },
+  },
+  {
+    files: ["tests/**/*.ts"],
+    rules: {
+      "obsidianmd/no-nodejs-modules": "off",
     },
   },
 );
