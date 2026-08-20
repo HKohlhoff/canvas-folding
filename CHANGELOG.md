@@ -14,6 +14,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Cycle-safe descendant traversal for directed Canvas branches.
 - Session-only collapsed-branch state and non-destructive Canvas visibility handling.
 - Commands to collapse or expand a selected branch and expand all branches.
+- Accessible branch controls for Canvas nodes with directed descendants.
 - Plugin lifecycle and a settings tab with normalized defaults.
 - Reproducible npm installs through `package-lock.json` and `npm ci` in CI.
 

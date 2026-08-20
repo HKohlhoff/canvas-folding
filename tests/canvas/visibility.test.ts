@@ -4,6 +4,7 @@ import test from "node:test";
 import type {
   ActiveCanvasContext,
   CanvasElementHandle,
+  CanvasNodeElementHandle,
 } from "../../src/canvas/adapter";
 import { CanvasVisibilityManager } from "../../src/canvas/visibility";
 
@@ -62,9 +63,9 @@ function createContext(): {
       },
       selectedNodeIds: [],
       nodeViews: [
-        { id: "A", element: createElement(nodeA) },
-        { id: "B", element: createElement(nodeB) },
-        { id: "C", element: createElement(nodeC) },
+        { id: "A", element: createNodeElement(nodeA) },
+        { id: "B", element: createNodeElement(nodeB) },
+        { id: "C", element: createNodeElement(nodeC) },
       ],
       edgeViews: [
         {
@@ -79,6 +80,17 @@ function createContext(): {
 
 function createElement(classList: FakeClassList): CanvasElementHandle {
   return { classList };
+}
+
+function createNodeElement(classList: FakeClassList): CanvasNodeElementHandle {
+  return {
+    classList,
+    createEl: <K extends keyof HTMLElementTagNameMap>(
+      _tag: K,
+    ): HTMLElementTagNameMap[K] => {
+      throw new Error("Node creation is not used by this visibility test.");
+    },
+  };
 }
 
 class FakeClassList {

@@ -7,7 +7,13 @@ export interface CanvasElementHandle {
 
 export interface CanvasNodeView {
   id: string;
-  element: CanvasElementHandle;
+  element: CanvasNodeElementHandle;
+}
+
+export interface CanvasNodeElementHandle extends CanvasElementHandle {
+  createEl<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+  ): HTMLElementTagNameMap[K];
 }
 
 export interface CanvasEdgeView {
@@ -24,7 +30,7 @@ export function extractCanvasNodeViews(
       continue;
     }
 
-    const element = asCanvasElement(value.nodeEl);
+    const element = asCanvasNodeElement(value.nodeEl);
     if (element !== null) {
       nodeViews.push({ id: value.id, element });
     }
@@ -60,12 +66,25 @@ export function extractSelectedNodeIds(selection: Iterable<unknown>): string[] {
     if (
       isRecord(value) &&
       typeof value.id === "string" &&
-      asCanvasElement(value.nodeEl) !== null
+      asCanvasNodeElement(value.nodeEl) !== null
     ) {
       nodeIds.push(value.id);
     }
   }
   return nodeIds;
+}
+
+function asCanvasNodeElement(value: unknown): CanvasNodeElementHandle | null {
+  const element = asCanvasElement(value);
+  if (
+    element === null ||
+    !isRecord(value) ||
+    typeof value.createEl !== "function"
+  ) {
+    return null;
+  }
+
+  return value as unknown as CanvasNodeElementHandle;
 }
 
 function asCanvasElement(value: unknown): CanvasElementHandle | null {

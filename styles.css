@@ -1,3 +1,33 @@
 .canvas-tree-hidden {
   display: none !important;
 }
+
+.canvas-tree-branch-control {
+  align-items: center;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 50%;
+  box-shadow: var(--shadow-s);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  font-size: 16px;
+  font-weight: 600;
+  height: 24px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  z-index: 10;
+}
+
+.canvas-tree-branch-control:hover,
+.canvas-tree-branch-control:focus-visible {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}

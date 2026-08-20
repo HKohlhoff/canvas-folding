@@ -11,6 +11,7 @@ import {
 export type {
   CanvasEdgeView,
   CanvasElementHandle,
+  CanvasNodeElementHandle,
   CanvasNodeView,
 } from "./runtime-elements";
 
