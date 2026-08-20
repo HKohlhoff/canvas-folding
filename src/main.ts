@@ -125,6 +125,18 @@ export default class CanvasTreePlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "reset-canvas-toolbar-position",
+      name: "Reset canvas toolbar position",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          void this.updateSettings({
+            toolbarPositionXPercent: DEFAULT_SETTINGS.toolbarPositionXPercent,
+            toolbarPositionYPixels: DEFAULT_SETTINGS.toolbarPositionYPixels,
+          }).then(() => this.syncToolbar(context));
+        }),
+    });
+
+    this.addCommand({
       id: "show-branch-controls",
       name: "Show branch controls",
       checkCallback: (checking) =>
@@ -563,11 +575,9 @@ export default class CanvasTreePlugin extends Plugin {
       ...summary,
     });
 
-    if (this.settings.showStatusNotices) {
-      new Notice(
-        `Canvas tree: ${summary.nodeCount} nodes, ${summary.edgeCount} edges, ${summary.rootIds.length} roots.`,
-      );
-    }
+    new Notice(
+      `Canvas tree: ${summary.nodeCount} nodes, ${summary.edgeCount} edges, ${summary.rootIds.length} roots.`,
+    );
   }
 
   private runActiveCanvasCommand(
@@ -849,6 +859,16 @@ export default class CanvasTreePlugin extends Plugin {
         this.branchControlsVisible,
       ),
       (action) => this.runToolbarAction(action),
+      {
+        xPercent: this.settings.toolbarPositionXPercent,
+        yPixels: this.settings.toolbarPositionYPixels,
+      },
+      (position) => {
+        void this.updateSettings({
+          toolbarPositionXPercent: position.xPercent,
+          toolbarPositionYPixels: position.yPixels,
+        });
+      },
     );
   }
 
@@ -862,8 +882,13 @@ export default class CanvasTreePlugin extends Plugin {
     switch (action) {
       case "collapse-selected": this.collapseSelectedBranch(context); break;
       case "expand-selected": this.expandSelectedBranch(context); break;
-      case "focus-selected": this.focusSelectedBranch(context); break;
-      case "exit-focus": this.exitBranchFocus(context); break;
+      case "toggle-focus":
+        if (this.getCollapseState(context, buildCanvasGraph(context.data)).isFocusActive()) {
+          this.exitBranchFocus(context);
+        } else {
+          this.focusSelectedBranch(context);
+        }
+        break;
       case "collapse-all": this.collapseAllBranches(context); break;
       case "expand-all": this.expandAllBranches(context); break;
       case "show-level": this.openCanvasDepthModal(context); break;

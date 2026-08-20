@@ -5,6 +5,8 @@ export interface CanvasTreeSettings {
   showBranchControls: boolean;
   showCanvasToolbar: boolean;
   showStatusNotices: boolean;
+  toolbarPositionXPercent: number;
+  toolbarPositionYPixels: number;
 }
 
 export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
@@ -14,6 +16,8 @@ export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
   showBranchControls: true,
   showCanvasToolbar: true,
   showStatusNotices: true,
+  toolbarPositionXPercent: 50,
+  toolbarPositionYPixels: 8,
 };
 
 export function normalizeSettings(data: unknown): CanvasTreeSettings {
@@ -49,6 +53,20 @@ export function normalizeSettings(data: unknown): CanvasTreeSettings {
       data,
       "showStatusNotices",
       DEFAULT_SETTINGS.showStatusNotices,
+    ),
+    toolbarPositionXPercent: readNumber(
+      data,
+      "toolbarPositionXPercent",
+      DEFAULT_SETTINGS.toolbarPositionXPercent,
+      0,
+      100,
+    ),
+    toolbarPositionYPixels: readNumber(
+      data,
+      "toolbarPositionYPixels",
+      DEFAULT_SETTINGS.toolbarPositionYPixels,
+      0,
+      5000,
     ),
   };
 }

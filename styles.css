@@ -29,6 +29,16 @@
   flex: 0 0 auto;
 }
 
+.canvas-tree-toolbar-drag-handle {
+  cursor: grab;
+  flex: 0 0 auto;
+  touch-action: none;
+}
+
+.canvas-tree-toolbar-drag-handle:active {
+  cursor: grabbing;
+}
+
 .canvas-tree-toolbar-button.is-active {
   background: var(--background-modifier-hover);
   color: var(--interactive-accent);

@@ -7,8 +7,7 @@ import type { BranchCollapseState } from "../tree/state";
 export type ToolbarAction =
   | "collapse-selected"
   | "expand-selected"
-  | "focus-selected"
-  | "exit-focus"
+  | "toggle-focus"
   | "collapse-all"
   | "expand-all"
   | "show-level"
@@ -43,12 +42,11 @@ export function buildToolbarButtonModels(
   const hasRootDepths = Math.max(0, ...getRootDepths(graph).values()) > 0;
 
   return [
-    { action: "collapse-selected", disabled: !hasSelectedDescendants || selectedBranchCollapsed, icon: "chevron-down", label: "Collapse selected branch" },
-    { action: "expand-selected", disabled: !selectedBranchCollapsed, icon: "chevron-up", label: "Expand selected branch" },
-    { action: "focus-selected", disabled: selectedNodeId === undefined, icon: "focus", label: "Focus selected branch", separatorBefore: true },
-    { action: "exit-focus", disabled: !state.isFocusActive(), icon: "circle-off", label: "Exit branch focus" },
-    { action: "collapse-all", disabled: !hasRootedBranches, icon: "minimize-2", label: "Collapse all branches", separatorBefore: true },
-    { action: "expand-all", icon: "maximize-2", label: "Expand all branches" },
+    { action: "collapse-selected", disabled: !hasSelectedDescendants || selectedBranchCollapsed, icon: "minus", label: "Collapse selected branch" },
+    { action: "expand-selected", disabled: !selectedBranchCollapsed, icon: "plus", label: "Expand selected branch" },
+    { action: "toggle-focus", active: state.isFocusActive(), disabled: !state.isFocusActive() && selectedNodeId === undefined, icon: "focus", label: state.isFocusActive() ? "Exit branch focus" : "Focus selected branch", separatorBefore: true },
+    { action: "collapse-all", disabled: !hasRootedBranches, icon: "minus", label: "Collapse all branches", separatorBefore: true },
+    { action: "expand-all", icon: "plus", label: "Expand all branches" },
     { action: "show-level", disabled: !hasRootDepths, icon: "layers", label: "Show canvas through level…" },
     { action: "toggle-controls", active: branchControlsVisible, icon: "circle-dot", label: "Toggle branch controls", separatorBefore: true },
     { action: "inspect-graph", icon: "network", label: "Inspect active canvas graph", separatorBefore: true },
@@ -69,6 +67,8 @@ export class CanvasToolbarManager {
     context: ActiveCanvasContext,
     models: readonly ToolbarButtonModel[],
     onAction: (action: ToolbarAction) => void,
+    position: { xPercent: number; yPixels: number },
+    onPositionChange: (position: { xPercent: number; yPixels: number }) => void,
   ): void {
     let entry = this.entries.get(context.leaf);
     if (entry !== undefined && entry.host !== context.toolbarHost) {
@@ -87,6 +87,13 @@ export class CanvasToolbarManager {
     }
 
     entry.toolbar.empty();
+    applyPosition(entry.toolbar, position);
+    const dragHandle = entry.toolbar.createEl("button", {
+      cls: "clickable-icon canvas-tree-toolbar-drag-handle",
+      attr: { "aria-label": "Move canvas toolbar", title: "Move canvas toolbar", type: "button" },
+    });
+    setIcon(dragHandle, "grip-vertical");
+    installDrag(dragHandle, entry.toolbar, entry.host, onPositionChange);
     for (const model of models) {
       if (model.separatorBefore) {
         entry.toolbar.createDiv({ cls: "canvas-tree-toolbar-separator" });
@@ -114,6 +121,55 @@ export class CanvasToolbarManager {
     for (const entry of this.entries.values()) entry.toolbar.remove();
     this.entries.clear();
   }
+}
+
+function applyPosition(
+  toolbar: HTMLElement,
+  position: { xPercent: number; yPixels: number },
+): void {
+  toolbar.style.left = `${position.xPercent}%`;
+  toolbar.style.top = `${position.yPixels}px`;
+}
+
+function installDrag(
+  handle: HTMLButtonElement,
+  toolbar: HTMLElement,
+  host: HTMLElement,
+  onPositionChange: (position: { xPercent: number; yPixels: number }) => void,
+): void {
+  handle.addEventListener("pointerdown", (event) => {
+    blockCanvasInteraction(event);
+    handle.setPointerCapture(event.pointerId);
+    const hostRect = host.getBoundingClientRect();
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const centerX = toolbarRect.left - hostRect.left + toolbarRect.width / 2;
+    const topY = toolbarRect.top - hostRect.top;
+    let latest = { xPercent: (centerX / hostRect.width) * 100, yPixels: topY };
+    const move = (moveEvent: PointerEvent): void => {
+      const halfWidth = toolbarRect.width / 2;
+      const nextCenterX = Math.min(
+        hostRect.width - halfWidth,
+        Math.max(halfWidth, centerX + moveEvent.clientX - startX),
+      );
+      const nextTop = Math.min(
+        hostRect.height - toolbarRect.height,
+        Math.max(0, topY + moveEvent.clientY - startY),
+      );
+      latest = { xPercent: (nextCenterX / hostRect.width) * 100, yPixels: nextTop };
+      applyPosition(toolbar, latest);
+    };
+    const finish = (): void => {
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", finish);
+      handle.removeEventListener("pointercancel", finish);
+      onPositionChange(latest);
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", finish);
+    handle.addEventListener("pointercancel", finish);
+  });
 }
 
 function blockCanvasInteraction(event: Event): void {

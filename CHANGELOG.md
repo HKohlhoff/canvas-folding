@@ -18,6 +18,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - A level chooser for showing all rooted branches through a global canvas depth.
 - Branch spotlight commands with configurable opacity for inactive canvas context.
 - A responsive Canvas command toolbar with contextual action states and visibility commands.
+- A draggable persisted toolbar position, focus toggle, matching +/− icons and visible graph inspection feedback.
 - Accessible branch controls for Canvas nodes with directed descendants.
 - Setting and commands to show, hide or toggle branch controls without modifying Canvas data.
 - A branch-control context menu for absolute visibility through levels 1–5.
