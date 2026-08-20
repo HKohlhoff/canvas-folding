@@ -98,6 +98,19 @@ export function extractCanvasItemId(value: unknown): string | null {
   return isRecord(value) && typeof value.id === "string" ? value.id : null;
 }
 
+export function resolveCanvasKey(
+  viewFilePath: unknown,
+  activeFilePath: unknown,
+): string {
+  if (typeof viewFilePath === "string" && viewFilePath.length > 0) {
+    return viewFilePath;
+  }
+  if (typeof activeFilePath === "string" && activeFilePath.length > 0) {
+    return activeFilePath;
+  }
+  return "canvas-view:active";
+}
+
 export function removeSelectionByIds(
   canvas: CanvasSelectionRuntime,
   itemIds: ReadonlySet<string>,

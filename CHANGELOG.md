@@ -38,3 +38,4 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Allow visible alternative parents to reveal a branch hidden by another collapse.
 - Prevent standard Canvas connection and resize handles for hidden nodes.
 - Wait for pointer release before opening the branch-depth context menu.
+- Use the Canvas view file path as the persistence key for branch states.

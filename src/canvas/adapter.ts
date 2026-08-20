@@ -6,6 +6,7 @@ import {
   extractCanvasNodeViews,
   extractSelectedNodeIds,
   removeSelectionByIds,
+  resolveCanvasKey,
   type CanvasEdgeView,
   type CanvasNodeInteractionLayer,
   type CanvasNodeView,
@@ -74,7 +75,10 @@ interface RuntimeValueCollection {
   values(): Iterable<unknown>;
 }
 
-type CanvasItemView = ItemView & { canvas?: unknown };
+type CanvasItemView = ItemView & {
+  canvas?: unknown;
+  file?: { path?: unknown } | null;
+};
 
 export function readActiveCanvasSnapshot(app: App): CanvasSnapshotResult {
   const view = app.workspace.getActiveViewOfType(ItemView);
@@ -116,7 +120,8 @@ export function readActiveCanvasContext(
   }
 
   const view = app.workspace.getActiveViewOfType(ItemView);
-  const canvas = view === null ? undefined : (view as CanvasItemView).canvas;
+  const canvasView: CanvasItemView | null = view;
+  const canvas = canvasView?.canvas;
   if (!isInteractiveCanvasRuntime(canvas)) {
     return {
       ok: false,
@@ -127,12 +132,15 @@ export function readActiveCanvasContext(
 
   const nodeViews = extractCanvasNodeViews(canvas.nodes.values());
   const edgeViews = extractCanvasEdgeViews(canvas.edges.values());
-  const filePath = app.workspace.getActiveFile()?.path;
+  const canvasKey = resolveCanvasKey(
+    canvasView?.file?.path,
+    app.workspace.getActiveFile()?.path,
+  );
 
   return {
     ok: true,
     context: {
-      key: filePath ?? "canvas-view:active",
+      key: canvasKey,
       data: snapshot.data,
       deselectItems: (itemIds) => removeSelectionByIds(canvas, itemIds),
       selectedNodeIds: extractSelectedNodeIds(canvas.selection),

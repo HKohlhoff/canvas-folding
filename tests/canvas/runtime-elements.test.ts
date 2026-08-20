@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   extractCanvasEdgeViews,
+  resolveCanvasKey,
   type CanvasElementHandle,
 } from "../../src/canvas/runtime-elements";
 
@@ -22,6 +23,15 @@ void test("extracts line, arrow and label wrapper elements from an edge", () => 
 
   assert.equal(edgeViews.length, 1);
   assert.deepEqual(edgeViews[0]?.elements, [line, arrow, label]);
+});
+
+void test("prefers the Canvas view file path for the persistence key", () => {
+  assert.equal(
+    resolveCanvasKey("Folder/View.canvas", "Other.canvas"),
+    "Folder/View.canvas",
+  );
+  assert.equal(resolveCanvasKey(undefined, "Fallback.canvas"), "Fallback.canvas");
+  assert.equal(resolveCanvasKey(undefined, null), "canvas-view:active");
 });
 
 function createElement(): CanvasElementHandle {
