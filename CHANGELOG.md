@@ -9,6 +9,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 ### Added
 
 - Canvas Tree project identity and local hot-reload deployment support.
+- Plugin lifecycle and a settings tab with normalized defaults.
 - Reproducible npm installs through `package-lock.json` and `npm ci` in CI.
 
 ### Changed
