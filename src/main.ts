@@ -18,14 +18,19 @@ import {
   getDescendantIds,
 } from "./tree/graph";
 import { BranchCollapseState } from "./tree/state";
+import { CanvasBranchControlManager } from "./ui/branch-controls";
+import { buildBranchControlModels } from "./ui/control-model";
 
 export default class CanvasTreePlugin extends Plugin {
   settings: CanvasTreeSettings = { ...DEFAULT_SETTINGS };
+  private readonly branchControls = new CanvasBranchControlManager();
+  private branchControlsVisible = DEFAULT_SETTINGS.showBranchControls;
   private readonly collapseStates = new Map<string, BranchCollapseState>();
   private readonly visibility = new CanvasVisibilityManager();
 
   async onload(): Promise<void> {
     await this.loadSettings();
+    this.branchControlsVisible = this.settings.showBranchControls;
 
     this.addSettingTab(new CanvasTreeSettingTab(this.app, this));
 
@@ -35,6 +40,45 @@ export default class CanvasTreePlugin extends Plugin {
       callback: () => {
         new Notice("Canvas tree branch prototype is active.");
       },
+    });
+
+    this.addCommand({
+      id: "show-branch-controls",
+      name: "Show branch controls",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.branchControlsVisible = true;
+          this.syncBranchControls(context);
+          this.notifySuccess("Branch controls are visible.");
+        }),
+    });
+
+    this.addCommand({
+      id: "hide-branch-controls",
+      name: "Hide branch controls",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, () => {
+          this.branchControlsVisible = false;
+          this.branchControls.removeAll();
+          this.notifySuccess("Branch controls are hidden.");
+        }),
+    });
+
+    this.addCommand({
+      id: "toggle-branch-controls",
+      name: "Toggle branch controls",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.branchControlsVisible = !this.branchControlsVisible;
+          if (this.branchControlsVisible) {
+            this.syncBranchControls(context);
+          } else {
+            this.branchControls.removeAll();
+          }
+          this.notifySuccess(
+            `Branch controls are ${this.branchControlsVisible ? "visible" : "hidden"}.`,
+          );
+        }),
     });
 
     this.addCommand({
@@ -54,6 +98,20 @@ export default class CanvasTreePlugin extends Plugin {
         }
         return true;
       },
+    });
+
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", () => {
+        this.refreshActiveBranchControls();
+      }),
+    );
+    this.registerEvent(
+      this.app.workspace.on("layout-change", () => {
+        this.refreshActiveBranchControls();
+      }),
+    );
+    this.app.workspace.onLayoutReady(() => {
+      this.refreshActiveBranchControls();
     });
 
     this.addCommand({
@@ -87,6 +145,7 @@ export default class CanvasTreePlugin extends Plugin {
   }
 
   onunload(): void {
+    this.branchControls.removeAll();
     this.visibility.restoreAll();
     this.collapseStates.clear();
   }
@@ -94,6 +153,15 @@ export default class CanvasTreePlugin extends Plugin {
   async updateSettings(update: Partial<CanvasTreeSettings>): Promise<void> {
     this.settings = normalizeSettings({ ...this.settings, ...update });
     await this.saveData(this.settings);
+
+    if (typeof update.showBranchControls === "boolean") {
+      this.branchControlsVisible = update.showBranchControls;
+      if (this.branchControlsVisible) {
+        this.refreshActiveBranchControls();
+      } else {
+        this.branchControls.removeAll();
+      }
+    }
   }
 
   private async loadSettings(): Promise<void> {
@@ -165,6 +233,7 @@ export default class CanvasTreePlugin extends Plugin {
 
     state.collapse(selectedNodeId);
     const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    this.syncBranchControls(context, graph, state);
     this.debug("Collapsed branch", { selectedNodeId, ...result });
     this.notifySuccess(`Collapsed branch with ${descendants.length} descendants.`);
   }
@@ -184,6 +253,7 @@ export default class CanvasTreePlugin extends Plugin {
     state.expand(selectedNodeId);
     const graph = buildCanvasGraph(context.data);
     const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    this.syncBranchControls(context, graph, state);
     this.debug("Expanded branch", { selectedNodeId, ...result });
     this.notifySuccess("Expanded selected branch.");
   }
@@ -193,6 +263,7 @@ export default class CanvasTreePlugin extends Plugin {
     state.expandAll();
 
     const result = this.visibility.apply(context, new Set());
+    this.syncBranchControls(context, buildCanvasGraph(context.data), state);
     this.debug("Expanded all branches", result);
     this.notifySuccess("Expanded all branches.");
   }
@@ -221,5 +292,68 @@ export default class CanvasTreePlugin extends Plugin {
     if (this.settings.showStatusNotices) {
       new Notice(message);
     }
+  }
+
+  private refreshActiveBranchControls(): void {
+    if (!this.branchControlsVisible) {
+      this.branchControls.removeAll();
+      return;
+    }
+
+    const result = readActiveCanvasContext(this.app);
+    if (result.ok) {
+      this.syncBranchControls(result.context);
+    }
+  }
+
+  private syncBranchControls(
+    context: ActiveCanvasContext,
+    graph = buildCanvasGraph(context.data),
+    state = this.getCollapseState(context.key),
+  ): void {
+    if (!this.branchControlsVisible) {
+      this.branchControls.removeAll();
+      return;
+    }
+
+    this.branchControls.sync(
+      context,
+      buildBranchControlModels(graph, state),
+      (controlContext, nodeId) => {
+        this.toggleBranchFromControl(controlContext, nodeId);
+      },
+    );
+  }
+
+  private toggleBranchFromControl(
+    context: ActiveCanvasContext,
+    nodeId: string,
+  ): void {
+    const graph = buildCanvasGraph(context.data);
+    const descendants = getDescendantIds(graph, nodeId);
+    if (descendants.length === 0) {
+      this.syncBranchControls(context, graph);
+      return;
+    }
+
+    const state = this.getCollapseState(context.key);
+    const expanding = state.isCollapsed(nodeId);
+    if (expanding) {
+      state.expand(nodeId);
+    } else {
+      state.collapse(nodeId);
+    }
+
+    const result = this.visibility.apply(context, state.getHiddenNodeIds(graph));
+    this.syncBranchControls(context, graph, state);
+    this.debug(expanding ? "Expanded branch control" : "Collapsed branch control", {
+      nodeId,
+      ...result,
+    });
+    this.notifySuccess(
+      expanding
+        ? "Expanded selected branch."
+        : `Collapsed branch with ${descendants.length} descendants.`,
+    );
   }
 }

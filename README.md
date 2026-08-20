@@ -11,9 +11,10 @@ Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bere
 - `Collapse selected branch` blendet alle gerichteten Nachfahren des einzelnen ausgewählten Nodes aus.
 - `Expand selected branch` blendet den zuvor an diesem Node eingeklappten Zweig wieder ein.
 - `Expand all branches` hebt alle Collapse-Zustände des aktiven Canvas auf.
+- `Show branch controls`, `Hide branch controls` und `Toggle branch controls` steuern die `+`/`−`-Buttons für die aktuelle Sitzung.
 - `Inspect active canvas graph` zeigt eine Zusammenfassung der erkannten Struktur und bei aktiviertem Debug-Logging weitere Details.
 
-Der Collapse-State existiert nur für die aktuelle Plugin-Sitzung. Das Plugin schreibt für diese Funktionen nichts in die `.canvas`-Datei.
+Parent-Nodes erhalten einen `−`-Button; nach dem Einklappen wechselt er zu `+`. Die Einstellung `Show branch controls` legt fest, ob die Buttons nach dem Laden standardmäßig sichtbar sind. Der Collapse-State und Command-Überschreibungen existieren nur für die aktuelle Plugin-Sitzung. Das Plugin schreibt für diese Funktionen nichts in die `.canvas`-Datei.
 
 ## Geplanter Funktionsumfang
 

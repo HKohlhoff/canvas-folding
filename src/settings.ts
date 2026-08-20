@@ -7,11 +7,13 @@ import {
 
 export interface CanvasTreeSettings {
   debugLogging: boolean;
+  showBranchControls: boolean;
   showStatusNotices: boolean;
 }
 
 export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
   debugLogging: false,
+  showBranchControls: true,
   showStatusNotices: true,
 };
 
@@ -22,6 +24,11 @@ export function normalizeSettings(data: unknown): CanvasTreeSettings {
 
   return {
     debugLogging: readBoolean(data, "debugLogging", DEFAULT_SETTINGS.debugLogging),
+    showBranchControls: readBoolean(
+      data,
+      "showBranchControls",
+      DEFAULT_SETTINGS.showBranchControls,
+    ),
     showStatusNotices: readBoolean(
       data,
       "showStatusNotices",
@@ -48,6 +55,15 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         type: "group",
         heading: "Behavior",
         items: [
+          {
+            name: "Show branch controls",
+            desc: "Show +/− buttons on canvas nodes that have descendants.",
+            control: {
+              type: "toggle",
+              key: "showBranchControls",
+              defaultValue: DEFAULT_SETTINGS.showBranchControls,
+            },
+          },
           {
             name: "Show status notices",
             desc: "Show confirmations after canvas tree actions.",
@@ -104,5 +120,9 @@ function readBoolean(
 }
 
 function isSettingKey(key: string): key is CanvasTreeSettingKey {
-  return key === "debugLogging" || key === "showStatusNotices";
+  return (
+    key === "debugLogging" ||
+    key === "showBranchControls" ||
+    key === "showStatusNotices"
+  );
 }
