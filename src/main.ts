@@ -40,6 +40,11 @@ import {
 import { CanvasBranchControlManager } from "./ui/branch-controls";
 import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import { buildBranchControlModels } from "./ui/control-model";
+import {
+  buildToolbarButtonModels,
+  CanvasToolbarManager,
+  type ToolbarAction,
+} from "./ui/toolbar";
 
 const MAX_DEPTH_MENU_LEVELS = 5;
 const CANVAS_STATE_PRUNE_DELAY_MS = 750;
@@ -47,8 +52,10 @@ const CANVAS_STATE_PRUNE_DELAY_MS = 750;
 export default class CanvasTreePlugin extends Plugin {
   settings: CanvasTreeSettings = { ...DEFAULT_SETTINGS };
   private readonly branchControls = new CanvasBranchControlManager();
+  private readonly canvasToolbar = new CanvasToolbarManager();
   private activeCanvasPath: string | null = null;
   private branchControlsVisible = DEFAULT_SETTINGS.showBranchControls;
+  private canvasToolbarVisible = DEFAULT_SETTINGS.showCanvasToolbar;
   private readonly collapseStates = new Map<
     object,
     Map<string, BranchCollapseState>
@@ -68,6 +75,7 @@ export default class CanvasTreePlugin extends Plugin {
     await this.pruneAllSavedCanvasNodeStates();
     await this.writePluginData();
     this.branchControlsVisible = this.settings.showBranchControls;
+    this.canvasToolbarVisible = this.settings.showCanvasToolbar;
     this.rememberOpenedCanvas(this.app.workspace.getActiveFile());
 
     this.addSettingTab(new CanvasTreeSettingTab(this.app, this));
@@ -76,8 +84,44 @@ export default class CanvasTreePlugin extends Plugin {
       id: "show-status",
       name: "Show current status",
       callback: () => {
-        new Notice("Canvas tree branch prototype is active.");
+        this.showCurrentStatus();
       },
+    });
+
+    this.addCommand({
+      id: "show-canvas-toolbar",
+      name: "Show canvas toolbar",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.canvasToolbarVisible = true;
+          this.syncToolbar(context);
+          this.notifySuccess("Canvas toolbar is visible.");
+        }),
+    });
+
+    this.addCommand({
+      id: "hide-canvas-toolbar",
+      name: "Hide canvas toolbar",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, () => {
+          this.canvasToolbarVisible = false;
+          this.canvasToolbar.removeAll();
+          this.notifySuccess("Canvas toolbar is hidden.");
+        }),
+    });
+
+    this.addCommand({
+      id: "toggle-canvas-toolbar",
+      name: "Toggle canvas toolbar",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.canvasToolbarVisible = !this.canvasToolbarVisible;
+          if (this.canvasToolbarVisible) this.syncToolbar(context);
+          else this.canvasToolbar.removeAll();
+          this.notifySuccess(
+            `Canvas toolbar is ${this.canvasToolbarVisible ? "visible" : "hidden"}.`,
+          );
+        }),
     });
 
     this.addCommand({
@@ -95,9 +139,10 @@ export default class CanvasTreePlugin extends Plugin {
       id: "hide-branch-controls",
       name: "Hide branch controls",
       checkCallback: (checking) =>
-        this.runActiveCanvasCommand(checking, () => {
+        this.runActiveCanvasCommand(checking, (context) => {
           this.branchControlsVisible = false;
           this.branchControls.removeAll();
+          this.syncToolbar(context);
           this.notifySuccess("Branch controls are hidden.");
         }),
     });
@@ -112,6 +157,7 @@ export default class CanvasTreePlugin extends Plugin {
             this.syncBranchControls(context);
           } else {
             this.branchControls.removeAll();
+            this.syncToolbar(context);
           }
           this.notifySuccess(
             `Branch controls are ${this.branchControlsVisible ? "visible" : "hidden"}.`,
@@ -253,6 +299,7 @@ export default class CanvasTreePlugin extends Plugin {
     }
     this.nodePruneTimers.clear();
     this.branchControls.removeAll();
+    this.canvasToolbar.removeAll();
     this.visibility.restoreAll();
     this.collapseStates.clear();
   }
@@ -285,6 +332,12 @@ export default class CanvasTreePlugin extends Plugin {
       } else {
         this.branchControls.removeAll();
       }
+    }
+
+    if (typeof update.showCanvasToolbar === "boolean") {
+      this.canvasToolbarVisible = update.showCanvasToolbar;
+      if (this.canvasToolbarVisible) this.refreshActiveCanvasState();
+      else this.canvasToolbar.removeAll();
     }
 
     if (typeof update.rememberCanvasStates === "boolean") {
@@ -728,10 +781,15 @@ export default class CanvasTreePlugin extends Plugin {
     }
   }
 
+  private showCurrentStatus(): void {
+    new Notice("Canvas tree branch prototype is active.");
+  }
+
   private refreshActiveCanvasState(): void {
     const result = this.readActiveCanvasContext();
     if (!result.ok) {
       this.branchControls.removeAll();
+      this.canvasToolbar.removeAll();
       return;
     }
 
@@ -748,6 +806,7 @@ export default class CanvasTreePlugin extends Plugin {
     graph = buildCanvasGraph(context.data),
     state = this.getCollapseState(context, graph),
   ): void {
+    this.syncToolbar(context, graph, state);
     if (!this.branchControlsVisible) {
       this.branchControls.removeAll();
       return;
@@ -770,6 +829,56 @@ export default class CanvasTreePlugin extends Plugin {
         );
       },
     );
+  }
+
+  private syncToolbar(
+    context: ActiveCanvasContext,
+    graph = buildCanvasGraph(context.data),
+    state = this.getCollapseState(context, graph),
+  ): void {
+    if (!this.canvasToolbarVisible) {
+      this.canvasToolbar.removeAll();
+      return;
+    }
+    this.canvasToolbar.sync(
+      context,
+      buildToolbarButtonModels(
+        graph,
+        state,
+        context.selectedNodeIds,
+        this.branchControlsVisible,
+      ),
+      (action) => this.runToolbarAction(action),
+    );
+  }
+
+  private runToolbarAction(action: ToolbarAction): void {
+    const result = this.readActiveCanvasContext();
+    if (!result.ok) {
+      new Notice(result.message);
+      return;
+    }
+    const context = result.context;
+    switch (action) {
+      case "collapse-selected": this.collapseSelectedBranch(context); break;
+      case "expand-selected": this.expandSelectedBranch(context); break;
+      case "focus-selected": this.focusSelectedBranch(context); break;
+      case "exit-focus": this.exitBranchFocus(context); break;
+      case "collapse-all": this.collapseAllBranches(context); break;
+      case "expand-all": this.expandAllBranches(context); break;
+      case "show-level": this.openCanvasDepthModal(context); break;
+      case "toggle-controls":
+        this.branchControlsVisible = !this.branchControlsVisible;
+        if (!this.branchControlsVisible) this.branchControls.removeAll();
+        this.syncBranchControls(context);
+        break;
+      case "inspect-graph": this.logCanvasGraph(context.data); break;
+      case "show-status": this.showCurrentStatus(); break;
+      case "hide-toolbar":
+        this.canvasToolbarVisible = false;
+        this.canvasToolbar.removeAll();
+        break;
+    }
   }
 
   private refreshControlContext(

@@ -7,6 +7,41 @@
   pointer-events: none !important;
 }
 
+.canvas-tree-toolbar {
+  align-items: center;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-s);
+  display: flex;
+  gap: 2px;
+  left: 50%;
+  max-width: calc(100% - 96px);
+  overflow-x: auto;
+  padding: 4px;
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+.canvas-tree-toolbar-button {
+  flex: 0 0 auto;
+}
+
+.canvas-tree-toolbar-button.is-active {
+  background: var(--background-modifier-hover);
+  color: var(--interactive-accent);
+}
+
+.canvas-tree-toolbar-separator {
+  align-self: stretch;
+  background: var(--background-modifier-border);
+  flex: 0 0 1px;
+  margin: 3px 2px;
+  width: 1px;
+}
+
 .canvas-tree-branch-control {
   align-items: center;
   background: var(--background-primary);

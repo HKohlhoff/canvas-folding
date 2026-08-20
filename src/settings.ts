@@ -37,6 +37,15 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         heading: "Behavior",
         items: [
           {
+            name: "Show canvas toolbar initially",
+            desc: "Show the Canvas Tree command toolbar when the plugin loads. Use the command palette to show, hide, or toggle it at any time.",
+            control: {
+              type: "toggle",
+              key: "showCanvasToolbar",
+              defaultValue: DEFAULT_SETTINGS.showCanvasToolbar,
+            },
+          },
+          {
             name: "Background opacity during branch focus",
             desc: "Set the opacity of nodes and edges outside the focused branch.",
             control: {
@@ -160,6 +169,7 @@ function isSettingKey(key: string): key is CanvasTreeSettingKey {
     key === "focusBackgroundOpacity" ||
     key === "rememberCanvasStates" ||
     key === "showBranchControls" ||
+    key === "showCanvasToolbar" ||
     key === "showStatusNotices"
   );
 }

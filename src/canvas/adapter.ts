@@ -47,6 +47,7 @@ export interface ActiveCanvasContext {
   nodeViews: readonly CanvasNodeView[];
   edgeViews: readonly CanvasEdgeView[];
   nodeInteractionLayer: CanvasNodeInteractionLayer | null;
+  toolbarHost: HTMLElement;
 }
 
 type CanvasReadFailure = {
@@ -158,6 +159,7 @@ export function readActiveCanvasContext(
       nodeInteractionLayer: extractCanvasNodeInteractionLayer(
         canvas.nodeInteractionLayer,
       ),
+      toolbarHost: canvasView.contentEl,
     },
   };
 }

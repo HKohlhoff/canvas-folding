@@ -17,6 +17,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - A command to collapse every rooted branch while keeping root and isolated nodes visible.
 - A level chooser for showing all rooted branches through a global canvas depth.
 - Branch spotlight commands with configurable opacity for inactive canvas context.
+- A responsive Canvas command toolbar with contextual action states and visibility commands.
 - Accessible branch controls for Canvas nodes with directed descendants.
 - Setting and commands to show, hide or toggle branch controls without modifying Canvas data.
 - A branch-control context menu for absolute visibility through levels 1–5.

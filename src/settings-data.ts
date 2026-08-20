@@ -3,6 +3,7 @@ export interface CanvasTreeSettings {
   focusBackgroundOpacity: number;
   rememberCanvasStates: boolean;
   showBranchControls: boolean;
+  showCanvasToolbar: boolean;
   showStatusNotices: boolean;
 }
 
@@ -11,6 +12,7 @@ export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
   focusBackgroundOpacity: 20,
   rememberCanvasStates: false,
   showBranchControls: true,
+  showCanvasToolbar: true,
   showStatusNotices: true,
 };
 
@@ -37,6 +39,11 @@ export function normalizeSettings(data: unknown): CanvasTreeSettings {
       data,
       "showBranchControls",
       DEFAULT_SETTINGS.showBranchControls,
+    ),
+    showCanvasToolbar: readBoolean(
+      data,
+      "showCanvasToolbar",
+      DEFAULT_SETTINGS.showCanvasToolbar,
     ),
     showStatusNotices: readBoolean(
       data,

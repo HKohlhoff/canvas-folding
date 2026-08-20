@@ -135,6 +135,7 @@ function createContext(): {
         { id: "BC", elements: [createElement(edgeBC)] },
       ],
       nodeInteractionLayer: null,
+      toolbarHost: {} as HTMLElement,
     },
   };
 }
