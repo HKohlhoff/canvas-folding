@@ -29,4 +29,4 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 ### Fixed
 
 - Hide edge labels together with collapsed Canvas branches.
-- Keep branch controls clear of the standard Canvas edge handles.
+- Place branch controls inside nodes to avoid standard Canvas edge and resize handles.
