@@ -42,6 +42,32 @@ void test("identifies every edge incident to a hidden node", () => {
   assert.deepEqual([...getHiddenEdgeIds(context, new Set(["B"]))], ["AB", "BC"]);
 });
 
+void test("blocks the interaction layer from targeting hidden nodes", () => {
+  const { context } = createContext();
+  const targetNode = { id: "B" };
+  const visibleNode = { id: "A" };
+  const interactionLayer = {
+    target: targetNode as unknown,
+    setTarget(target: unknown): void {
+      this.target = target;
+    },
+  };
+  context.nodeInteractionLayer = interactionLayer;
+
+  const manager = new CanvasVisibilityManager();
+  manager.apply(context, new Set(["B"]));
+
+  assert.equal(interactionLayer.target, null);
+  interactionLayer.setTarget(targetNode);
+  assert.equal(interactionLayer.target, null);
+  interactionLayer.setTarget(visibleNode);
+  assert.equal(interactionLayer.target, visibleNode);
+
+  manager.restoreAll();
+  interactionLayer.setTarget(targetNode);
+  assert.equal(interactionLayer.target, targetNode);
+});
+
 function createContext(): {
   context: ActiveCanvasContext;
   edgeAB: FakeClassList;
@@ -84,6 +110,7 @@ function createContext(): {
         },
         { id: "BC", elements: [createElement(edgeBC)] },
       ],
+      nodeInteractionLayer: null,
     },
   };
 }

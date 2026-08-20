@@ -33,3 +33,4 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Deselect hidden descendants and incident edges when collapsing a branch.
 - Restore the session collapse state after returning to a Canvas in the same tab.
 - Allow visible alternative parents to reveal a branch hidden by another collapse.
+- Prevent standard Canvas connection and resize handles for hidden nodes.

@@ -21,6 +21,11 @@ export interface CanvasEdgeView {
   elements: readonly CanvasElementHandle[];
 }
 
+export interface CanvasNodeInteractionLayer {
+  target?: unknown;
+  setTarget(target: unknown): void;
+}
+
 export interface CanvasSelectionRuntime {
   selection: Set<unknown>;
   updateSelection(update: () => void): void;
@@ -77,6 +82,20 @@ export function extractSelectedNodeIds(selection: Iterable<unknown>): string[] {
     }
   }
   return nodeIds;
+}
+
+export function extractCanvasNodeInteractionLayer(
+  value: unknown,
+): CanvasNodeInteractionLayer | null {
+  if (!isRecord(value) || typeof value.setTarget !== "function") {
+    return null;
+  }
+
+  return value as unknown as CanvasNodeInteractionLayer;
+}
+
+export function extractCanvasItemId(value: unknown): string | null {
+  return isRecord(value) && typeof value.id === "string" ? value.id : null;
 }
 
 export function removeSelectionByIds(

@@ -2,10 +2,12 @@ import { App, ItemView } from "obsidian";
 
 import {
   extractCanvasEdgeViews,
+  extractCanvasNodeInteractionLayer,
   extractCanvasNodeViews,
   extractSelectedNodeIds,
   removeSelectionByIds,
   type CanvasEdgeView,
+  type CanvasNodeInteractionLayer,
   type CanvasNodeView,
   type CanvasSelectionRuntime,
 } from "./runtime-elements";
@@ -14,6 +16,7 @@ export type {
   CanvasEdgeView,
   CanvasElementHandle,
   CanvasNodeElementHandle,
+  CanvasNodeInteractionLayer,
   CanvasNodeView,
 } from "./runtime-elements";
 
@@ -40,6 +43,7 @@ export interface ActiveCanvasContext {
   selectedNodeIds: readonly string[];
   nodeViews: readonly CanvasNodeView[];
   edgeViews: readonly CanvasEdgeView[];
+  nodeInteractionLayer: CanvasNodeInteractionLayer | null;
 }
 
 type CanvasReadFailure = {
@@ -62,6 +66,7 @@ interface CanvasRuntime {
 
 interface InteractiveCanvasRuntime extends CanvasRuntime, CanvasSelectionRuntime {
   edges: RuntimeValueCollection;
+  nodeInteractionLayer?: unknown;
   nodes: RuntimeValueCollection;
 }
 
@@ -133,6 +138,9 @@ export function readActiveCanvasContext(
       selectedNodeIds: extractSelectedNodeIds(canvas.selection),
       nodeViews,
       edgeViews,
+      nodeInteractionLayer: extractCanvasNodeInteractionLayer(
+        canvas.nodeInteractionLayer,
+      ),
     },
   };
 }
