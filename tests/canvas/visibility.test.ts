@@ -40,6 +40,23 @@ void test("restores only the class managed by Canvas Folding", () => {
   assert.equal(elements.nodeB.has("existing-class"), true);
 });
 
+void test("restores managed classes from replaced render elements", () => {
+  const elements = createContext();
+  const manager = new CanvasVisibilityManager();
+  manager.apply(elements.context, new Set(["B"]));
+
+  const replacementNodeB = new FakeClassList();
+  elements.context.nodeViews = elements.context.nodeViews.map((nodeView) =>
+    nodeView.id === "B"
+      ? { id: "B", element: createNodeElement(replacementNodeB) }
+      : nodeView,
+  );
+  manager.apply(elements.context, new Set(["B"]));
+
+  assert.equal(elements.nodeB.has("canvas-folding-hidden"), false);
+  assert.equal(replacementNodeB.has("canvas-folding-hidden"), true);
+});
+
 void test("blocks the interaction layer from targeting hidden nodes", () => {
   const { context } = createContext();
   const targetNode = { id: "B" };
@@ -64,6 +81,25 @@ void test("blocks the interaction layer from targeting hidden nodes", () => {
   manager.restoreAll();
   interactionLayer.setTarget(targetNode);
   assert.equal(interactionLayer.target, targetNode);
+});
+
+void test("restores an interaction layer replaced during render", () => {
+  const { context } = createContext();
+  const hiddenNode = { id: "B" };
+  const oldLayer = createInteractionLayer(hiddenNode);
+  context.nodeInteractionLayer = oldLayer;
+
+  const manager = new CanvasVisibilityManager();
+  manager.apply(context, new Set(["B"]));
+  assert.equal(oldLayer.target, null);
+
+  const newLayer = createInteractionLayer(hiddenNode);
+  context.nodeInteractionLayer = newLayer;
+  manager.apply(context, new Set(["B"]));
+
+  oldLayer.setTarget(hiddenNode);
+  assert.equal(oldLayer.target, hiddenNode);
+  assert.equal(newLayer.target, null);
 });
 
 void test("dims and blocks nodes outside branch focus", () => {
@@ -145,6 +181,18 @@ function createNodeElement(classList: FakeClassList): CanvasNodeElementHandle {
       _tag: K,
     ): HTMLElementTagNameMap[K] => {
       throw new Error("Node creation is not used by this visibility test.");
+    },
+  };
+}
+
+function createInteractionLayer(target: unknown): {
+  target: unknown;
+  setTarget(nextTarget: unknown): void;
+} {
+  return {
+    target,
+    setTarget(nextTarget: unknown): void {
+      this.target = nextTarget;
     },
   };
 }

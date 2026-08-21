@@ -7,6 +7,7 @@ import {
   type ActiveCanvasContext,
   type ActiveCanvasContextResult,
 } from "./canvas/adapter";
+import { CanvasLiveSync } from "./canvas/live-sync";
 import {
   CanvasVisibilityManager,
   type VisibilityResult,
@@ -48,11 +49,13 @@ import {
 
 const MAX_DEPTH_MENU_LEVELS = 5;
 const CANVAS_STATE_PRUNE_DELAY_MS = 750;
+const LIVE_CANVAS_REFRESH_DELAY_MS = 75;
 
 export default class CanvasFoldingPlugin extends Plugin {
   settings: CanvasFoldingSettings = { ...DEFAULT_SETTINGS };
   private readonly branchControls = new CanvasBranchControlManager();
   private readonly canvasToolbar = new CanvasToolbarManager();
+  private readonly canvasLiveSync = new CanvasLiveSync();
   private activeCanvasPath: string | null = null;
   private branchControlsVisible = DEFAULT_SETTINGS.showBranchControls;
   private canvasToolbarVisible = DEFAULT_SETTINGS.showCanvasToolbar;
@@ -62,6 +65,7 @@ export default class CanvasFoldingPlugin extends Plugin {
   >();
   private dataSaveChain: Promise<void> = Promise.resolve();
   private dataSaveTimer: number | null = null;
+  private liveCanvasRefreshTimer: number | null = null;
   private readonly nodePruneTimers = new Map<string, number>();
   private readonly savedCanvasStates = new Map<
     string,
@@ -201,6 +205,9 @@ export default class CanvasFoldingPlugin extends Plugin {
       this.app.vault.on("modify", (file) => {
         if (file instanceof TFile && file.extension.toLowerCase() === "canvas") {
           this.scheduleCanvasNodeStatePrune(file);
+          if (file.path === this.activeCanvasPath) {
+            this.scheduleActiveCanvasRefresh();
+          }
         }
       }),
     );
@@ -311,6 +318,11 @@ export default class CanvasFoldingPlugin extends Plugin {
       window.clearTimeout(timer);
     }
     this.nodePruneTimers.clear();
+    if (this.liveCanvasRefreshTimer !== null) {
+      window.clearTimeout(this.liveCanvasRefreshTimer);
+      this.liveCanvasRefreshTimer = null;
+    }
+    this.canvasLiveSync.disconnect();
     this.branchControls.removeAll();
     this.canvasToolbar.removeAll();
     this.visibility.restoreAll();
@@ -818,17 +830,34 @@ export default class CanvasFoldingPlugin extends Plugin {
   private refreshActiveCanvasState(): void {
     const result = this.readActiveCanvasContext();
     if (!result.ok) {
+      this.canvasLiveSync.disconnect();
       this.branchControls.removeAll();
       this.canvasToolbar.removeAll();
       return;
     }
 
     const { context } = result;
+    this.canvasLiveSync.watch(context.toolbarHost, () => {
+      this.scheduleActiveCanvasRefresh();
+    });
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
-    const visibility = this.applyVisibilityState(context, graph, state);
+    if (state.prune(graph)) {
+      this.storeCanvasState(context.key, state);
+    }
+    const visibility = this.applyCollapsedState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Refreshed active canvas state", visibility);
+  }
+
+  private scheduleActiveCanvasRefresh(): void {
+    if (this.liveCanvasRefreshTimer !== null) {
+      window.clearTimeout(this.liveCanvasRefreshTimer);
+    }
+    this.liveCanvasRefreshTimer = window.setTimeout(() => {
+      this.liveCanvasRefreshTimer = null;
+      this.refreshActiveCanvasState();
+    }, LIVE_CANVAS_REFRESH_DELAY_MS);
   }
 
   private syncBranchControls(

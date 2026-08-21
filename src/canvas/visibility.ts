@@ -22,7 +22,7 @@ export class CanvasVisibilityManager {
     CanvasNodeInteractionLayer,
     ManagedInteractionLayer
   >();
-  private readonly managedElements = new Set<CanvasElementHandle>();
+  private readonly managedElements = new Map<CanvasElementHandle, object>();
 
   apply(
     context: ActiveCanvasContext,
@@ -30,6 +30,16 @@ export class CanvasVisibilityManager {
     dimmedNodeIds: ReadonlySet<string> = new Set(),
     focusOpacity = 20,
   ): VisibilityResult {
+    const currentElements = new Set([
+      ...context.nodeViews.map((nodeView) => nodeView.element),
+      ...context.edgeViews.flatMap((edgeView) => edgeView.elements),
+    ]);
+    this.restoreMissingElements(context.leaf, currentElements);
+    this.restoreReplacedInteractionLayers(
+      context.leaf,
+      context.nodeInteractionLayer,
+    );
+
     const visibility = deriveCanvasVisibility(
       context.data,
       hiddenNodeIds,
@@ -39,15 +49,24 @@ export class CanvasVisibilityManager {
       ...visibility.hiddenNodeIds,
       ...visibility.dimmedNodeIds,
     ]);
-    this.updateInteractionLayer(context.nodeInteractionLayer, inactiveNodeIds);
+    this.updateInteractionLayer(
+      context.nodeInteractionLayer,
+      inactiveNodeIds,
+      context.leaf,
+    );
 
     let hiddenNodeCount = 0;
     let dimmedNodeCount = 0;
     for (const nodeView of context.nodeViews) {
       const hidden = visibility.hiddenNodeIds.has(nodeView.id);
       const dimmed = visibility.dimmedNodeIds.has(nodeView.id);
-      this.setHidden(nodeView.element, hidden);
-      this.setDimmed(nodeView.element, dimmed, focusOpacity);
+      this.setHidden(nodeView.element, hidden, context.leaf);
+      this.setDimmed(
+        nodeView.element,
+        dimmed,
+        focusOpacity,
+        context.leaf,
+      );
       if (hidden) {
         hiddenNodeCount += 1;
       }
@@ -61,8 +80,8 @@ export class CanvasVisibilityManager {
       const dimmed = visibility.dimmedEdgeIds.has(edgeView.id);
 
       for (const element of edgeView.elements) {
-        this.setHidden(element, hidden);
-        this.setDimmed(element, dimmed, focusOpacity);
+        this.setHidden(element, hidden, context.leaf);
+        this.setDimmed(element, dimmed, focusOpacity, context.leaf);
       }
       if (hidden) {
         hiddenEdgeCount += 1;
@@ -74,19 +93,13 @@ export class CanvasVisibilityManager {
   }
 
   restoreAll(): void {
-    for (const element of this.managedElements) {
-      element.classList.remove(HIDDEN_CLASS);
-      element.classList.remove(DIMMED_CLASS);
-      element.style.removeProperty(FOCUS_OPACITY_PROPERTY);
+    for (const element of this.managedElements.keys()) {
+      this.restoreElement(element);
     }
     this.managedElements.clear();
 
     for (const [layer, managed] of this.interactionLayers) {
-      if (managed.hadOwnSetTarget) {
-        layer.setTarget = managed.originalSetTarget;
-      } else {
-        delete (layer as Partial<CanvasNodeInteractionLayer>).setTarget;
-      }
+      this.restoreInteractionLayer(layer, managed);
     }
     this.interactionLayers.clear();
   }
@@ -94,6 +107,7 @@ export class CanvasVisibilityManager {
   private updateInteractionLayer(
     layer: CanvasNodeInteractionLayer | null,
     hiddenNodeIds: ReadonlySet<string>,
+    leaf: object,
   ): void {
     if (layer === null) {
       return;
@@ -108,6 +122,7 @@ export class CanvasVisibilityManager {
           "setTarget",
         ),
         hiddenNodeIds: new Set(),
+        leaf,
         originalSetTarget,
       };
       this.interactionLayers.set(layer, entry);
@@ -131,10 +146,55 @@ export class CanvasVisibilityManager {
     }
   }
 
-  private setHidden(element: CanvasElementHandle, hidden: boolean): void {
+  private restoreReplacedInteractionLayers(
+    leaf: object,
+    currentLayer: CanvasNodeInteractionLayer | null,
+  ): void {
+    for (const [layer, managed] of this.interactionLayers) {
+      if (managed.leaf === leaf && layer !== currentLayer) {
+        this.restoreInteractionLayer(layer, managed);
+        this.interactionLayers.delete(layer);
+      }
+    }
+  }
+
+  private restoreInteractionLayer(
+    layer: CanvasNodeInteractionLayer,
+    managed: ManagedInteractionLayer,
+  ): void {
+    if (managed.hadOwnSetTarget) {
+      layer.setTarget = managed.originalSetTarget;
+    } else {
+      delete (layer as Partial<CanvasNodeInteractionLayer>).setTarget;
+    }
+  }
+
+  private restoreMissingElements(
+    leaf: object,
+    currentElements: ReadonlySet<CanvasElementHandle>,
+  ): void {
+    for (const [element, ownerLeaf] of this.managedElements) {
+      if (ownerLeaf === leaf && !currentElements.has(element)) {
+        this.restoreElement(element);
+        this.managedElements.delete(element);
+      }
+    }
+  }
+
+  private restoreElement(element: CanvasElementHandle): void {
+    element.classList.remove(HIDDEN_CLASS);
+    element.classList.remove(DIMMED_CLASS);
+    element.style.removeProperty(FOCUS_OPACITY_PROPERTY);
+  }
+
+  private setHidden(
+    element: CanvasElementHandle,
+    hidden: boolean,
+    leaf: object,
+  ): void {
     element.classList.toggle(HIDDEN_CLASS, hidden);
     if (hidden) {
-      this.managedElements.add(element);
+      this.managedElements.set(element, leaf);
     } else {
       this.managedElements.delete(element);
     }
@@ -144,11 +204,12 @@ export class CanvasVisibilityManager {
     element: CanvasElementHandle,
     dimmed: boolean,
     focusOpacity: number,
+    leaf: object,
   ): void {
     element.classList.toggle(DIMMED_CLASS, dimmed);
     if (dimmed) {
       element.style.setProperty(FOCUS_OPACITY_PROPERTY, String(focusOpacity / 100));
-      this.managedElements.add(element);
+      this.managedElements.set(element, leaf);
     } else {
       element.style.removeProperty(FOCUS_OPACITY_PROPERTY);
     }
@@ -158,5 +219,6 @@ export class CanvasVisibilityManager {
 interface ManagedInteractionLayer {
   hadOwnSetTarget: boolean;
   hiddenNodeIds: Set<string>;
+  leaf: object;
   originalSetTarget: CanvasNodeInteractionLayer["setTarget"];
 }

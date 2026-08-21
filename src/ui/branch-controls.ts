@@ -7,7 +7,7 @@ import type { BranchControlModel } from "./control-model";
 interface ControlEntry {
   activate: () => void;
   button: HTMLButtonElement;
-  canvasKey: string;
+  leaf: object;
   openContextMenu: (event: MouseEvent) => void;
 }
 
@@ -29,7 +29,7 @@ export class CanvasBranchControlManager {
 
     for (const [host, entry] of this.entries) {
       if (
-        entry.canvasKey === context.key &&
+        entry.leaf === context.leaf &&
         (!currentHosts.has(host) || !hasModelForHost(context, host, modelsByNodeId))
       ) {
         entry.button.remove();
@@ -43,7 +43,10 @@ export class CanvasBranchControlManager {
         continue;
       }
 
-      const entry = this.getOrCreateEntry(nodeView.element, context.key);
+      const entry = this.getOrCreateEntry(
+        nodeView.element,
+        context.leaf,
+      );
       entry.activate = () => {
         onToggle(context, nodeView.id);
       };
@@ -63,7 +66,7 @@ export class CanvasBranchControlManager {
 
   private getOrCreateEntry(
     host: CanvasNodeElementHandle,
-    canvasKey: string,
+    leaf: object,
   ): ControlEntry {
     const existing = this.entries.get(host);
     if (existing !== undefined) {
@@ -77,7 +80,7 @@ export class CanvasBranchControlManager {
     const entry: ControlEntry = {
       activate: () => undefined,
       button,
-      canvasKey,
+      leaf,
       openContextMenu: () => undefined,
     };
     button.addEventListener("pointerdown", blockCanvasInteraction);
