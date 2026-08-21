@@ -37,6 +37,52 @@ void test("leaves unrelated edges visible", () => {
   assert.deepEqual([...visibility.dimmedEdgeIds], ["AB"]);
 });
 
+void test("hides a non-empty group when all contained nodes are hidden", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "B", type: "file", x: 150, y: 80, width: 100, height: 80 },
+      { id: "O", type: "text", x: 400, y: 20, width: 80, height: 50 },
+    ],
+    edges: [],
+  });
+
+  const visibility = deriveCanvasVisibility(groupGraph, new Set(["A", "B"]));
+
+  assert.deepEqual([...visibility.hiddenNodeIds], ["A", "B", "G"]);
+});
+
+void test("keeps a group visible while any fully contained node is visible", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "B", type: "text", x: 150, y: 80, width: 100, height: 80 },
+    ],
+    edges: [],
+  });
+
+  const visibility = deriveCanvasVisibility(groupGraph, new Set(["A"]));
+
+  assert.deepEqual([...visibility.hiddenNodeIds], ["A"]);
+});
+
+void test("does not hide empty groups or count partially overlapping nodes", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "EMPTY", type: "group", x: 400, y: 0, width: 100, height: 100 },
+      { id: "G", type: "group", x: 0, y: 0, width: 100, height: 100 },
+      { id: "P", type: "text", x: 80, y: 20, width: 50, height: 50 },
+    ],
+    edges: [],
+  });
+
+  const visibility = deriveCanvasVisibility(groupGraph, new Set(["P"]));
+
+  assert.deepEqual([...visibility.hiddenNodeIds], ["P"]);
+});
+
 function createData(): CanvasGraphData {
   return {
     nodes: ["A", "B", "C", "D", "E", "F"].map((id) => ({

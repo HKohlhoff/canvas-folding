@@ -1,4 +1,4 @@
-import type { CanvasGraph } from "./graph";
+import type { CanvasGraph, CanvasGraphNodeData } from "./graph";
 
 export interface CanvasVisibility {
   dimmedEdgeIds: ReadonlySet<string>;
@@ -8,11 +8,12 @@ export interface CanvasVisibility {
 }
 
 export function deriveCanvasVisibility(
-  graph: Pick<CanvasGraph, "edges">,
+  graph: Pick<CanvasGraph, "edges" | "nodes">,
   hiddenNodeIds: ReadonlySet<string>,
   dimmedNodeIds: ReadonlySet<string> = new Set(),
 ): CanvasVisibility {
   const normalizedHiddenNodeIds = new Set(hiddenNodeIds);
+  addGroupsWithOnlyHiddenContents(graph.nodes, normalizedHiddenNodeIds);
   const normalizedDimmedNodeIds = new Set(
     [...dimmedNodeIds].filter((nodeId) => !normalizedHiddenNodeIds.has(nodeId)),
   );
@@ -34,6 +35,52 @@ export function deriveCanvasVisibility(
     hiddenEdgeIds,
     hiddenNodeIds: normalizedHiddenNodeIds,
   };
+}
+
+function addGroupsWithOnlyHiddenContents(
+  nodes: readonly CanvasGraphNodeData[],
+  hiddenNodeIds: Set<string>,
+): void {
+  const contentNodes = nodes.filter((node) => node.type !== "group");
+
+  for (const group of nodes) {
+    if (group.type !== "group" || !hasCompleteBounds(group)) {
+      continue;
+    }
+
+    const containedNodes = contentNodes.filter(
+      (node) => hasCompleteBounds(node) && isFullyContained(node, group),
+    );
+    if (
+      containedNodes.length > 0 &&
+      containedNodes.every((node) => hiddenNodeIds.has(node.id))
+    ) {
+      hiddenNodeIds.add(group.id);
+    }
+  }
+}
+
+function hasCompleteBounds(
+  node: CanvasGraphNodeData,
+): node is CanvasGraphNodeData & Required<Pick<CanvasGraphNodeData, "x" | "y" | "width" | "height">> {
+  return (
+    node.x !== undefined &&
+    node.y !== undefined &&
+    node.width !== undefined &&
+    node.height !== undefined
+  );
+}
+
+function isFullyContained(
+  node: CanvasGraphNodeData & Required<Pick<CanvasGraphNodeData, "x" | "y" | "width" | "height">>,
+  group: CanvasGraphNodeData & Required<Pick<CanvasGraphNodeData, "x" | "y" | "width" | "height">>,
+): boolean {
+  return (
+    node.x >= group.x &&
+    node.y >= group.y &&
+    node.x + node.width <= group.x + group.width &&
+    node.y + node.height <= group.y + group.height
+  );
 }
 
 export function getIncidentEdgeIds(

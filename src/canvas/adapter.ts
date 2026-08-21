@@ -165,9 +165,11 @@ export function parseCanvasGraphData(value: unknown): CanvasGraphData | null {
       return null;
     }
 
+    const geometry = readCanvasNodeGeometry(valueNode);
     nodes.push({
       id: valueNode.id,
       type: typeof valueNode.type === "string" ? valueNode.type : "unknown",
+      ...geometry,
     });
   }
 
@@ -218,4 +220,26 @@ function isRuntimeValueCollection(value: unknown): value is RuntimeValueCollecti
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function readCanvasNodeGeometry(
+  node: Record<string, unknown>,
+): Pick<CanvasGraphNodeData, "x" | "y" | "width" | "height"> | undefined {
+  const { x, y, width, height } = node;
+  if (
+    typeof x !== "number" ||
+    !Number.isFinite(x) ||
+    typeof y !== "number" ||
+    !Number.isFinite(y) ||
+    typeof width !== "number" ||
+    !Number.isFinite(width) ||
+    width < 0 ||
+    typeof height !== "number" ||
+    !Number.isFinite(height) ||
+    height < 0
+  ) {
+    return undefined;
+  }
+
+  return { x, y, width, height };
 }
