@@ -25,6 +25,10 @@ void test("uses an open eye while branch controls are visible", () => {
     controls.find((control) => control.action === "toggle-controls")?.icon,
     "eye",
   );
+  assert.equal(
+    controls.find((control) => control.action === "toggle-controls")?.active,
+    undefined,
+  );
 });
 
 void test("uses a closed eye while branch controls are hidden", () => {
@@ -37,6 +41,10 @@ void test("uses a closed eye while branch controls are hidden", () => {
 
   assert.equal(
     controls.find((control) => control.action === "toggle-controls")?.icon,
-    "eye-off",
+    "eye-closed",
+  );
+  assert.equal(
+    controls.find((control) => control.action === "toggle-controls")?.active,
+    undefined,
   );
 });

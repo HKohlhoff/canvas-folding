@@ -52,7 +52,7 @@ export function buildToolbarButtonModels(
     { action: "collapse-all", disabled: !hasRootedBranches, icon: "minus", label: "Collapse all branches", separatorBefore: true },
     { action: "show-level", disabled: !hasRootDepths, icon: "layers", label: "Show canvas through level…" },
     { action: "expand-all", icon: "plus", label: "Expand all branches" },
-    { action: "toggle-controls", active: branchControlsVisible, icon: branchControlsVisible ? "eye" : "eye-off", label: "Toggle branch controls", separatorBefore: true },
+    { action: "toggle-controls", icon: branchControlsVisible ? "eye" : "eye-closed", label: "Toggle branch controls", separatorBefore: true },
     { action: "inspect-graph", icon: "network", label: "Inspect active canvas graph", separatorBefore: true },
     { action: "show-status", icon: "info", label: "Show current status" },
     { action: "hide-toolbar", icon: "x", label: "Hide canvas toolbar", separatorBefore: true },
