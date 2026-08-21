@@ -8,7 +8,6 @@ import type {
 } from "../../src/canvas/adapter";
 import {
   CanvasVisibilityManager,
-  getHiddenEdgeIds,
 } from "../../src/canvas/visibility";
 
 void test("hides descendant nodes and every incident edge", () => {
@@ -39,12 +38,6 @@ void test("restores only the class managed by Canvas Folding", () => {
 
   assert.equal(elements.nodeB.has("canvas-folding-hidden"), false);
   assert.equal(elements.nodeB.has("existing-class"), true);
-});
-
-void test("identifies every edge incident to a hidden node", () => {
-  const { context } = createContext();
-
-  assert.deepEqual([...getHiddenEdgeIds(context, new Set(["B"]))], ["AB", "BC"]);
 });
 
 void test("blocks the interaction layer from targeting hidden nodes", () => {

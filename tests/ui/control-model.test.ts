@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { CanvasGraphData } from "../../src/canvas/adapter";
 import { buildCanvasGraph } from "../../src/tree/graph";
+import type { CanvasGraphData } from "../../src/tree/graph";
 import { BranchCollapseState } from "../../src/tree/state";
 import { buildBranchControlModels } from "../../src/ui/control-model";
 

@@ -1,5 +1,11 @@
 import { App, ItemView } from "obsidian";
 
+import type {
+  CanvasGraphData,
+  CanvasGraphEdgeData,
+  CanvasGraphNodeData,
+} from "../tree/graph";
+
 import {
   extractCanvasEdgeViews,
   extractCanvasPathFromViewState,
@@ -21,22 +27,6 @@ export type {
   CanvasNodeInteractionLayer,
   CanvasNodeView,
 } from "./runtime-elements";
-
-export interface CanvasGraphNodeData {
-  id: string;
-  type: string;
-}
-
-export interface CanvasGraphEdgeData {
-  id: string;
-  fromNode: string;
-  toNode: string;
-}
-
-export interface CanvasGraphData {
-  nodes: readonly CanvasGraphNodeData[];
-  edges: readonly CanvasGraphEdgeData[];
-}
 
 export interface ActiveCanvasContext {
   key: string;

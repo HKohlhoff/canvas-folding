@@ -9,7 +9,6 @@ import {
 } from "./canvas/adapter";
 import {
   CanvasVisibilityManager,
-  getHiddenEdgeIds,
   type VisibilityResult,
 } from "./canvas/visibility";
 import {
@@ -37,6 +36,7 @@ import {
   BranchCollapseState,
   type BranchCollapseStateData,
 } from "./tree/state";
+import { deriveCanvasVisibility } from "./tree/visibility";
 import { CanvasBranchControlManager } from "./ui/branch-controls";
 import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import { buildBranchControlModels } from "./ui/control-model";
@@ -1084,11 +1084,16 @@ export default class CanvasFoldingPlugin extends Plugin {
   ): VisibilityResult & { deselectedItemCount: number } {
     const hiddenNodeIds = state.getHiddenNodeIds(graph);
     const dimmedNodeIds = state.getDimmedNodeIds(graph);
+    const visibility = deriveCanvasVisibility(
+      graph,
+      hiddenNodeIds,
+      dimmedNodeIds,
+    );
     const hiddenItemIds = new Set([
-      ...hiddenNodeIds,
-      ...dimmedNodeIds,
-      ...getHiddenEdgeIds(context, hiddenNodeIds),
-      ...getHiddenEdgeIds(context, dimmedNodeIds),
+      ...visibility.hiddenNodeIds,
+      ...visibility.dimmedNodeIds,
+      ...visibility.hiddenEdgeIds,
+      ...visibility.dimmedEdgeIds,
     ]);
     const deselectedItemCount = context.deselectItems(hiddenItemIds);
 

@@ -1,8 +1,18 @@
-import type {
-  CanvasGraphData,
-  CanvasGraphEdgeData,
-  CanvasGraphNodeData,
-} from "../canvas/adapter";
+export interface CanvasGraphNodeData {
+  id: string;
+  type: string;
+}
+
+export interface CanvasGraphEdgeData {
+  id: string;
+  fromNode: string;
+  toNode: string;
+}
+
+export interface CanvasGraphData {
+  nodes: readonly CanvasGraphNodeData[];
+  edges: readonly CanvasGraphEdgeData[];
+}
 
 export interface CanvasGraph {
   nodes: readonly CanvasGraphNodeData[];

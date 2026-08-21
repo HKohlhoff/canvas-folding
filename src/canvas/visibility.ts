@@ -4,6 +4,7 @@ import type {
   CanvasNodeInteractionLayer,
 } from "./adapter";
 import { extractCanvasItemId } from "./runtime-elements";
+import { deriveCanvasVisibility } from "../tree/visibility";
 
 const HIDDEN_CLASS = "canvas-folding-hidden";
 const DIMMED_CLASS = "canvas-folding-dimmed";
@@ -14,20 +15,6 @@ export interface VisibilityResult {
   hiddenNodeCount: number;
   dimmedEdgeCount: number;
   dimmedNodeCount: number;
-}
-
-export function getHiddenEdgeIds(
-  context: Pick<ActiveCanvasContext, "data">,
-  hiddenNodeIds: ReadonlySet<string>,
-): ReadonlySet<string> {
-  return new Set(
-    context.data.edges
-      .filter(
-        (edge) =>
-          hiddenNodeIds.has(edge.fromNode) || hiddenNodeIds.has(edge.toNode),
-      )
-      .map((edge) => edge.id),
-  );
 }
 
 export class CanvasVisibilityManager {
@@ -43,14 +30,22 @@ export class CanvasVisibilityManager {
     dimmedNodeIds: ReadonlySet<string> = new Set(),
     focusOpacity = 20,
   ): VisibilityResult {
-    const inactiveNodeIds = new Set([...hiddenNodeIds, ...dimmedNodeIds]);
+    const visibility = deriveCanvasVisibility(
+      context.data,
+      hiddenNodeIds,
+      dimmedNodeIds,
+    );
+    const inactiveNodeIds = new Set([
+      ...visibility.hiddenNodeIds,
+      ...visibility.dimmedNodeIds,
+    ]);
     this.updateInteractionLayer(context.nodeInteractionLayer, inactiveNodeIds);
 
     let hiddenNodeCount = 0;
     let dimmedNodeCount = 0;
     for (const nodeView of context.nodeViews) {
-      const hidden = hiddenNodeIds.has(nodeView.id);
-      const dimmed = !hidden && dimmedNodeIds.has(nodeView.id);
+      const hidden = visibility.hiddenNodeIds.has(nodeView.id);
+      const dimmed = visibility.dimmedNodeIds.has(nodeView.id);
       this.setHidden(nodeView.element, hidden);
       this.setDimmed(nodeView.element, dimmed, focusOpacity);
       if (hidden) {
@@ -59,18 +54,11 @@ export class CanvasVisibilityManager {
       if (dimmed) dimmedNodeCount += 1;
     }
 
-    const edgesById = new Map(context.data.edges.map((edge) => [edge.id, edge]));
     let hiddenEdgeCount = 0;
     let dimmedEdgeCount = 0;
     for (const edgeView of context.edgeViews) {
-      const edge = edgesById.get(edgeView.id);
-      const hidden =
-        edge !== undefined &&
-        (hiddenNodeIds.has(edge.fromNode) || hiddenNodeIds.has(edge.toNode));
-      const dimmed =
-        !hidden &&
-        edge !== undefined &&
-        (dimmedNodeIds.has(edge.fromNode) || dimmedNodeIds.has(edge.toNode));
+      const hidden = visibility.hiddenEdgeIds.has(edgeView.id);
+      const dimmed = visibility.dimmedEdgeIds.has(edgeView.id);
 
       for (const element of edgeView.elements) {
         this.setHidden(element, hidden);
