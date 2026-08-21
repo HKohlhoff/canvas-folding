@@ -7,7 +7,10 @@ import {
   type ActiveCanvasContext,
   type ActiveCanvasContextResult,
 } from "./canvas/adapter";
-import { CanvasLiveSync } from "./canvas/live-sync";
+import {
+  CanvasLiveSync,
+  getLiveHiddenNodeIds,
+} from "./canvas/live-sync";
 import {
   CanvasVisibilityManager,
   type VisibilityResult,
@@ -50,6 +53,7 @@ import {
 const MAX_DEPTH_MENU_LEVELS = 5;
 const CANVAS_STATE_PRUNE_DELAY_MS = 750;
 const LIVE_CANVAS_REFRESH_DELAY_MS = 75;
+const LIVE_CANVAS_FOLLOW_UP_DELAY_MS = 500;
 
 export default class CanvasFoldingPlugin extends Plugin {
   settings: CanvasFoldingSettings = { ...DEFAULT_SETTINGS };
@@ -65,6 +69,7 @@ export default class CanvasFoldingPlugin extends Plugin {
   >();
   private dataSaveChain: Promise<void> = Promise.resolve();
   private dataSaveTimer: number | null = null;
+  private liveCanvasFollowUpTimer: number | null = null;
   private liveCanvasRefreshTimer: number | null = null;
   private readonly nodePruneTimers = new Map<string, number>();
   private readonly savedCanvasStates = new Map<
@@ -206,7 +211,7 @@ export default class CanvasFoldingPlugin extends Plugin {
         if (file instanceof TFile && file.extension.toLowerCase() === "canvas") {
           this.scheduleCanvasNodeStatePrune(file);
           if (file.path === this.activeCanvasPath) {
-            this.scheduleActiveCanvasRefresh();
+            this.scheduleActiveCanvasRefresh(true);
           }
         }
       }),
@@ -321,6 +326,10 @@ export default class CanvasFoldingPlugin extends Plugin {
     if (this.liveCanvasRefreshTimer !== null) {
       window.clearTimeout(this.liveCanvasRefreshTimer);
       this.liveCanvasRefreshTimer = null;
+    }
+    if (this.liveCanvasFollowUpTimer !== null) {
+      window.clearTimeout(this.liveCanvasFollowUpTimer);
+      this.liveCanvasFollowUpTimer = null;
     }
     this.canvasLiveSync.disconnect();
     this.branchControls.removeAll();
@@ -838,19 +847,19 @@ export default class CanvasFoldingPlugin extends Plugin {
 
     const { context } = result;
     this.canvasLiveSync.watch(context.toolbarHost, () => {
-      this.scheduleActiveCanvasRefresh();
+      this.scheduleActiveCanvasRefresh(true);
     });
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
     if (state.prune(graph)) {
       this.storeCanvasState(context.key, state);
     }
-    const visibility = this.applyCollapsedState(context, graph, state);
+    const visibility = this.applyLiveVisibilityState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Refreshed active canvas state", visibility);
   }
 
-  private scheduleActiveCanvasRefresh(): void {
+  private scheduleActiveCanvasRefresh(includeFollowUp = false): void {
     if (this.liveCanvasRefreshTimer !== null) {
       window.clearTimeout(this.liveCanvasRefreshTimer);
     }
@@ -858,6 +867,16 @@ export default class CanvasFoldingPlugin extends Plugin {
       this.liveCanvasRefreshTimer = null;
       this.refreshActiveCanvasState();
     }, LIVE_CANVAS_REFRESH_DELAY_MS);
+
+    if (includeFollowUp) {
+      if (this.liveCanvasFollowUpTimer !== null) {
+        window.clearTimeout(this.liveCanvasFollowUpTimer);
+      }
+      this.liveCanvasFollowUpTimer = window.setTimeout(() => {
+        this.liveCanvasFollowUpTimer = null;
+        this.refreshActiveCanvasState();
+      }, LIVE_CANVAS_FOLLOW_UP_DELAY_MS);
+    }
   }
 
   private syncBranchControls(
@@ -1145,6 +1164,22 @@ export default class CanvasFoldingPlugin extends Plugin {
     return this.visibility.apply(
       context,
       state.getHiddenNodeIds(graph),
+      state.getDimmedNodeIds(graph),
+      this.settings.focusBackgroundOpacity,
+    );
+  }
+
+  private applyLiveVisibilityState(
+    context: ActiveCanvasContext,
+    graph: ReturnType<typeof buildCanvasGraph>,
+    state: BranchCollapseState,
+  ): VisibilityResult {
+    return this.visibility.apply(
+      context,
+      getLiveHiddenNodeIds(
+        state.getHiddenNodeIds(graph),
+        context.selectedNodeIds,
+      ),
       state.getDimmedNodeIds(graph),
       this.settings.focusBackgroundOpacity,
     );

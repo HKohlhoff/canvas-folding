@@ -32,6 +32,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Renamed the plugin and its technical ID from Canvas Tree (`canvas-tree`) to Canvas Folding (`canvas-folding`).
 - Separated neutral graph types and edge-visibility rules from the Obsidian adapter and DOM integration in preparation for a shared Canvas Core.
 - Keep controls, toolbar actions and folding visibility synchronized after live Canvas structure, selection and render changes.
+- Keep a newly inserted selected node visible for editing until it is deselected, and use eye icons for the branch-control toggle.
 - Updated the baseline to Obsidian API 1.13, ESLint 10, TypeScript 6 and esbuild 0.28.
 - Strengthened TypeScript compiler checks and ESLint coverage.
 - Updated GitHub Actions to Node.js 22/24 and current action versions.

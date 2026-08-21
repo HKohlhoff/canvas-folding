@@ -65,6 +65,17 @@ export function hasRelevantCanvasMutation(
   });
 }
 
+export function getLiveHiddenNodeIds(
+  hiddenNodeIds: ReadonlySet<string>,
+  selectedNodeIds: readonly string[],
+): ReadonlySet<string> {
+  const liveHiddenNodeIds = new Set(hiddenNodeIds);
+  for (const selectedNodeId of selectedNodeIds) {
+    liveHiddenNodeIds.delete(selectedNodeId);
+  }
+  return liveHiddenNodeIds;
+}
+
 function isRelevantClassMutation(record: CanvasMutationRecord): boolean {
   if (
     record.attributeName !== "class" ||

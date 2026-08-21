@@ -2,9 +2,25 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  getLiveHiddenNodeIds,
   hasRelevantCanvasMutation,
   type CanvasMutationRecord,
 } from "../../src/canvas/live-sync";
+
+void test("keeps selected hidden nodes temporarily visible", () => {
+  assert.deepEqual(
+    [...getLiveHiddenNodeIds(new Set(["B", "C"]), ["B"])],
+    ["C"],
+  );
+});
+
+void test("does not change the stored hidden-node set", () => {
+  const hiddenNodeIds = new Set(["B"]);
+
+  getLiveHiddenNodeIds(hiddenNodeIds, ["B"]);
+
+  assert.deepEqual([...hiddenNodeIds], ["B"]);
+});
 
 void test("ignores visibility classes managed by Canvas Folding", () => {
   const node = createElement("canvas-node canvas-folding-hidden");
