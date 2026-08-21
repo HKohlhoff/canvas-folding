@@ -16,7 +16,12 @@ export interface CanvasMutationRecord {
 
 export class CanvasLiveSync {
   private host: HTMLElement | null = null;
-  private observer: MutationObserver | null = null;
+  private observer: CanvasMutationObserver | null = null;
+
+  constructor(
+    private readonly createObserver: CanvasMutationObserverFactory =
+      (callback) => new MutationObserver(callback),
+  ) {}
 
   watch(host: HTMLElement, onChange: () => void): void {
     if (this.host === host) {
@@ -25,7 +30,7 @@ export class CanvasLiveSync {
 
     this.disconnect();
     this.host = host;
-    this.observer = new MutationObserver((records) => {
+    this.observer = this.createObserver((records) => {
       if (hasRelevantCanvasMutation(records)) {
         onChange();
       }
@@ -45,6 +50,15 @@ export class CanvasLiveSync {
     this.host = null;
   }
 }
+
+interface CanvasMutationObserver {
+  disconnect(): void;
+  observe(target: Node, options?: MutationObserverInit): void;
+}
+
+type CanvasMutationObserverFactory = (
+  callback: MutationCallback,
+) => CanvasMutationObserver;
 
 export function hasRelevantCanvasMutation(
   records: readonly CanvasMutationRecord[],

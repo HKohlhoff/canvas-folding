@@ -40,6 +40,19 @@ void test("removes an obsolete control after a render in the same leaf", () => {
   assert.equal(replacement.button.removed, false);
 });
 
+void test("removes controls from every managed leaf during cleanup", () => {
+  const manager = new CanvasBranchControlManager();
+  const first = createContext("first.canvas", {});
+  const second = createContext("second.canvas", {});
+
+  sync(manager, first.context);
+  sync(manager, second.context);
+  manager.removeAll();
+
+  assert.equal(first.button.removed, true);
+  assert.equal(second.button.removed, true);
+});
+
 function sync(
   manager: CanvasBranchControlManager,
   context: ActiveCanvasContext,

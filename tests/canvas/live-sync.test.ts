@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  CanvasLiveSync,
   getLiveHiddenNodeIds,
   hasRelevantCanvasMutation,
   type CanvasMutationRecord,
@@ -83,6 +84,22 @@ void test("detects changed nodes without an element parent", () => {
   );
 });
 
+void test("disconnects the canvas observer during cleanup", () => {
+  const observers: FakeMutationObserver[] = [];
+  const liveSync = new CanvasLiveSync((callback) => {
+    const observer = new FakeMutationObserver(callback);
+    observers.push(observer);
+    return observer;
+  });
+
+  liveSync.watch({} as HTMLElement, () => undefined);
+  liveSync.disconnect();
+
+  assert.equal(observers.length, 1);
+  assert.equal(observers[0]?.observeCount, 1);
+  assert.equal(observers[0]?.disconnectCount, 1);
+});
+
 function classMutation(
   target: FakeElement,
   oldValue: string,
@@ -138,4 +155,19 @@ interface FakeElement {
   closest(selector: string): FakeElement | null;
   getAttribute(name: string): string | null;
   parentElement: FakeElement | null;
+}
+
+class FakeMutationObserver {
+  disconnectCount = 0;
+  observeCount = 0;
+
+  constructor(readonly callback: MutationCallback) {}
+
+  disconnect(): void {
+    this.disconnectCount += 1;
+  }
+
+  observe(): void {
+    this.observeCount += 1;
+  }
 }
