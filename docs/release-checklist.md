@@ -31,6 +31,16 @@ npm run build:prod
 - Check ribbon icons, settings tabs and notices if used.
 - Verify desktop-only behavior if `isDesktopOnly` is `true`.
 
+### Canvas Folding matrix
+
+- Fold and expand branches containing text, file, image, link and group nodes.
+- Check a simple tree, multiple roots, an isolated node, a shared descendant with multiple parents and a directed cycle.
+- Add and delete nodes and edges; repeat both operations with undo and redo.
+- Add a child to a collapsed branch: it remains visible while selected and folds after deselection.
+- Open the same Canvas in two leaves and verify that controls, focus and visibility remain leaf-specific.
+- Navigate away and back in one leaf, then close and reopen the leaf with persistence disabled and enabled.
+- Disable and re-enable Canvas Folding and verify that no managed classes, controls or interaction handlers remain stale.
+
 ## Repository Hygiene
 
 - No `node_modules/`.

@@ -81,6 +81,25 @@ void test("collapse all leaves state unchanged when a graph has no roots", () =>
   assert.deepEqual(state.toData().visibleDepths, { A: 0 });
 });
 
+void test("collapses and expands an individual branch inside a cycle", () => {
+  const graph = buildCanvasGraph({
+    nodes: ["A", "B", "C"].map((id) => ({ id, type: "text" })),
+    edges: [
+      { id: "AB", fromNode: "A", toNode: "B" },
+      { id: "BC", fromNode: "B", toNode: "C" },
+      { id: "CA", fromNode: "C", toNode: "A" },
+    ],
+  });
+  const state = new BranchCollapseState();
+
+  state.collapse("A");
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["B", "C"]);
+  assert.equal(state.isBranchCollapsed(graph, "A"), true);
+
+  state.expand("A");
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
+});
+
 void test("shows a canvas through a global root depth", () => {
   const graph = buildCanvasGraph(createTreeData());
   const state = new BranchCollapseState();

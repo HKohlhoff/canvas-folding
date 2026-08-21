@@ -57,6 +57,27 @@ void test("restores managed classes from replaced render elements", () => {
   assert.equal(replacementNodeB.has("canvas-folding-hidden"), true);
 });
 
+void test("keeps managed visibility isolated between canvas leaves", () => {
+  const first = createContext();
+  const second = createContext();
+  const manager = new CanvasVisibilityManager();
+
+  manager.apply(first.context, new Set(["B"]));
+  manager.apply(second.context, new Set(["B"]));
+
+  const replacementNodeB = new FakeClassList();
+  first.context.nodeViews = first.context.nodeViews.map((nodeView) =>
+    nodeView.id === "B"
+      ? { id: "B", element: createNodeElement(replacementNodeB) }
+      : nodeView,
+  );
+  manager.apply(first.context, new Set(["B"]));
+
+  assert.equal(first.nodeB.has("canvas-folding-hidden"), false);
+  assert.equal(replacementNodeB.has("canvas-folding-hidden"), true);
+  assert.equal(second.nodeB.has("canvas-folding-hidden"), true);
+});
+
 void test("blocks the interaction layer from targeting hidden nodes", () => {
   const { context } = createContext();
   const targetNode = { id: "B" };

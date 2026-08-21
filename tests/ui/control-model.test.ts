@@ -48,6 +48,31 @@ void test("shows expand controls at the boundary of a visible depth", () => {
   assert.equal(models.find((model) => model.nodeId === "B")?.collapsed, true);
 });
 
+void test("treats group, file, link and text nodes consistently", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group" },
+      { id: "F", type: "file" },
+      { id: "L", type: "link" },
+      { id: "T", type: "text" },
+    ],
+    edges: [
+      { id: "GF", fromNode: "G", toNode: "F" },
+      { id: "FL", fromNode: "F", toNode: "L" },
+      { id: "LT", fromNode: "L", toNode: "T" },
+    ],
+  });
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, new BranchCollapseState()),
+    [
+      { nodeId: "G", collapsed: false, descendantCount: 3 },
+      { nodeId: "F", collapsed: false, descendantCount: 2 },
+      { nodeId: "L", collapsed: false, descendantCount: 1 },
+    ],
+  );
+});
+
 function createData(): CanvasGraphData {
   return {
     nodes: ["A", "B", "C", "D"].map((id) => ({ id, type: "text" })),
