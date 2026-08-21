@@ -1,7 +1,7 @@
 import {
   DEFAULT_SETTINGS,
   normalizeSettings,
-  type CanvasTreeSettings,
+  type CanvasFoldingSettings,
 } from "./settings-data";
 import {
   normalizeBranchCollapseStateData,
@@ -10,13 +10,13 @@ import {
 
 export const PLUGIN_DATA_VERSION = 1;
 
-export interface CanvasTreePluginData {
+export interface CanvasFoldingPluginData {
   canvasStates: Readonly<Record<string, BranchCollapseStateData>>;
   dataVersion: typeof PLUGIN_DATA_VERSION;
-  settings: CanvasTreeSettings;
+  settings: CanvasFoldingSettings;
 }
 
-export function normalizePluginData(data: unknown): CanvasTreePluginData {
+export function normalizePluginData(data: unknown): CanvasFoldingPluginData {
   const root = isRecord(data) ? data : {};
   const settings = normalizeSettings(
     isRecord(root.settings) ? root.settings : root,

@@ -23,13 +23,13 @@ void test("hides descendant nodes and every incident edge", () => {
     hiddenEdgeCount: 2,
     hiddenNodeCount: 1,
   });
-  assert.equal(elements.nodeB.has("canvas-tree-hidden"), true);
-  assert.equal(elements.edgeAB.has("canvas-tree-hidden"), true);
-  assert.equal(elements.edgeABLabel.has("canvas-tree-hidden"), true);
-  assert.equal(elements.edgeBC.has("canvas-tree-hidden"), true);
+  assert.equal(elements.nodeB.has("canvas-folding-hidden"), true);
+  assert.equal(elements.edgeAB.has("canvas-folding-hidden"), true);
+  assert.equal(elements.edgeABLabel.has("canvas-folding-hidden"), true);
+  assert.equal(elements.edgeBC.has("canvas-folding-hidden"), true);
 });
 
-void test("restores only the class managed by Canvas Tree", () => {
+void test("restores only the class managed by Canvas Folding", () => {
   const elements = createContext();
   const manager = new CanvasVisibilityManager();
 
@@ -37,7 +37,7 @@ void test("restores only the class managed by Canvas Tree", () => {
   manager.apply(elements.context, new Set(["B"]));
   manager.restoreAll();
 
-  assert.equal(elements.nodeB.has("canvas-tree-hidden"), false);
+  assert.equal(elements.nodeB.has("canvas-folding-hidden"), false);
   assert.equal(elements.nodeB.has("existing-class"), true);
 });
 
@@ -86,7 +86,7 @@ void test("dims and blocks nodes outside branch focus", () => {
 
   assert.equal(result.dimmedNodeCount, 1);
   assert.equal(result.dimmedEdgeCount, 1);
-  assert.equal(elements.nodeA.has("canvas-tree-dimmed"), true);
+  assert.equal(elements.nodeA.has("canvas-folding-dimmed"), true);
 });
 
 function createContext(): {

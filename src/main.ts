@@ -18,13 +18,13 @@ import {
   PLUGIN_DATA_VERSION,
   removePathEntries,
   renamePathEntries,
-  type CanvasTreePluginData,
+  type CanvasFoldingPluginData,
 } from "./plugin-data";
 import {
-  CanvasTreeSettingTab,
+  CanvasFoldingSettingTab,
   DEFAULT_SETTINGS,
   normalizeSettings,
-  type CanvasTreeSettings,
+  type CanvasFoldingSettings,
 } from "./settings";
 import {
   buildCanvasGraph,
@@ -49,8 +49,8 @@ import {
 const MAX_DEPTH_MENU_LEVELS = 5;
 const CANVAS_STATE_PRUNE_DELAY_MS = 750;
 
-export default class CanvasTreePlugin extends Plugin {
-  settings: CanvasTreeSettings = { ...DEFAULT_SETTINGS };
+export default class CanvasFoldingPlugin extends Plugin {
+  settings: CanvasFoldingSettings = { ...DEFAULT_SETTINGS };
   private readonly branchControls = new CanvasBranchControlManager();
   private readonly canvasToolbar = new CanvasToolbarManager();
   private activeCanvasPath: string | null = null;
@@ -78,7 +78,7 @@ export default class CanvasTreePlugin extends Plugin {
     this.canvasToolbarVisible = this.settings.showCanvasToolbar;
     this.rememberOpenedCanvas(this.app.workspace.getActiveFile());
 
-    this.addSettingTab(new CanvasTreeSettingTab(this.app, this));
+    this.addSettingTab(new CanvasFoldingSettingTab(this.app, this));
 
     this.addCommand({
       id: "show-status",
@@ -317,7 +317,7 @@ export default class CanvasTreePlugin extends Plugin {
     this.collapseStates.clear();
   }
 
-  async updateSettings(update: Partial<CanvasTreeSettings>): Promise<void> {
+  async updateSettings(update: Partial<CanvasFoldingSettings>): Promise<void> {
     const wasRememberingCanvasStates = this.settings.rememberCanvasStates;
     this.settings = normalizeSettings({ ...this.settings, ...update });
 
@@ -374,15 +374,15 @@ export default class CanvasTreePlugin extends Plugin {
     }
     new Notice(
       removedCount === 0
-        ? "Canvas Tree: no stale saved states found."
-        : `Canvas Tree: cleaned ${removedCount} saved canvas state${removedCount === 1 ? "" : "s"}.`,
+        ? "Canvas Folding: no stale saved states found."
+        : `Canvas Folding: cleaned ${removedCount} saved canvas state${removedCount === 1 ? "" : "s"}.`,
     );
   }
 
   async clearSavedCanvasStates(): Promise<void> {
     this.savedCanvasStates.clear();
     await this.flushPluginDataSave();
-    new Notice("Canvas tree: cleared all persisted canvas states.");
+    new Notice("Cleared all persisted canvas states.");
   }
 
   private async loadPluginData(): Promise<void> {
@@ -510,7 +510,7 @@ export default class CanvasTreePlugin extends Plugin {
       return;
     }
     if (!isCanvasPath(canvasPath)) {
-      console.warn("[Canvas Tree] Skipped state persistence: invalid canvas path", {
+      console.warn("[Canvas Folding] Skipped state persistence: invalid canvas path", {
         canvasPath,
       });
       return;
@@ -543,7 +543,7 @@ export default class CanvasTreePlugin extends Plugin {
   }
 
   private writePluginData(): Promise<void> {
-    const data: CanvasTreePluginData = {
+    const data: CanvasFoldingPluginData = {
       canvasStates: Object.fromEntries(this.savedCanvasStates),
       dataVersion: PLUGIN_DATA_VERSION,
       settings: this.settings,
@@ -552,7 +552,7 @@ export default class CanvasTreePlugin extends Plugin {
       await this.saveData(data);
     });
     this.dataSaveChain = write.catch((error: unknown) => {
-      console.error("[Canvas Tree] Failed to save plugin data", error);
+      console.error("[Canvas Folding] Failed to save plugin data", error);
     });
     return write;
   }
@@ -562,7 +562,7 @@ export default class CanvasTreePlugin extends Plugin {
       return;
     }
 
-    console.debug(`[Canvas Tree] ${message}`, details ?? "");
+    console.debug(`[Canvas Folding] ${message}`, details ?? "");
   }
 
   private logCanvasGraph(
@@ -577,7 +577,7 @@ export default class CanvasTreePlugin extends Plugin {
     });
 
     new Notice(
-      `Canvas tree: ${summary.nodeCount} nodes, ${summary.edgeCount} edges, ${summary.rootIds.length} roots.`,
+      `Canvas Folding: ${summary.nodeCount} nodes, ${summary.edgeCount} edges, ${summary.rootIds.length} roots.`,
     );
   }
 
@@ -811,7 +811,7 @@ export default class CanvasTreePlugin extends Plugin {
           ? "current state is stored between sessions"
           : "current state is being saved";
     new Notice(
-      `Canvas tree: ${activeNodeCount} active, ${hiddenNodeIds.size} hidden, ${dimmedNodeIds.size} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"} · ${persistenceStatus}.`,
+      `Canvas Folding: ${activeNodeCount} active, ${hiddenNodeIds.size} hidden, ${dimmedNodeIds.size} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"} · ${persistenceStatus}.`,
     );
   }
 

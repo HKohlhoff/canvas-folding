@@ -6,31 +6,31 @@ import {
 } from "obsidian";
 import {
   DEFAULT_SETTINGS,
-  type CanvasTreeSettings,
+  type CanvasFoldingSettings,
 } from "./settings-data";
 
 export {
   DEFAULT_SETTINGS,
   normalizeSettings,
-  type CanvasTreeSettings,
+  type CanvasFoldingSettings,
 } from "./settings-data";
 
-type CanvasTreeSettingKey = keyof CanvasTreeSettings;
+type CanvasFoldingSettingKey = keyof CanvasFoldingSettings;
 
-interface CanvasTreeSettingsHost extends Plugin {
-  settings: CanvasTreeSettings;
+interface CanvasFoldingSettingsHost extends Plugin {
+  settings: CanvasFoldingSettings;
   cleanupSavedCanvasStates(): Promise<void>;
   clearSavedCanvasStates(): Promise<void>;
   hasSavedCanvasStates(): boolean;
-  updateSettings(update: Partial<CanvasTreeSettings>): Promise<void>;
+  updateSettings(update: Partial<CanvasFoldingSettings>): Promise<void>;
 }
 
-export class CanvasTreeSettingTab extends PluginSettingTab {
-  constructor(app: App, private readonly plugin: CanvasTreeSettingsHost) {
+export class CanvasFoldingSettingTab extends PluginSettingTab {
+  constructor(app: App, private readonly plugin: CanvasFoldingSettingsHost) {
     super(app, plugin);
   }
 
-  getSettingDefinitions(): SettingDefinitionItem<CanvasTreeSettingKey>[] {
+  getSettingDefinitions(): SettingDefinitionItem<CanvasFoldingSettingKey>[] {
     return [
       {
         type: "group",
@@ -38,7 +38,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         items: [
           {
             name: "Show canvas toolbar initially",
-            desc: "Show the Canvas Tree command toolbar when the plugin loads. Use the command palette to show, hide, or toggle it at any time.",
+            desc: "Show the Canvas Folding command toolbar when the plugin loads. Use the command palette to show, hide, or toggle it at any time.",
             control: {
               type: "toggle",
               key: "showCanvasToolbar",
@@ -60,7 +60,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
           },
           {
             name: "Show branch controls initially",
-            desc: "Set the initial visibility of +/− controls when Canvas Tree loads. Use the command palette at any time to show, hide, or toggle them.",
+            desc: "Set the initial visibility of +/− controls when Canvas Folding loads. Use the command palette at any time to show, hide, or toggle them.",
             control: {
               type: "toggle",
               key: "showBranchControls",
@@ -69,7 +69,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
           },
           {
             name: "Show status notices",
-            desc: "Show confirmations after canvas tree actions.",
+            desc: "Show confirmations after Canvas Folding actions.",
             control: {
               type: "toggle",
               key: "showStatusNotices",
@@ -78,7 +78,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
           },
           {
             name: "Remember canvas states between sessions",
-            desc: "Canvas Tree remembers states in each open tab for back navigation. Enable this to also restore them in newly opened tabs and after Obsidian or the plugin restarts. Canvas files remain unchanged.",
+            desc: "Canvas Folding remembers states in each open tab for back navigation. Enable this to also restore them in newly opened tabs and after Obsidian or the plugin restarts. Canvas files remain unchanged.",
             control: {
               type: "toggle",
               key: "rememberCanvasStates",
@@ -130,7 +130,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
         items: [
           {
             name: "Debug logging",
-            desc: "Write canvas tree diagnostics to the developer console.",
+            desc: "Write Canvas Folding diagnostics to the developer console.",
             control: {
               type: "toggle",
               key: "debugLogging",
@@ -163,7 +163,7 @@ export class CanvasTreeSettingTab extends PluginSettingTab {
   }
 }
 
-function isSettingKey(key: string): key is CanvasTreeSettingKey {
+function isSettingKey(key: string): key is CanvasFoldingSettingKey {
   return (
     key === "debugLogging" ||
     key === "focusBackgroundOpacity" ||

@@ -78,8 +78,8 @@ export class CanvasToolbarManager {
     }
     if (entry === undefined) {
       const toolbar = context.toolbarHost.createDiv({
-        cls: "canvas-tree-toolbar",
-        attr: { "aria-label": "Canvas Tree commands", role: "toolbar" },
+        cls: "canvas-folding-toolbar",
+        attr: { "aria-label": "Canvas Folding commands", role: "toolbar" },
       });
       toolbar.addEventListener("pointerdown", blockCanvasInteraction);
       entry = { host: context.toolbarHost, toolbar };
@@ -89,17 +89,17 @@ export class CanvasToolbarManager {
     entry.toolbar.empty();
     applyPosition(entry.toolbar, position);
     const dragHandle = entry.toolbar.createEl("button", {
-      cls: "clickable-icon canvas-tree-toolbar-drag-handle",
+      cls: "clickable-icon canvas-folding-toolbar-drag-handle",
       attr: { "aria-label": "Move canvas toolbar", title: "Move canvas toolbar", type: "button" },
     });
     setIcon(dragHandle, "grip-vertical");
     installDrag(dragHandle, entry.toolbar, entry.host, onPositionChange);
     for (const model of models) {
       if (model.separatorBefore) {
-        entry.toolbar.createDiv({ cls: "canvas-tree-toolbar-separator" });
+        entry.toolbar.createDiv({ cls: "canvas-folding-toolbar-separator" });
       }
       const button = entry.toolbar.createEl("button", {
-        cls: "clickable-icon canvas-tree-toolbar-button",
+        cls: "clickable-icon canvas-folding-toolbar-button",
         attr: {
           "aria-label": model.label,
           "aria-pressed": model.active === undefined ? "false" : String(model.active),

@@ -1,4 +1,4 @@
-export interface CanvasTreeSettings {
+export interface CanvasFoldingSettings {
   debugLogging: boolean;
   focusBackgroundOpacity: number;
   rememberCanvasStates: boolean;
@@ -9,7 +9,7 @@ export interface CanvasTreeSettings {
   toolbarPositionYPixels: number;
 }
 
-export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
+export const DEFAULT_SETTINGS: Readonly<CanvasFoldingSettings> = {
   debugLogging: false,
   focusBackgroundOpacity: 20,
   rememberCanvasStates: false,
@@ -20,7 +20,7 @@ export const DEFAULT_SETTINGS: Readonly<CanvasTreeSettings> = {
   toolbarPositionYPixels: 8,
 };
 
-export function normalizeSettings(data: unknown): CanvasTreeSettings {
+export function normalizeSettings(data: unknown): CanvasFoldingSettings {
   if (!isRecord(data)) {
     return { ...DEFAULT_SETTINGS };
   }

@@ -1,6 +1,6 @@
-# Canvas Tree
+# Canvas Folding
 
-Canvas Tree erweitert normale Obsidian-Canvases um hierarchische Funktionen. Das Plugin soll komplette Zweige rekursiv ein- und ausklappen, ohne Nodes, Kanten, Inhalte oder Positionen zu verändern.
+Canvas Folding erweitert normale Obsidian-Canvases um hierarchische Funktionen. Das Plugin soll komplette Zweige rekursiv ein- und ausklappen, ohne Nodes, Kanten, Inhalte oder Positionen zu verändern.
 
 Das Projekt befindet sich in einer frühen Entwicklungsphase. Der aktuelle Prototyp enthält bereits die Plugin-, Settings- und Canvas-Integrationsbasis sowie optional dauerhaftes Collapse/Expand.
 
@@ -25,9 +25,9 @@ Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wech
 
 Der Branch-Fokus wirkt als zusätzlicher Spotlight-Filter und verändert bestehende Collapse-Zustände nicht. Der ausgewählte Node und seine Nachfolger bleiben vollständig aktiv; alle übrigen Nodes und betroffenen Kanten werden mit einstellbarer Deckkraft gedimmt und vor Interaktionen geschützt. Bereits eingeklappte Elemente bleiben vollständig verborgen. Der Fokus gehört zum flüchtigen beziehungsweise optional persistenten Canvas-Zustand.
 
-Die optionale Canvas-Toolbar stellt die Canvas-Tree-Funktionen als Icon-Buttons direkt am oberen Rand bereit. Collapse und Expand verwenden dieselben `−`/`+`-Symbole wie die Node-Controls; Branch-Fokus wird über einen aktiven Toggle-Button gesteuert. Tooltips benennen jede Aktion, und nicht anwendbare Aktionen sind deaktiviert. Über den Griff am linken Rand lässt sich die Toolbar verschieben; ihre globale Position wird in den Plugin-Einstellungen gespeichert. Bei knapper Breite bleibt die Leiste horizontal scrollbar. `Show canvas toolbar initially` legt nur den Startzustand fest, der anschließend über Commands oder den Ausblenden-Button geändert werden kann.
+Die optionale Canvas-Toolbar stellt die Canvas-Folding-Funktionen als Icon-Buttons direkt am oberen Rand bereit. Collapse und Expand verwenden dieselben `−`/`+`-Symbole wie die Node-Controls; Branch-Fokus wird über einen aktiven Toggle-Button gesteuert. Tooltips benennen jede Aktion, und nicht anwendbare Aktionen sind deaktiviert. Über den Griff am linken Rand lässt sich die Toolbar verschieben; ihre globale Position wird in den Plugin-Einstellungen gespeichert. Bei knapper Breite bleibt die Leiste horizontal scrollbar. `Show canvas toolbar initially` legt nur den Startzustand fest, der anschließend über Commands oder den Ausblenden-Button geändert werden kann.
 
-Canvas Tree merkt sich Collapse-State, Sichttiefe und temporäre Freigaben flüchtig pro geöffnetem Tab. So wird der letzte Zustand wiederhergestellt, wenn man in diesem Tab zu anderen Dateien und anschließend zum Canvas zurücknavigiert. Beim Schließen des Tabs wird dieser flüchtige Zustand verworfen. `Remember canvas states between sessions` speichert den Zustand zusätzlich nach Canvas-Pfad in der Plugin-Datei `data.json`, sodass er in neu geöffneten Tabs und nach einem Neustart von Obsidian oder des Plugins verfügbar ist. Einträge gelöschter Canvas-Dateien werden automatisch entfernt. Nicht mehr vorhandene Node-IDs werden beim Plugin-Start, nach Änderungen einer Canvas-Datei und beim manuellen Aufräumen gegen die tatsächliche Canvas-JSON geprüft. Ungültige oder vorübergehend nicht lesbare Canvas-Daten führen zu keiner Löschung. Die `.canvas`-Datei selbst wird nicht verändert.
+Canvas Folding merkt sich Collapse-State, Sichttiefe und temporäre Freigaben flüchtig pro geöffnetem Tab. So wird der letzte Zustand wiederhergestellt, wenn man in diesem Tab zu anderen Dateien und anschließend zum Canvas zurücknavigiert. Beim Schließen des Tabs wird dieser flüchtige Zustand verworfen. `Remember canvas states between sessions` speichert den Zustand zusätzlich nach Canvas-Pfad in der Plugin-Datei `data.json`, sodass er in neu geöffneten Tabs und nach einem Neustart von Obsidian oder des Plugins verfügbar ist. Einträge gelöschter Canvas-Dateien werden automatisch entfernt. Nicht mehr vorhandene Node-IDs werden beim Plugin-Start, nach Änderungen einer Canvas-Datei und beim manuellen Aufräumen gegen die tatsächliche Canvas-JSON geprüft. Ungültige oder vorübergehend nicht lesbare Canvas-Daten führen zu keiner Löschung. Die `.canvas`-Datei selbst wird nicht verändert.
 
 ## Geplanter Funktionsumfang
 
@@ -37,7 +37,7 @@ Canvas Tree merkt sich Collapse-State, Sichttiefe und temporäre Freigaben flüc
 - zyklensichere Graph-Traversierung
 - optionale Kompatibilität mit Advanced Canvas ohne harte Abhängigkeit
 
-Canvas Tree ist weder Importer noch HTML-Exporter. Normale JSON-Canvas-Dateien bleiben die Source of Truth.
+Canvas Folding ist weder Importer noch HTML-Exporter. Normale JSON-Canvas-Dateien bleiben die Source of Truth.
 
 ## Entwicklung
 
@@ -55,11 +55,11 @@ Für ein lokales Deployment wird `OBSIDIAN_PLUGINS_DIR` auf den `.obsidian/plugi
 OBSIDIAN_PLUGINS_DIR="/path/to/vault/.obsidian/plugins" npm run build:prod:deploy
 ```
 
-Der Build kopiert `main.js`, `manifest.json` und `styles.css` nach `canvas-tree` und legt dort die von Obsidian Hot Reload verwendete Datei `.hotreload` an.
+Der Build kopiert `main.js`, `manifest.json` und `styles.css` nach `canvas-folding` und legt dort die von Obsidian Hot Reload verwendete Datei `.hotreload` an.
 
 ## Datenschutz
 
-Canvas Tree verarbeitet Canvas-Daten lokal im Vault und sendet keine Daten an externe Dienste. Bei aktivierter Zustandsspeicherung enthält die lokale Plugin-Datei `data.json` Canvas-Pfade, Node-IDs und Sichtbarkeitseinstellungen.
+Canvas Folding verarbeitet Canvas-Daten lokal im Vault und sendet keine Daten an externe Dienste. Bei aktivierter Zustandsspeicherung enthält die lokale Plugin-Datei `data.json` Canvas-Pfade, Node-IDs und Sichtbarkeitseinstellungen.
 
 ## Grenzen
 

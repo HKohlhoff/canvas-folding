@@ -426,7 +426,7 @@ interface TreeNodeInfo {
   depth: number;
 }
 
-interface CanvasTree {
+interface CanvasFolding {
   roots: string[];
   nodes: Map<string, TreeNodeInfo>;
   treeEdges: Set<string>;

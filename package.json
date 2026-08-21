@@ -1,5 +1,5 @@
 {
-  "name": "canvas-tree",
+  "name": "canvas-folding",
   "version": "0.1.0",
   "description": "Collapse and expand hierarchical branches in Obsidian Canvas.",
   "main": "main.js",

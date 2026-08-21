@@ -5,9 +5,9 @@ import type {
 } from "./adapter";
 import { extractCanvasItemId } from "./runtime-elements";
 
-const HIDDEN_CLASS = "canvas-tree-hidden";
-const DIMMED_CLASS = "canvas-tree-dimmed";
-const FOCUS_OPACITY_PROPERTY = "--canvas-tree-focus-opacity";
+const HIDDEN_CLASS = "canvas-folding-hidden";
+const DIMMED_CLASS = "canvas-folding-dimmed";
+const FOCUS_OPACITY_PROPERTY = "--canvas-folding-focus-opacity";
 
 export interface VisibilityResult {
   hiddenEdgeCount: number;

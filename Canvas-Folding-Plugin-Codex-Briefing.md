@@ -1,8 +1,8 @@
-# Obsidian Canvas Tree Plugin – Projektbriefing für Codex
+# Obsidian Canvas Folding Plugin – Projektbriefing für Codex
 
 **Stand:** 20.08.2026  
 **Projekt:** neues, eigenständiges Obsidian-Plugin für rekursiv ein-/ausklappbare Canvas-Zweige  
-**Arbeitstitel:** Canvas Tree (Name noch nicht endgültig)
+**Projektname:** Canvas Folding
 
 ## 1. Ausgangslage und Ziel
 
@@ -37,7 +37,7 @@ Es existiert bereits ein veröffentlichtes Plugin **Canvas HTML Exporter**.
 
 Die Verantwortlichkeiten sollen strikt getrennt bleiben:
 
-### Canvas Tree Plugin
+### Canvas Folding Plugin
 - verändert/erweitert die interaktive Darstellung **in Obsidian**;
 - analysiert Parent-/Child-Beziehungen;
 - bietet Collapse/Expand;
@@ -254,7 +254,7 @@ Unser Konzept ist ausdrücklich anders:
 
 ```text
 Collapse Node:  einzelne Karte / Karteninhalt zusammenklappen
-Canvas Tree:    gesamten rekursiven Teilbaum ausblenden
+Canvas Folding: gesamten rekursiven Teilbaum ausblenden
 ```
 
 Dieses bestehende Plugin kann als technische Referenz für Canvas-Menüs/DOM-/State-Handling untersucht werden, soll aber nicht die fachliche Definition unseres Plugins bestimmen.

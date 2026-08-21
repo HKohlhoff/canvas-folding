@@ -72,7 +72,7 @@ export class CanvasBranchControlManager {
 
     const button = host.createEl("button");
     button.type = "button";
-    button.className = "canvas-tree-branch-control";
+    button.className = "canvas-folding-branch-control";
 
     const entry: ControlEntry = {
       activate: () => undefined,

@@ -1,13 +1,13 @@
-.canvas-tree-hidden {
+.canvas-folding-hidden {
   display: none !important;
 }
 
-.canvas-tree-dimmed {
-  opacity: var(--canvas-tree-focus-opacity, 0.2) !important;
+.canvas-folding-dimmed {
+  opacity: var(--canvas-folding-focus-opacity, 0.2) !important;
   pointer-events: none !important;
 }
 
-.canvas-tree-toolbar {
+.canvas-folding-toolbar {
   align-items: center;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
@@ -25,26 +25,26 @@
   z-index: 50;
 }
 
-.canvas-tree-toolbar-button {
+.canvas-folding-toolbar-button {
   flex: 0 0 auto;
 }
 
-.canvas-tree-toolbar-drag-handle {
+.canvas-folding-toolbar-drag-handle {
   cursor: grab;
   flex: 0 0 auto;
   touch-action: none;
 }
 
-.canvas-tree-toolbar-drag-handle:active {
+.canvas-folding-toolbar-drag-handle:active {
   cursor: grabbing;
 }
 
-.canvas-tree-toolbar-button.is-active {
+.canvas-folding-toolbar-button.is-active {
   background: var(--background-modifier-hover);
   color: var(--interactive-accent);
 }
 
-.canvas-tree-toolbar-separator {
+.canvas-folding-toolbar-separator {
   align-self: stretch;
   background: var(--background-modifier-border);
   flex: 0 0 1px;
@@ -52,7 +52,7 @@
   width: 1px;
 }
 
-.canvas-tree-branch-control {
+.canvas-folding-branch-control {
   align-items: center;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
@@ -74,8 +74,8 @@
   z-index: 30;
 }
 
-.canvas-tree-branch-control:hover,
-.canvas-tree-branch-control:focus-visible {
+.canvas-folding-branch-control:hover,
+.canvas-folding-branch-control:focus-visible {
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
   color: var(--text-on-accent);
