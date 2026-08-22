@@ -21,3 +21,6 @@ data.json
 
 # Local development / AI working files
 _local/
+
+# Local Codex instructions
+AGENTS.md
