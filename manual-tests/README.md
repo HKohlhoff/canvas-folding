@@ -22,7 +22,12 @@ File: `01-basic-tree.canvas`
 - Expand `Root`: all nodes and the edge label `label` return.
 - Open the control context menu on `Upper` and show one, then all, levels.
 - Use **Show canvas through level…** for levels 0, 1 and 2.
-- Verify depth-first control order: `Root`, `Upper`, `Upper child`, `Lower`.
+- Verify depth-first branch-control order: `Root`, `Upper`, then the Canvas
+  toolbar. Leaf nodes (`Upper child` and `Lower`) have no branch control and
+  therefore do not occur in this sequence.
+- Select `Upper` and verify that the branch-control order rotates to start at
+  its control: `Upper`, `Root`, then the Canvas toolbar. `Shift+Tab` from
+  `Root` returns to `Upper`.
 - While `Root` is collapsed, add a child and an edge. The selected new child
   stays visible for editing and folds after deselection.
 - Delete and undo an edge; controls update without selecting a node first.
