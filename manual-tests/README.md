@@ -95,7 +95,7 @@ Use `01-basic-tree.canvas` unless stated otherwise.
   removed automatically.
 - Disable and re-enable Canvas Folding with persistence disabled and enabled;
   no controls, classes or interaction handlers remain stale.
-- Test Tab, Shift+Tab, Enter, Space, context-menu key, Shift+F10 and all arrow
+- Test Tab, Shift+Tab, Enter, Space, the context-menu key and all arrow
   keys on branch controls and the toolbar handle.
 - In a narrow split view, move and horizontally scroll the toolbar.
 - On iPhone and iPad, select nodes by short tap/stylus with the toolbar visible,

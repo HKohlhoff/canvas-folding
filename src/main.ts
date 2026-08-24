@@ -857,9 +857,8 @@ export default class CanvasFoldingPlugin extends Plugin {
     });
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
-    if (state.prune(graph)) {
-      this.storeCanvasState(context.key, state);
-    }
+    // Canvas runtime data can be transiently empty while a view opens. Stale
+    // IDs are pruned only against the authoritative Canvas file JSON.
     const visibility = this.applyLiveVisibilityState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Refreshed active canvas state", visibility);

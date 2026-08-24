@@ -190,19 +190,19 @@ function updateButton(
 ): void {
   const action = model.collapsed ? "Expand" : "Collapse";
   const label = `${action} branch with ${formatDescendantCount(model.descendantCount)}`;
-  const title = `${label}. Right-click or press Shift+F10 to choose visible levels.`;
+  const title = `${label}. Open the context menu to choose visible levels.`;
 
   button.textContent = model.collapsed ? "+" : "−";
   button.title = title;
   button.setAttribute("aria-haspopup", "menu");
-  button.setAttribute("aria-keyshortcuts", "Shift+F10");
+  button.setAttribute("aria-keyshortcuts", "ContextMenu");
   button.setAttribute("aria-label", label);
 }
 
 export function isBranchMenuKeyboardEvent(
-  event: Pick<KeyboardEvent, "key" | "shiftKey">,
+  event: Pick<KeyboardEvent, "key">,
 ): boolean {
-  return event.key === "ContextMenu" || (event.key === "F10" && event.shiftKey);
+  return event.key === "ContextMenu";
 }
 
 export function getBranchControlTabOrder(

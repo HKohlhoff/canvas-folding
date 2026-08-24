@@ -67,7 +67,7 @@ void test("uses singular descendant labels and exposes the levels menu", () => {
   assert.equal(entry.button.attributes.get("aria-haspopup"), "menu");
   assert.equal(
     entry.button.attributes.get("aria-keyshortcuts"),
-    "Shift+F10",
+    "ContextMenu",
   );
   assert.equal(entry.button.attributes.has("aria-expanded"), false);
   assert.equal(
@@ -77,11 +77,10 @@ void test("uses singular descendant labels and exposes the levels menu", () => {
   assert.equal(entry.button.tabIndex, 0);
 });
 
-void test("recognizes standard keyboard shortcuts for the levels menu", () => {
-  assert.equal(isBranchMenuKeyboardEvent({ key: "ContextMenu", shiftKey: false }), true);
-  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: true }), true);
-  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: false }), false);
-  assert.equal(isBranchMenuKeyboardEvent({ key: "Enter", shiftKey: false }), false);
+void test("recognizes only the context-menu key for the levels menu", () => {
+  assert.equal(isBranchMenuKeyboardEvent({ key: "ContextMenu" }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "F10" }), false);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "Enter" }), false);
 });
 
 void test("moves through the depth-first branch-control order", () => {
