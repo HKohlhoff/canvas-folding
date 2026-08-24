@@ -7,6 +7,12 @@ export interface CanvasVisibility {
   hiddenNodeIds: ReadonlySet<string>;
 }
 
+export interface CanvasVisibilitySummary {
+  activeNodeCount: number;
+  dimmedNodeCount: number;
+  hiddenNodeCount: number;
+}
+
 export function deriveCanvasVisibility(
   graph: Pick<CanvasGraph, "edges" | "nodes">,
   hiddenNodeIds: ReadonlySet<string>,
@@ -34,6 +40,26 @@ export function deriveCanvasVisibility(
     dimmedNodeIds: normalizedDimmedNodeIds,
     hiddenEdgeIds,
     hiddenNodeIds: normalizedHiddenNodeIds,
+  };
+}
+
+export function summarizeCanvasVisibility(
+  graph: Pick<CanvasGraph, "edges" | "nodes">,
+  hiddenNodeIds: ReadonlySet<string>,
+  dimmedNodeIds: ReadonlySet<string> = new Set(),
+): CanvasVisibilitySummary {
+  const visibility = deriveCanvasVisibility(
+    graph,
+    hiddenNodeIds,
+    dimmedNodeIds,
+  );
+  return {
+    activeNodeCount:
+      graph.nodes.length -
+      visibility.hiddenNodeIds.size -
+      visibility.dimmedNodeIds.size,
+    dimmedNodeCount: visibility.dimmedNodeIds.size,
+    hiddenNodeCount: visibility.hiddenNodeIds.size,
   };
 }
 

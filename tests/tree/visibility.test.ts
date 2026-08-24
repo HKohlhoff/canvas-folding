@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildCanvasGraph, type CanvasGraphData } from "../../src/tree/graph";
-import { deriveCanvasVisibility } from "../../src/tree/visibility";
+import {
+  deriveCanvasVisibility,
+  summarizeCanvasVisibility,
+} from "../../src/tree/visibility";
 
 const graph = buildCanvasGraph(createData());
 
@@ -51,6 +54,23 @@ void test("hides a non-empty group when all contained nodes are hidden", () => {
   const visibility = deriveCanvasVisibility(groupGraph, new Set(["A", "B"]));
 
   assert.deepEqual([...visibility.hiddenNodeIds], ["A", "B", "G"]);
+});
+
+void test("includes automatically hidden groups in the status summary", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "B", type: "file", x: 150, y: 80, width: 100, height: 80 },
+      { id: "O", type: "text", x: 400, y: 20, width: 80, height: 50 },
+    ],
+    edges: [],
+  });
+
+  assert.deepEqual(
+    summarizeCanvasVisibility(groupGraph, new Set(["A", "B"])),
+    { activeNodeCount: 1, dimmedNodeCount: 0, hiddenNodeCount: 3 },
+  );
 });
 
 void test("keeps a group visible while any fully contained node is visible", () => {

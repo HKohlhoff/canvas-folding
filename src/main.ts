@@ -40,7 +40,10 @@ import {
   BranchCollapseState,
   type BranchCollapseStateData,
 } from "./tree/state";
-import { deriveCanvasVisibility } from "./tree/visibility";
+import {
+  deriveCanvasVisibility,
+  summarizeCanvasVisibility,
+} from "./tree/visibility";
 import { CanvasBranchControlManager } from "./ui/branch-controls";
 import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import { buildBranchControlModels } from "./ui/control-model";
@@ -816,14 +819,11 @@ export default class CanvasFoldingPlugin extends Plugin {
   private showCurrentStatus(context: ActiveCanvasContext): void {
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
-    const hiddenNodeIds = state.getHiddenNodeIds(graph);
-    const dimmedNodeIds = new Set(
-      [...state.getDimmedNodeIds(graph)].filter(
-        (nodeId) => !hiddenNodeIds.has(nodeId),
-      ),
+    const visibilitySummary = summarizeCanvasVisibility(
+      graph,
+      state.getHiddenNodeIds(graph),
+      state.getDimmedNodeIds(graph),
     );
-    const activeNodeCount =
-      graph.nodes.length - hiddenNodeIds.size - dimmedNodeIds.size;
     const persistenceStatus = !this.settings.rememberCanvasStates
       ? "current state is kept for this tab only"
       : state.isEmpty()
@@ -832,7 +832,7 @@ export default class CanvasFoldingPlugin extends Plugin {
           ? "current state is stored between sessions"
           : "current state is being saved";
     new Notice(
-      `Canvas Folding: ${activeNodeCount} active, ${hiddenNodeIds.size} hidden, ${dimmedNodeIds.size} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"} · ${persistenceStatus}.`,
+      `Canvas Folding: ${visibilitySummary.activeNodeCount} active, ${visibilitySummary.hiddenNodeCount} hidden, ${visibilitySummary.dimmedNodeCount} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"} · ${persistenceStatus}.`,
     );
   }
 

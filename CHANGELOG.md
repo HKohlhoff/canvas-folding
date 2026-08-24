@@ -41,6 +41,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Count automatically hidden Canvas groups correctly in the status summary.
 - Hide edge labels together with collapsed Canvas branches.
 - Place branch controls inside nodes to avoid standard Canvas edge and resize handles.
 - Deselect hidden descendants and incident edges when collapsing a branch.
