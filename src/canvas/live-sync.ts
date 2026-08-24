@@ -1,8 +1,9 @@
 const PLUGIN_UI_SELECTOR =
   ".canvas-folding-toolbar, .canvas-folding-branch-control";
-const MANAGED_CANVAS_CLASSES = new Set([
+const IGNORED_CANVAS_CLASSES = new Set([
   "canvas-folding-dimmed",
   "canvas-folding-hidden",
+  "mobile-tap",
 ]);
 
 export interface CanvasMutationRecord {
@@ -109,7 +110,7 @@ function normalizeCanvasClassName(value: string): string {
     .split(/\s+/u)
     .filter(
       (className) =>
-        className.length > 0 && !MANAGED_CANVAS_CLASSES.has(className),
+        className.length > 0 && !IGNORED_CANVAS_CLASSES.has(className),
     )
     .sort()
     .join(" ");

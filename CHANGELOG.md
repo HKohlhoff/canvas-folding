@@ -42,7 +42,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
-- Bound mobile toolbar hit-testing to an explicitly measured, horizontally scrollable box and position it without a transformed WebKit layer so the surrounding Canvas remains tappable.
+- Ignore Obsidian's transient `mobile-tap` class in live synchronization so a visible toolbar is not rebuilt during native node selection.
 - Block the transparent Canvas edge interaction path while an edge is dimmed or hidden.
 - Preserve native tap and stylus node selection in mobile Obsidian by limiting the private Canvas interaction-layer guard to desktop mode.
 - Keep a narrow toolbar horizontally touch-scrollable, isolate its pointer sequence from underlying Canvas nodes and enlarge branch controls for coarse pointers.

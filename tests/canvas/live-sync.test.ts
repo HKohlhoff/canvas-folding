@@ -34,6 +34,17 @@ void test("ignores visibility classes managed by Canvas Folding", () => {
   );
 });
 
+void test("ignores Obsidian's transient mobile tap class", () => {
+  const blocker = createElement("canvas-node-content-blocker mobile-tap");
+
+  assert.equal(
+    hasRelevantCanvasMutation([
+      classMutation(blocker, "canvas-node-content-blocker"),
+    ]),
+    false,
+  );
+});
+
 void test("detects Obsidian selection class changes", () => {
   const node = createElement("canvas-node is-selected");
 
