@@ -53,6 +53,13 @@ export function getMeasuredToolbarWidth(
   return Math.max(0, Math.ceil(scrollWidth + borderWidth));
 }
 
+export function getToolbarLeftPosition(
+  xPercent: number,
+  renderedWidth: number,
+): string {
+  return `calc(${xPercent}% - ${Math.max(0, renderedWidth) / 2}px)`;
+}
+
 export function getToolbarButtonAriaPressed(
   model: Pick<ToolbarButtonModel, "active">,
 ): string | null {

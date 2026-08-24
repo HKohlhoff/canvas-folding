@@ -7,6 +7,7 @@ import {
   buildToolbarButtonModels,
   getToolbarButtonAriaPressed,
   getMeasuredToolbarWidth,
+  getToolbarLeftPosition,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
   TOOLBAR_POINTER_EVENT_NAMES,
@@ -129,4 +130,9 @@ void test("isolates the complete toolbar pointer sequence", () => {
 void test("measures the complete toolbar content including its border", () => {
   assert.equal(getMeasuredToolbarWidth(420.2, 302, 300), 423);
   assert.equal(getMeasuredToolbarWidth(0, 0, 0), 0);
+});
+
+void test("centers the toolbar without a CSS transform", () => {
+  assert.equal(getToolbarLeftPosition(50, 420), "calc(50% - 210px)");
+  assert.equal(getToolbarLeftPosition(25, -10), "calc(25% - 0px)");
 });

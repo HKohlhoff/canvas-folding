@@ -9,6 +9,7 @@ import type {
 import {
   getToolbarButtonAriaPressed,
   getMeasuredToolbarWidth,
+  getToolbarLeftPosition,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
   TOOLBAR_POINTER_EVENT_NAMES,
@@ -52,7 +53,6 @@ export class CanvasToolbarManager {
 
     const focusedControlKey = getFocusedToolbarControlKey(entry.toolbar);
     entry.toolbar.empty();
-    applyPosition(entry.toolbar, position);
     const dragHandle = entry.toolbar.createEl("button", {
       cls: "clickable-icon canvas-folding-toolbar-drag-handle",
       attr: {
@@ -101,6 +101,7 @@ export class CanvasToolbarManager {
       });
     }
     applyMeasuredWidth(entry.toolbar);
+    applyPosition(entry.toolbar, position);
     installKeyboardMove(
       dragHandle,
       entry.toolbar,
@@ -146,7 +147,10 @@ function applyPosition(
   toolbar: HTMLElement,
   position: ToolbarPosition,
 ): void {
-  toolbar.style.left = `${position.xPercent}%`;
+  toolbar.style.left = getToolbarLeftPosition(
+    position.xPercent,
+    toolbar.offsetWidth,
+  );
   toolbar.style.top = `${position.yPixels}px`;
 }
 

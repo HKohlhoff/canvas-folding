@@ -28,7 +28,6 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   position: absolute;
   top: 8px;
   touch-action: pan-x;
-  transform: translateX(-50%);
   z-index: 50;
 }
 
