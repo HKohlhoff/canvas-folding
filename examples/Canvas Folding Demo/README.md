@@ -1,7 +1,12 @@
 # Canvas Folding Demo
 
-This folder is self-contained. Copy the complete **Canvas Folding Demo** folder
-to your Obsidian vault, then open `Canvas Folding Demo.canvas`.
+This folder contains every file required by the demo. Copy the complete
+**Canvas Folding Demo** folder unchanged to the root of your Obsidian vault,
+then open `Canvas Folding Demo.canvas`.
+
+Obsidian stores Canvas file-node paths relative to the vault root, not relative
+to the `.canvas` file. Placing the folder elsewhere therefore requires Obsidian
+to relink the included Markdown and image nodes.
 
 The Canvas contains explanatory cards and these graph cases:
 

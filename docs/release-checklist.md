@@ -51,6 +51,22 @@ npm run build:prod
 - On a touch device, tap Canvas nodes with the plugin toolbar visible, tap a branch control, drag the toolbar handle, horizontally scroll a narrow toolbar and check whether a long press opens the branch-level menu.
 - Discover the plugin by ID `canvas-folding`, verify `api.apiVersion === 1`, and compare `getFoldState()` for an active leaf, a persisted closed Canvas and a path without applicable state.
 
+### Advanced Canvas coexistence gate
+
+Complete this gate before claiming unrestricted Advanced Canvas compatibility:
+
+- Record the tested Obsidian and Advanced Canvas versions.
+- Enable both plugins in both load orders, then reload Obsidian and restart it once.
+- Repeat the core folding matrix with text, file, image, link and group nodes, shared descendants and a cycle.
+- Verify node selection, editing, moving, resizing, connecting, creation, deletion, undo and redo with both plugins active.
+- Check that branch controls, both toolbars, native handles and Advanced Canvas controls neither overlap incorrectly nor intercept unrelated pointer or touch input.
+- Test toolbar tapping, dragging and horizontal scrolling, node selection and branch controls on desktop, iPad and iPhone where Advanced Canvas supports the device.
+- Verify focus mode, group frames, hidden edges and edge labels, level views, live synchronization and the same Canvas in two leaves.
+- Test persistence disabled and enabled, navigation away and back, tab closing and reopening, and plugin disable/re-enable in both orders.
+- Confirm that no duplicate controls, stale classes, observers, event handlers or console errors remain after either plugin is disabled.
+- Verify that `CanvasFoldingApi` v1 returns the same effective fold state with Advanced Canvas active.
+- Update the README compatibility statement only after the complete matrix passes; otherwise document every observed limitation precisely.
+
 ## Repository Hygiene
 
 - No `node_modules/`.
