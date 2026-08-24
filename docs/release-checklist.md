@@ -28,7 +28,7 @@ npm run build:prod
 - Test in a real Obsidian vault.
 - Enable and disable the plugin.
 - Run all commands from the command palette.
-- Check ribbon icons, settings tabs and notices if used.
+- Check the settings tab and notices. Canvas Folding intentionally registers no ribbon icon.
 - Verify desktop-only behavior if `isDesktopOnly` is `true`.
 
 ### Canvas Folding matrix

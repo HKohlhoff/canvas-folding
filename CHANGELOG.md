@@ -32,7 +32,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 - Improve branch-control and toolbar keyboard behavior, menu semantics and accessible labels.
 - Renamed the plugin and its technical ID from Canvas Tree (`canvas-tree`) to Canvas Folding (`canvas-folding`).
-- Separated neutral graph types and edge-visibility rules from the Obsidian adapter and DOM integration in preparation for a shared Canvas Core.
+- Separated neutral graph types and edge-visibility rules from the Obsidian adapter and DOM integration while keeping Canvas Folding independently deployable.
 - Keep controls, toolbar actions and folding visibility synchronized after live Canvas structure, selection and render changes.
 - Keep a newly inserted selected node visible for editing until it is deselected, and use eye icons for the branch-control toggle.
 - Hide a non-empty Canvas group when all nodes fully contained by it are hidden by folding.

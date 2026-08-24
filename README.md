@@ -1,10 +1,10 @@
 # Canvas Folding
 
-Canvas Folding erweitert normale Obsidian-Canvases um hierarchische Funktionen. Das Plugin soll komplette Zweige rekursiv ein- und ausklappen, ohne Nodes, Kanten, Inhalte oder Positionen zu verändern.
+Canvas Folding erweitert normale Obsidian-Canvases um hierarchische Funktionen. Das Plugin klappt komplette Zweige rekursiv ein und aus, ohne Nodes, Kanten, Inhalte oder Positionen zu verändern.
 
-Das Projekt befindet sich in einer frühen Entwicklungsphase. Der aktuelle Prototyp enthält bereits die Plugin-, Settings- und Canvas-Integrationsbasis sowie optional dauerhaftes Collapse/Expand.
+Der aktuelle Stand ist eine funktionsfähige Vorabversion in der V1-Stabilisierung. Sie unterstützt den normalen Obsidian Canvas ohne Abhängigkeit von Advanced Canvas.
 
-## Aktueller Prototyp
+## Aktueller Funktionsumfang
 
 Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bereit:
 
@@ -41,13 +41,13 @@ Die optionale Canvas-Toolbar stellt die Canvas-Folding-Funktionen als Icon-Butto
 
 Canvas Folding merkt sich Collapse-State, Sichttiefe und temporäre Freigaben flüchtig pro geöffnetem Tab. So wird der letzte Zustand wiederhergestellt, wenn man in diesem Tab zu anderen Dateien und anschließend zum Canvas zurücknavigiert. Beim Schließen des Tabs wird dieser flüchtige Zustand verworfen. `Remember canvas states between sessions` speichert den Zustand zusätzlich nach Canvas-Pfad in der Plugin-Datei `data.json`, sodass er in neu geöffneten Tabs und nach einem Neustart von Obsidian oder des Plugins verfügbar ist. Einträge gelöschter Canvas-Dateien werden automatisch entfernt. Nicht mehr vorhandene Node-IDs werden beim Plugin-Start, nach Änderungen einer Canvas-Datei und beim manuellen Aufräumen gegen die tatsächliche Canvas-JSON geprüft. Ungültige oder vorübergehend nicht lesbare Canvas-Daten führen zu keiner Löschung. Die `.canvas`-Datei selbst wird nicht verändert.
 
-## Geplanter Funktionsumfang
+## Abgrenzung und nächste Phasen
 
-- Hierarchie aus gerichteten Canvas-Kanten (`fromNode` → `toNode`) ableiten
-- komplette Teilbäume ein- und ausklappen
-- unverändertes Stable Layout
-- zyklensichere Graph-Traversierung
-- optionale Kompatibilität mit Advanced Canvas ohne harte Abhängigkeit
+- Die Hierarchie wird aus gerichteten Canvas-Kanten (`fromNode` → `toNode`) abgeleitet; Canvas Folding behandelt die Datei dabei als allgemeinen Graphen mit mehreren Roots, mehreren Parents, Querverbindungen und Zyklen.
+- Folding bleibt reiner View-State und verändert weder Layout noch `.canvas`-Datei.
+- Eine öffentliche, versionierte Folding-API folgt erst nach der funktionalen V1-Stabilisierung.
+- Die Koexistenz mit Advanced Canvas wird anschließend separat geprüft; eine harte Abhängigkeit ist nicht vorgesehen.
+- Automatisches Layout, Navigation zwischen Verwandten und Branch-Styling sind bewusst spätere Funktionen.
 
 Canvas Folding ist weder Importer noch HTML-Exporter. Normale JSON-Canvas-Dateien bleiben die Source of Truth.
 
@@ -81,7 +81,7 @@ Canvas Folding verarbeitet Canvas-Daten lokal im Vault und sendet keine Daten an
 ## Grenzen
 
 - Die Canvas-Ansicht besitzt derzeit nur teilweise öffentlich typisierte Erweiterungspunkte. Interne Zugriffe werden deshalb in einem Compatibility-Layer gekapselt.
-- Automatische Layouts gehören noch nicht zu diesem Prototyp.
+- Advanced-Canvas-Koexistenz und eine spätere öffentliche Folding-API sind noch nicht Teil dieses Vorabstands.
 
 ## Lizenz
 
