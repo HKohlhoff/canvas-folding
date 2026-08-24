@@ -64,7 +64,15 @@ export function extractCanvasEdgeViews(
     const labelWrapper = isRecord(value.labelElement)
       ? value.labelElement.wrapperEl
       : undefined;
-    const elements = [value.lineGroupEl, value.lineEndGroupEl, labelWrapper]
+    const interactionPath = isRecord(value.path)
+      ? value.path.interaction
+      : undefined;
+    const elements = [
+      value.lineGroupEl,
+      value.lineEndGroupEl,
+      interactionPath,
+      labelWrapper,
+    ]
       .map(asCanvasElement)
       .filter((element): element is CanvasElementHandle => element !== null);
     if (elements.length > 0) {

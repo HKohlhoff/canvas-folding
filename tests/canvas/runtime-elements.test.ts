@@ -8,9 +8,10 @@ import {
   type CanvasElementHandle,
 } from "../../src/canvas/runtime-elements";
 
-void test("extracts line, arrow and label wrapper elements from an edge", () => {
+void test("extracts all visible and interactive elements from an edge", () => {
   const line = createElement();
   const arrow = createElement();
+  const interaction = createElement();
   const label = createElement();
 
   const edgeViews = extractCanvasEdgeViews([
@@ -18,12 +19,13 @@ void test("extracts line, arrow and label wrapper elements from an edge", () => 
       id: "edge-with-label",
       lineGroupEl: line,
       lineEndGroupEl: arrow,
+      path: { interaction },
       labelElement: { wrapperEl: label },
     },
   ]);
 
   assert.equal(edgeViews.length, 1);
-  assert.deepEqual(edgeViews[0]?.elements, [line, arrow, label]);
+  assert.deepEqual(edgeViews[0]?.elements, [line, arrow, interaction, label]);
 });
 
 void test("extracts a canvas path from an Obsidian view state", () => {
