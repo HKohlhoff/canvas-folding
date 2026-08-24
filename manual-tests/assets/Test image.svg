@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-labelledby="title description">
+  <title id="title">Canvas Folding test image</title>
+  <desc id="description">Blue and violet geometric branches used as a local image-node fixture.</desc>
+  <rect width="640" height="360" rx="32" fill="#eef2ff"/>
+  <path d="M96 180h180m0 0 96-96m-96 96 96 96m0-192h168m-168 192h168" fill="none" stroke="#6366f1" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="96" cy="180" r="28" fill="#2563eb"/>
+  <circle cx="276" cy="180" r="28" fill="#4f46e5"/>
+  <circle cx="372" cy="84" r="24" fill="#7c3aed"/>
+  <circle cx="372" cy="276" r="24" fill="#7c3aed"/>
+</svg>

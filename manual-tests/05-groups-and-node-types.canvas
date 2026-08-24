@@ -1,0 +1,16 @@
+{
+  "nodes": [
+    {"id":"5000000000000001","type":"text","text":"Root","x":0,"y":120,"width":200,"height":70,"color":"1"},
+    {"id":"5000000000000002","type":"group","label":"Mixed node group","x":300,"y":-100,"width":900,"height":460,"color":"6"},
+    {"id":"5000000000000003","type":"text","text":"Text","x":350,"y":0,"width":180,"height":80,"color":"5"},
+    {"id":"5000000000000004","type":"file","file":"Publizieren/Obsidian-Plugins/canvas-folding/V1-Test-Sammlung/assets/Test note.md","x":620,"y":0,"width":230,"height":110,"color":"4"},
+    {"id":"5000000000000005","type":"link","url":"https://obsidian.md/","x":350,"y":190,"width":230,"height":100,"color":"3"},
+    {"id":"5000000000000006","type":"file","file":"Publizieren/Obsidian-Plugins/canvas-folding/V1-Test-Sammlung/assets/Test image.svg","x":700,"y":170,"width":220,"height":140,"color":"2"}
+  ],
+  "edges": [
+    {"id":"5100000000000001","fromNode":"5000000000000001","fromSide":"right","toNode":"5000000000000003","toSide":"left"},
+    {"id":"5100000000000002","fromNode":"5000000000000003","fromSide":"right","toNode":"5000000000000004","toSide":"left"},
+    {"id":"5100000000000003","fromNode":"5000000000000003","fromSide":"bottom","toNode":"5000000000000005","toSide":"top"},
+    {"id":"5100000000000004","fromNode":"5000000000000004","fromSide":"bottom","toNode":"5000000000000006","toSide":"top"}
+  ]
+}

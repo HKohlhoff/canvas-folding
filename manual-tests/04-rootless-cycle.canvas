@@ -1,0 +1,12 @@
+{
+  "nodes": [
+    {"id":"4000000000000001","type":"text","text":"Cycle A","x":0,"y":120,"width":200,"height":70,"color":"1"},
+    {"id":"4000000000000002","type":"text","text":"Cycle B","x":360,"y":0,"width":200,"height":70,"color":"4"},
+    {"id":"4000000000000003","type":"text","text":"Cycle C","x":360,"y":240,"width":200,"height":70,"color":"5"}
+  ],
+  "edges": [
+    {"id":"4100000000000001","fromNode":"4000000000000001","fromSide":"right","toNode":"4000000000000002","toSide":"left"},
+    {"id":"4100000000000002","fromNode":"4000000000000002","fromSide":"bottom","toNode":"4000000000000003","toSide":"top"},
+    {"id":"4100000000000003","fromNode":"4000000000000003","fromSide":"left","toNode":"4000000000000001","toSide":"bottom"}
+  ]
+}

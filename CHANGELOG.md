@@ -8,6 +8,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Added
 
+- A versioned manual V1 test collection with focused Canvas fixtures and an explicit command, lifecycle, keyboard and touch matrix.
 - Canvas Folding project identity and local hot-reload deployment support.
 - A read-only active Canvas adapter and graph diagnostics command.
 - Pure graph analysis with focused unit tests for roots, cycles, isolated nodes and dangling edges.

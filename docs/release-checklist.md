@@ -33,6 +33,7 @@ npm run build:prod
 
 ### Canvas Folding matrix
 
+- Copy `manual-tests/` into the documented vault location and complete its V1 test matrix.
 - Fold and expand branches containing text, file, image, link and group nodes.
 - Check a simple tree, multiple roots, an isolated node, a shared descendant with multiple parents and a directed cycle.
 - Add and delete nodes and edges; repeat both operations with undo and redo.

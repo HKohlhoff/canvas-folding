@@ -1,0 +1,16 @@
+{
+  "nodes": [
+    {"id":"3000000000000001","type":"text","text":"Root","x":0,"y":120,"width":200,"height":70,"color":"1"},
+    {"id":"3000000000000002","type":"text","text":"Parent A","x":320,"y":0,"width":200,"height":70,"color":"5"},
+    {"id":"3000000000000003","type":"text","text":"Parent B","x":320,"y":240,"width":200,"height":70,"color":"4"},
+    {"id":"3000000000000004","type":"text","text":"Shared","x":650,"y":120,"width":200,"height":70,"color":"3"},
+    {"id":"3000000000000005","type":"text","text":"Shared child","x":980,"y":120,"width":200,"height":70,"color":"3"}
+  ],
+  "edges": [
+    {"id":"3100000000000001","fromNode":"3000000000000001","fromSide":"right","toNode":"3000000000000002","toSide":"left"},
+    {"id":"3100000000000002","fromNode":"3000000000000001","fromSide":"right","toNode":"3000000000000003","toSide":"left"},
+    {"id":"3100000000000003","fromNode":"3000000000000002","fromSide":"right","toNode":"3000000000000004","toSide":"left","color":"5"},
+    {"id":"3100000000000004","fromNode":"3000000000000003","fromSide":"right","toNode":"3000000000000004","toSide":"left","color":"4"},
+    {"id":"3100000000000005","fromNode":"3000000000000004","fromSide":"right","toNode":"3000000000000005","toSide":"left"}
+  ]
+}

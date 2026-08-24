@@ -53,6 +53,11 @@ Canvas Folding ist weder Importer noch HTML-Exporter. Normale JSON-Canvas-Dateie
 
 ## Entwicklung
 
+Die versionierte manuelle V1-Testmatrix liegt unter
+[`manual-tests/`](manual-tests/README.md). Sie enthält kleine Canvas-Fixtures
+für Baumtiefe, mehrere Roots, isolierte Nodes, Shared Descendants, einen
+rootlosen Zyklus sowie Gruppen mit unterschiedlichen Node-Typen.
+
 Voraussetzung ist Node.js 20.19 oder neuer.
 
 ```bash
