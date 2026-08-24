@@ -46,12 +46,17 @@ File: `02-multiple-roots-and-isolated.canvas`
 
 File: `03-shared-descendant.canvas`
 
-- Collapse `Parent A`: `Shared` remains visible through `Parent B`; only the
-  hidden incoming path disappears.
-- Collapse `Parent B` as well: `Shared` and `Shared child` disappear.
-- The visible alternative parent receives `+` whenever it can reveal the
-  shared branch without revealing the other parent.
-- Expand in both orders and verify that nested collapse state remains intact.
+- Collapse `Parent A`: `Shared` and `Shared child` disappear. Both `Parent A`
+  and the visible alternative parent `Parent B` show `+`.
+- Expand `Parent B`: `Shared` and `Shared child` return through `Parent B`,
+  and both direct incoming edges return because all their endpoint nodes are
+  visible. Both parent controls show `−` again.
+- Contrast this with the existing `TestCanvas` case that has an additional
+  hidden node on one parent path: that node and its incident edge remain
+  hidden when the shared branch is revealed through the alternative parent.
+- Collapse `Shared`, then repeat the collapse-and-alternative-reveal sequence.
+  `Shared` returns through the alternative parent, but its nested collapse
+  keeps `Shared child` hidden.
 
 ## 04 – Rootless cycle
 

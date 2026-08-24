@@ -178,6 +178,34 @@ void test("reveals a shared branch without restoring its hidden parent", () => {
   assert.equal(state.isBranchCollapsed(graph, "B"), false);
 });
 
+void test("reveals a direct shared child through its alternative visible parent", () => {
+  const graph = buildCanvasGraph({
+    nodes: ["R", "A", "B", "D", "E"].map((id) => ({
+      id,
+      type: "text",
+    })),
+    edges: [
+      { id: "RA", fromNode: "R", toNode: "A" },
+      { id: "RB", fromNode: "R", toNode: "B" },
+      { id: "AD", fromNode: "A", toNode: "D" },
+      { id: "BD", fromNode: "B", toNode: "D" },
+      { id: "DE", fromNode: "D", toNode: "E" },
+    ],
+  });
+  const state = new BranchCollapseState();
+
+  state.collapse("A");
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["D", "E"]);
+  assert.equal(state.isBranchCollapsed(graph, "A"), true);
+  assert.equal(state.isBranchCollapsed(graph, "B"), true);
+
+  assert.equal(state.revealBranch(graph, "B"), true);
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
+  assert.equal(state.isBranchCollapsed(graph, "A"), false);
+  assert.equal(state.isBranchCollapsed(graph, "B"), false);
+});
+
 void test("resets a shared-branch reveal with its causing collapse", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();
