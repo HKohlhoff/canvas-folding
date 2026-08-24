@@ -42,7 +42,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
-- Restrict mobile toolbar hit-testing to its visible buttons and drag handle so the surrounding Canvas remains tappable.
+- Bound mobile toolbar hit-testing to an explicitly measured, horizontally scrollable toolbar box so the surrounding Canvas remains tappable.
 - Block the transparent Canvas edge interaction path while an edge is dimmed or hidden.
 - Preserve native tap and stylus node selection in mobile Obsidian by limiting the private Canvas interaction-layer guard to desktop mode.
 - Keep a narrow toolbar horizontally touch-scrollable, isolate its pointer sequence from underlying Canvas nodes and enlarge branch controls for coarse pointers.

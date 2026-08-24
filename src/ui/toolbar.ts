@@ -8,6 +8,7 @@ import type {
 } from "./toolbar-model";
 import {
   getToolbarButtonAriaPressed,
+  getMeasuredToolbarWidth,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
   TOOLBAR_POINTER_EVENT_NAMES,
@@ -99,6 +100,7 @@ export class CanvasToolbarManager {
         if (!event.repeat && model.disabled !== true) onAction(model.action);
       });
     }
+    applyMeasuredWidth(entry.toolbar);
     installKeyboardMove(
       dragHandle,
       entry.toolbar,
@@ -113,6 +115,15 @@ export class CanvasToolbarManager {
     for (const entry of this.entries.values()) entry.toolbar.remove();
     this.entries.clear();
   }
+}
+
+function applyMeasuredWidth(toolbar: HTMLElement): void {
+  toolbar.style.removeProperty("width");
+  toolbar.style.width = `${getMeasuredToolbarWidth(
+    toolbar.scrollWidth,
+    toolbar.offsetWidth,
+    toolbar.clientWidth,
+  )}px`;
 }
 
 function getFocusedToolbarControlKey(toolbar: HTMLElement): string | null {
