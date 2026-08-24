@@ -88,6 +88,45 @@ void test("keeps a group visible while any fully contained node is visible", () 
   assert.deepEqual([...visibility.hiddenNodeIds], ["A"]);
 });
 
+void test("keeps a group active while it contains an active focused node", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "B", type: "text", x: 150, y: 80, width: 100, height: 80 },
+      { id: "O", type: "text", x: 400, y: 20, width: 80, height: 50 },
+    ],
+    edges: [],
+  });
+
+  const visibility = deriveCanvasVisibility(
+    groupGraph,
+    new Set(),
+    new Set(["G", "B", "O"]),
+  );
+
+  assert.deepEqual([...visibility.dimmedNodeIds], ["B", "O"]);
+});
+
+void test("dims a group when all of its contained nodes are dimmed", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "B", type: "text", x: 150, y: 80, width: 100, height: 80 },
+    ],
+    edges: [],
+  });
+
+  const visibility = deriveCanvasVisibility(
+    groupGraph,
+    new Set(),
+    new Set(["G", "A", "B"]),
+  );
+
+  assert.deepEqual([...visibility.dimmedNodeIds], ["G", "A", "B"]);
+});
+
 void test("does not hide empty groups or count partially overlapping nodes", () => {
   const groupGraph = buildCanvasGraph({
     nodes: [

@@ -23,6 +23,11 @@ export function deriveCanvasVisibility(
   const normalizedDimmedNodeIds = new Set(
     [...dimmedNodeIds].filter((nodeId) => !normalizedHiddenNodeIds.has(nodeId)),
   );
+  keepGroupsActiveWithActiveContents(
+    graph.nodes,
+    normalizedHiddenNodeIds,
+    normalizedDimmedNodeIds,
+  );
   const hiddenEdgeIds = getIncidentEdgeIds(graph, normalizedHiddenNodeIds);
   const dimmedEdgeIds = new Set(
     graph.edges
@@ -61,6 +66,33 @@ export function summarizeCanvasVisibility(
     dimmedNodeCount: visibility.dimmedNodeIds.size,
     hiddenNodeCount: visibility.hiddenNodeIds.size,
   };
+}
+
+function keepGroupsActiveWithActiveContents(
+  nodes: readonly CanvasGraphNodeData[],
+  hiddenNodeIds: ReadonlySet<string>,
+  dimmedNodeIds: Set<string>,
+): void {
+  const contentNodes = nodes.filter((node) => node.type !== "group");
+
+  for (const group of nodes) {
+    if (
+      group.type !== "group" ||
+      !dimmedNodeIds.has(group.id) ||
+      !hasCompleteBounds(group)
+    ) {
+      continue;
+    }
+
+    const containsActiveNode = contentNodes.some(
+      (node) =>
+        hasCompleteBounds(node) &&
+        isFullyContained(node, group) &&
+        !hiddenNodeIds.has(node.id) &&
+        !dimmedNodeIds.has(node.id),
+    );
+    if (containsActiveNode) dimmedNodeIds.delete(group.id);
+  }
 }
 
 function addGroupsWithOnlyHiddenContents(

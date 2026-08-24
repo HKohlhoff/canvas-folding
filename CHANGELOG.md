@@ -42,6 +42,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Keep a Canvas group active during branch focus when it geometrically contains an active focused node.
 - Ignore Obsidian's transient `mobile-tap` class in live synchronization so a visible toolbar is not rebuilt during native node selection.
 - Block the transparent Canvas edge interaction path while an edge is dimmed or hidden.
 - Preserve native tap and stylus node selection in mobile Obsidian by limiting the private Canvas interaction-layer guard to desktop mode.
