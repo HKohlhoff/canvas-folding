@@ -51,6 +51,16 @@ Canvas Folding merkt sich Collapse-State, Sichttiefe und temporäre Freigaben fl
 
 Canvas Folding ist weder Importer noch HTML-Exporter. Normale JSON-Canvas-Dateien bleiben die Source of Truth.
 
+## Öffentliche API
+
+Andere Plugins können Canvas Folding optional über die Plugin-ID
+`canvas-folding` erkennen. Die versionierte `CanvasFoldingApi` v1 liefert für
+einen Vault-relativen Canvas-Pfad die effektiv ausgeblendeten Node- und
+Edge-IDs. Ein passender aktiver Leaf hat Vorrang vor einem persistenten Zustand;
+DOM-, View- und interne State-Objekte werden nicht exponiert. Der vollständige
+Vertrag und ein defensives Discovery-Beispiel stehen unter
+[`docs/api.md`](docs/api.md).
+
 ## Entwicklung
 
 Die versionierte manuelle V1-Testmatrix liegt unter

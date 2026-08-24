@@ -8,6 +8,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Added
 
+- A versioned optional `CanvasFoldingApi` v1 that exposes effective hidden node and edge IDs through the `canvas-folding` plugin instance.
 - A versioned manual V1 test collection with focused Canvas fixtures and an explicit command, lifecycle, keyboard and touch matrix.
 - Canvas Folding project identity and local hot-reload deployment support.
 - A read-only active Canvas adapter and graph diagnostics command.

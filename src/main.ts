@@ -1,4 +1,12 @@
-import { Menu, Notice, Platform, Plugin, TFile } from "obsidian";
+import { Menu, normalizePath, Notice, Platform, Plugin, TFile } from "obsidian";
+
+import {
+  CANVAS_FOLDING_API_VERSION,
+  createCanvasFoldStateSnapshot,
+  selectCanvasFoldState,
+  type CanvasFoldStateSnapshot,
+  type CanvasFoldingApi,
+} from "./api";
 
 import {
   readActiveCanvasContext,
@@ -65,6 +73,10 @@ const LIVE_CANVAS_REFRESH_DELAY_MS = 75;
 const LIVE_CANVAS_FOLLOW_UP_DELAY_MS = 500;
 
 export default class CanvasFoldingPlugin extends Plugin {
+  readonly api: CanvasFoldingApi = Object.freeze({
+    apiVersion: CANVAS_FOLDING_API_VERSION,
+    getFoldState: (canvasPath: string) => this.getApiFoldState(canvasPath),
+  });
   settings: CanvasFoldingSettings = { ...DEFAULT_SETTINGS };
   private readonly branchControls = new CanvasBranchControlManager();
   private readonly canvasToolbar = new CanvasToolbarManager();
@@ -593,6 +605,75 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
 
     console.debug(`[Canvas Folding] ${message}`, details ?? "");
+  }
+
+  private async getApiFoldState(
+    rawCanvasPath: string,
+  ): Promise<CanvasFoldStateSnapshot | null> {
+    if (typeof rawCanvasPath !== "string") return null;
+    const trimmedPath = rawCanvasPath.trim();
+    if (trimmedPath.length === 0) return null;
+    const canvasPath = normalizePath(trimmedPath);
+    if (!isCanvasPath(canvasPath)) return null;
+
+    const activeResult = this.readActiveCanvasContext();
+    const activeContext =
+      activeResult.ok && activeResult.context.key === canvasPath
+        ? activeResult.context
+        : null;
+    const activeGraph = activeContext === null
+      ? null
+      : buildCanvasGraph(activeContext.data);
+    const activeState =
+      activeContext === null || activeGraph === null
+        ? null
+        : {
+            canvasPath,
+            data: this.getCollapseState(activeContext, activeGraph).toData(),
+          };
+    const selected = selectCanvasFoldState(
+      canvasPath,
+      activeState,
+      this.savedCanvasStates.get(canvasPath),
+      this.settings.rememberCanvasStates,
+    );
+    if (selected === null) return null;
+
+    const graph =
+      selected.source === "active-leaf" &&
+      activeGraph !== null &&
+      activeGraph.nodes.length > 0
+        ? activeGraph
+        : await this.readCanvasGraphForApi(canvasPath);
+    if (graph === null) return null;
+
+    return createCanvasFoldStateSnapshot(
+      canvasPath,
+      selected.source,
+      selected.data,
+      graph,
+    );
+  }
+
+  private async readCanvasGraphForApi(
+    canvasPath: string,
+  ): Promise<ReturnType<typeof buildCanvasGraph> | null> {
+    const file = this.app.vault.getAbstractFileByPath(canvasPath);
+    if (!(file instanceof TFile) || file.extension.toLowerCase() !== "canvas") {
+      return null;
+    }
+    try {
+      const data = parseCanvasGraphData(
+        JSON.parse(await this.app.vault.cachedRead(file)),
+      );
+      return data === null ? null : buildCanvasGraph(data);
+    } catch (error: unknown) {
+      this.debug("Canvas Folding API could not read canvas", {
+        error,
+        path: canvasPath,
+      });
+      return null;
+    }
   }
 
   private logCanvasGraph(

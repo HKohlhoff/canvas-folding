@@ -46,6 +46,7 @@ npm run build:prod
 - Reach branch controls in depth-first order, with upper siblings first. Select a parent and verify that the next pass starts at its control. Use Enter/Space to toggle and the context-menu key to open the levels menu. Verify focus remains on the invoked function.
 - Move the toolbar handle with every arrow key and verify that it remains inside a narrow Canvas view.
 - On a touch device, tap Canvas nodes with the plugin toolbar visible, tap a branch control, drag the toolbar handle, horizontally scroll a narrow toolbar and check whether a long press opens the branch-level menu.
+- Discover the plugin by ID `canvas-folding`, verify `api.apiVersion === 1`, and compare `getFoldState()` for an active leaf, a persisted closed Canvas and a path without applicable state.
 
 ## Repository Hygiene
 
