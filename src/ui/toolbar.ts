@@ -8,6 +8,7 @@ import type {
 } from "./toolbar-model";
 import {
   getToolbarButtonAriaPressed,
+  isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
 } from "./toolbar-model";
 
@@ -47,12 +48,14 @@ export class CanvasToolbarManager {
       this.entries.set(context.leaf, entry);
     }
 
+    const focusedControlKey = getFocusedToolbarControlKey(entry.toolbar);
     entry.toolbar.empty();
     applyPosition(entry.toolbar, position);
     const dragHandle = entry.toolbar.createEl("button", {
       cls: "clickable-icon canvas-folding-toolbar-drag-handle",
       attr: {
         "aria-label": "Move canvas toolbar",
+        "data-canvas-folding-focus-key": "move-toolbar",
         title: "Move canvas toolbar by dragging or using the arrow keys",
         type: "button",
       },
@@ -70,6 +73,7 @@ export class CanvasToolbarManager {
         cls: "clickable-icon canvas-folding-toolbar-button",
         attr: {
           "aria-label": model.label,
+          "data-canvas-folding-focus-key": model.action,
           title: model.label,
           type: "button",
         },
@@ -78,12 +82,20 @@ export class CanvasToolbarManager {
       if (ariaPressed !== null) {
         button.setAttribute("aria-pressed", ariaPressed);
       }
-      button.disabled = model.disabled === true;
+      if (model.disabled === true) {
+        button.setAttribute("aria-disabled", "true");
+      }
+      button.classList.toggle("is-disabled", model.disabled === true);
       button.classList.toggle("is-active", model.active === true);
       setIcon(button, model.icon);
       button.addEventListener("click", (event) => {
         blockCanvasInteraction(event);
-        if (!button.disabled) onAction(model.action);
+        if (model.disabled !== true) onAction(model.action);
+      });
+      button.addEventListener("keydown", (event) => {
+        if (!isToolbarSpaceKey(event.key)) return;
+        blockCanvasInteraction(event);
+        if (!event.repeat && model.disabled !== true) onAction(model.action);
       });
     }
     installKeyboardMove(
@@ -93,12 +105,29 @@ export class CanvasToolbarManager {
       position,
       onPositionChange,
     );
+    restoreToolbarFocus(entry.toolbar, focusedControlKey);
   }
 
   removeAll(): void {
     for (const entry of this.entries.values()) entry.toolbar.remove();
     this.entries.clear();
   }
+}
+
+function getFocusedToolbarControlKey(toolbar: HTMLElement): string | null {
+  const activeElement = toolbar.ownerDocument.activeElement;
+  if (activeElement === null || !toolbar.contains(activeElement)) return null;
+  return activeElement.getAttribute("data-canvas-folding-focus-key");
+}
+
+function restoreToolbarFocus(toolbar: HTMLElement, key: string | null): void {
+  if (key === null) return;
+  const button = [...toolbar.querySelectorAll<HTMLButtonElement>("button")]
+    .find(
+      (candidate) =>
+        candidate.getAttribute("data-canvas-folding-focus-key") === key,
+    );
+  button?.focus({ preventScroll: true });
 }
 
 function applyPosition(

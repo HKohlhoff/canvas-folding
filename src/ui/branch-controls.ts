@@ -11,7 +11,9 @@ interface ControlEntry {
   activate: () => void;
   button: HTMLButtonElement;
   leaf: object;
+  nodeId: string;
   openContextMenu: (position: BranchMenuPosition) => void;
+  toolbarHost: HTMLElement;
 }
 
 export interface BranchMenuPosition {
@@ -21,6 +23,7 @@ export interface BranchMenuPosition {
 
 export class CanvasBranchControlManager {
   private readonly entries = new Map<CanvasNodeElementHandle, ControlEntry>();
+  private readonly nodeOrderByLeaf = new Map<object, readonly string[]>();
 
   sync(
     context: ActiveCanvasContext,
@@ -32,6 +35,10 @@ export class CanvasBranchControlManager {
       position: BranchMenuPosition,
     ) => void,
   ): void {
+    this.nodeOrderByLeaf.set(
+      context.leaf,
+      models.map((model) => model.nodeId),
+    );
     const modelsByNodeId = new Map(models.map((model) => [model.nodeId, model]));
     const currentHosts = new Set(context.nodeViews.map((view) => view.element));
 
@@ -54,6 +61,8 @@ export class CanvasBranchControlManager {
       const entry = this.getOrCreateEntry(
         nodeView.element,
         context.leaf,
+        nodeView.id,
+        context.toolbarHost,
       );
       entry.activate = () => {
         onToggle(context, nodeView.id);
@@ -63,6 +72,13 @@ export class CanvasBranchControlManager {
       };
       updateButton(entry.button, model);
     }
+
+    const firstNodeId = models[0]?.nodeId;
+    for (const entry of this.entries.values()) {
+      if (entry.leaf === context.leaf) {
+        entry.button.tabIndex = entry.nodeId === firstNodeId ? 0 : -1;
+      }
+    }
   }
 
   removeAll(): void {
@@ -70,14 +86,19 @@ export class CanvasBranchControlManager {
       entry.button.remove();
     }
     this.entries.clear();
+    this.nodeOrderByLeaf.clear();
   }
 
   private getOrCreateEntry(
     host: CanvasNodeElementHandle,
     leaf: object,
+    nodeId: string,
+    toolbarHost: HTMLElement,
   ): ControlEntry {
     const existing = this.entries.get(host);
     if (existing !== undefined) {
+      existing.nodeId = nodeId;
+      existing.toolbarHost = toolbarHost;
       return existing;
     }
 
@@ -89,26 +110,76 @@ export class CanvasBranchControlManager {
       activate: () => undefined,
       button,
       leaf,
+      nodeId,
       openContextMenu: () => undefined,
+      toolbarHost,
     };
     button.addEventListener("pointerdown", blockCanvasInteraction);
     button.addEventListener("click", (event) => {
       blockCanvasInteraction(event);
       entry.activate();
+      if (event.detail === 0) this.restoreControlFocus(entry);
     });
     button.addEventListener("contextmenu", (event) => {
       blockCanvasInteraction(event);
       openContextMenuAfterPointerRelease(event, entry.openContextMenu);
     });
     button.addEventListener("keydown", (event) => {
-      if (!isBranchMenuKeyboardEvent(event)) return;
-      blockCanvasInteraction(event);
-      const bounds = button.getBoundingClientRect();
-      entry.openContextMenu({ x: bounds.right, y: bounds.bottom });
+      if (isBranchMenuKeyboardEvent(event)) {
+        blockCanvasInteraction(event);
+        const bounds = button.getBoundingClientRect();
+        entry.openContextMenu({ x: bounds.right, y: bounds.bottom });
+        return;
+      }
+      if (event.key === " ") {
+        blockCanvasInteraction(event);
+        if (!event.repeat) entry.activate();
+        this.restoreControlFocus(entry);
+        return;
+      }
+      if (event.key === "Tab") {
+        this.moveControlFocus(entry, event);
+      }
     });
 
     this.entries.set(host, entry);
     return entry;
+  }
+
+  private moveControlFocus(entry: ControlEntry, event: KeyboardEvent): void {
+    const order = this.nodeOrderByLeaf.get(entry.leaf) ?? [];
+    const nextNodeId = getAdjacentBranchControlId(
+      order,
+      entry.nodeId,
+      event.shiftKey,
+    );
+    const nextEntry = nextNodeId === null
+      ? undefined
+      : [...this.entries.values()].find(
+        (candidate) =>
+          candidate.leaf === entry.leaf && candidate.nodeId === nextNodeId,
+      );
+    if (nextEntry !== undefined) {
+      blockCanvasInteraction(event);
+      nextEntry.button.focus({ preventScroll: true });
+      return;
+    }
+    if (event.shiftKey) return;
+    const toolbarButton = entry.toolbarHost.querySelector<HTMLButtonElement>(
+      ".canvas-folding-toolbar button",
+    );
+    if (toolbarButton !== null) {
+      blockCanvasInteraction(event);
+      toolbarButton.focus({ preventScroll: true });
+    }
+  }
+
+  private restoreControlFocus(entry: ControlEntry): void {
+    const current = [...this.entries.values()].find(
+      (candidate) =>
+        candidate.leaf === entry.leaf && candidate.nodeId === entry.nodeId,
+    );
+    current?.button.focus({ preventScroll: true });
   }
 }
 
@@ -118,19 +189,33 @@ function updateButton(
 ): void {
   const action = model.collapsed ? "Expand" : "Collapse";
   const label = `${action} branch with ${formatDescendantCount(model.descendantCount)}`;
-  const title = `${label}. Right-click or press Shift+F10 to choose visible levels.`;
+  const title = `${label}. Right-click, press Shift+F10, or press Alt+Enter to choose visible levels.`;
 
   button.textContent = model.collapsed ? "+" : "−";
   button.title = title;
   button.setAttribute("aria-haspopup", "menu");
-  button.setAttribute("aria-keyshortcuts", "Shift+F10");
+  button.setAttribute("aria-keyshortcuts", "Shift+F10 Alt+Enter");
   button.setAttribute("aria-label", label);
 }
 
 export function isBranchMenuKeyboardEvent(
-  event: Pick<KeyboardEvent, "key" | "shiftKey">,
+  event: Pick<KeyboardEvent, "altKey" | "key" | "shiftKey">,
 ): boolean {
-  return event.key === "ContextMenu" || (event.key === "F10" && event.shiftKey);
+  return (
+    event.key === "ContextMenu" ||
+    (event.key === "F10" && event.shiftKey) ||
+    (event.key === "Enter" && event.altKey)
+  );
+}
+
+export function getAdjacentBranchControlId(
+  orderedNodeIds: readonly string[],
+  currentNodeId: string,
+  reverse: boolean,
+): string | null {
+  const currentIndex = orderedNodeIds.indexOf(currentNodeId);
+  if (currentIndex < 0) return null;
+  return orderedNodeIds[currentIndex + (reverse ? -1 : 1)] ?? null;
 }
 
 function blockCanvasInteraction(event: Event): void {

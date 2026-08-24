@@ -27,6 +27,16 @@ void test("reflects collapsed state without changing graph structure", () => {
   ]);
 });
 
+void test("omits controls hosted by hidden descendant nodes", () => {
+  const graph = buildCanvasGraph(createData());
+  const state = new BranchCollapseState();
+  state.collapse("A");
+
+  assert.deepEqual(buildBranchControlModels(graph, state), [
+    { nodeId: "A", collapsed: true, descendantCount: 3 },
+  ]);
+});
+
 void test("shows an expand control for a visible parent of a hidden shared branch", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();
@@ -70,6 +80,52 @@ void test("treats group, file, link and text nodes consistently", () => {
       { nodeId: "F", collapsed: false, descendantCount: 2 },
       { nodeId: "L", collapsed: false, descendantCount: 1 },
     ],
+  );
+});
+
+void test("orders branch controls from top to bottom and left to right", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "BOTTOM", type: "text", x: 0, y: 200 },
+      { id: "TOP_RIGHT", type: "text", x: 200, y: 0 },
+      { id: "TOP_LEFT", type: "text", x: 0, y: 0 },
+      { id: "CHILD", type: "text", x: 0, y: 400 },
+    ],
+    edges: [
+      { id: "BC", fromNode: "BOTTOM", toNode: "CHILD" },
+      { id: "RC", fromNode: "TOP_RIGHT", toNode: "CHILD" },
+      { id: "LC", fromNode: "TOP_LEFT", toNode: "CHILD" },
+    ],
+  });
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, new BranchCollapseState()).map(
+      (model) => model.nodeId,
+    ),
+    ["TOP_LEFT", "TOP_RIGHT", "BOTTOM"],
+  );
+});
+
+void test("treats slightly staggered nodes as one visual row", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "RIGHT", type: "text", x: 200, y: 0 },
+      { id: "LEFT", type: "text", x: 0, y: 12 },
+      { id: "BOTTOM", type: "text", x: 0, y: 100 },
+      { id: "CHILD", type: "text", x: 0, y: 300 },
+    ],
+    edges: [
+      { id: "RC", fromNode: "RIGHT", toNode: "CHILD" },
+      { id: "LC", fromNode: "LEFT", toNode: "CHILD" },
+      { id: "BC", fromNode: "BOTTOM", toNode: "CHILD" },
+    ],
+  });
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, new BranchCollapseState()).map(
+      (model) => model.nodeId,
+    ),
+    ["LEFT", "RIGHT", "BOTTOM"],
   );
 });
 

@@ -44,6 +44,11 @@
   color: var(--interactive-accent);
 }
 
+.canvas-folding-toolbar-button.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .canvas-folding-toolbar-separator {
   align-self: stretch;
   background: var(--background-modifier-border);

@@ -6,6 +6,7 @@ import { BranchCollapseState } from "../../src/tree/state";
 import {
   buildToolbarButtonModels,
   getToolbarButtonAriaPressed,
+  isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
 } from "../../src/ui/toolbar-model";
 
@@ -106,4 +107,10 @@ void test("moves and clamps the toolbar with arrow keys", () => {
     ),
     null,
   );
+});
+
+void test("recognizes the toolbar space activation key", () => {
+  assert.equal(isToolbarSpaceKey(" "), true);
+  assert.equal(isToolbarSpaceKey("Space"), false);
+  assert.equal(isToolbarSpaceKey("Enter"), false);
 });

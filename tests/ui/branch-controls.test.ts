@@ -8,6 +8,7 @@ import type {
 } from "../../src/canvas/adapter";
 import {
   CanvasBranchControlManager,
+  getAdjacentBranchControlId,
   isBranchMenuKeyboardEvent,
 } from "../../src/ui/branch-controls";
 import type { BranchControlModel } from "../../src/ui/control-model";
@@ -63,19 +64,31 @@ void test("uses singular descendant labels and exposes the levels menu", () => {
   sync(manager, entry.context);
 
   assert.equal(entry.button.attributes.get("aria-haspopup"), "menu");
-  assert.equal(entry.button.attributes.get("aria-keyshortcuts"), "Shift+F10");
+  assert.equal(
+    entry.button.attributes.get("aria-keyshortcuts"),
+    "Shift+F10 Alt+Enter",
+  );
   assert.equal(entry.button.attributes.has("aria-expanded"), false);
   assert.equal(
     entry.button.attributes.get("aria-label"),
     "Collapse branch with 1 descendant",
   );
+  assert.equal(entry.button.tabIndex, 0);
 });
 
 void test("recognizes standard keyboard shortcuts for the levels menu", () => {
-  assert.equal(isBranchMenuKeyboardEvent({ key: "ContextMenu", shiftKey: false }), true);
-  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: true }), true);
-  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: false }), false);
-  assert.equal(isBranchMenuKeyboardEvent({ key: "Enter", shiftKey: false }), false);
+  assert.equal(isBranchMenuKeyboardEvent({ altKey: false, key: "ContextMenu", shiftKey: false }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ altKey: false, key: "F10", shiftKey: true }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ altKey: true, key: "Enter", shiftKey: false }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ altKey: false, key: "Enter", shiftKey: false }), false);
+});
+
+void test("moves through the spatial branch-control order", () => {
+  const order = ["TOP_LEFT", "TOP_RIGHT", "BOTTOM"];
+
+  assert.equal(getAdjacentBranchControlId(order, "TOP_LEFT", false), "TOP_RIGHT");
+  assert.equal(getAdjacentBranchControlId(order, "BOTTOM", true), "TOP_RIGHT");
+  assert.equal(getAdjacentBranchControlId(order, "BOTTOM", false), null);
 });
 
 function sync(
@@ -151,6 +164,7 @@ class FakeButton {
   className = "";
   removed = false;
   textContent: string | null = null;
+  tabIndex = -1;
   title = "";
   type = "";
   readonly ownerDocument = {} as Document;

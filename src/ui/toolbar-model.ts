@@ -43,6 +43,10 @@ export function getToolbarButtonAriaPressed(
   return model.active === undefined ? null : String(model.active);
 }
 
+export function isToolbarSpaceKey(key: string): boolean {
+  return key === " ";
+}
+
 export function moveToolbarPositionWithArrowKey(
   position: ToolbarPosition,
   key: string,
