@@ -10,6 +10,7 @@ import {
   getToolbarButtonAriaPressed,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
+  TOOLBAR_POINTER_EVENT_NAMES,
 } from "./toolbar-model";
 
 export {
@@ -43,7 +44,7 @@ export class CanvasToolbarManager {
         cls: "canvas-folding-toolbar",
         attr: { "aria-label": "Canvas Folding commands", role: "toolbar" },
       });
-      toolbar.addEventListener("pointerdown", stopCanvasPropagation);
+      isolateToolbarPointerSequence(toolbar);
       entry = { host: context.toolbarHost, toolbar };
       this.entries.set(context.leaf, entry);
     }
@@ -213,4 +214,10 @@ function blockCanvasInteraction(event: Event): void {
 
 function stopCanvasPropagation(event: Event): void {
   event.stopPropagation();
+}
+
+function isolateToolbarPointerSequence(toolbar: HTMLElement): void {
+  for (const eventName of TOOLBAR_POINTER_EVENT_NAMES) {
+    toolbar.addEventListener(eventName, stopCanvasPropagation);
+  }
 }

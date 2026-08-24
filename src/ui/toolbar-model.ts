@@ -37,6 +37,13 @@ export interface ToolbarPositionBounds {
   minXPercent: number;
 }
 
+export const TOOLBAR_POINTER_EVENT_NAMES = [
+  "pointerdown",
+  "pointermove",
+  "pointerup",
+  "pointercancel",
+] as const;
+
 export function getToolbarButtonAriaPressed(
   model: Pick<ToolbarButtonModel, "active">,
 ): string | null {

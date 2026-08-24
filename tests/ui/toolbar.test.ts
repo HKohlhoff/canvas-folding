@@ -8,6 +8,7 @@ import {
   getToolbarButtonAriaPressed,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
+  TOOLBAR_POINTER_EVENT_NAMES,
 } from "../../src/ui/toolbar-model";
 
 const graph = buildCanvasGraph({
@@ -113,4 +114,13 @@ void test("recognizes the toolbar space activation key", () => {
   assert.equal(isToolbarSpaceKey(" "), true);
   assert.equal(isToolbarSpaceKey("Space"), false);
   assert.equal(isToolbarSpaceKey("Enter"), false);
+});
+
+void test("isolates the complete toolbar pointer sequence", () => {
+  assert.deepEqual(TOOLBAR_POINTER_EVENT_NAMES, [
+    "pointerdown",
+    "pointermove",
+    "pointerup",
+    "pointercancel",
+  ]);
 });
