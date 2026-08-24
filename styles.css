@@ -7,6 +7,10 @@
   pointer-events: none !important;
 }
 
+body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
+  z-index: var(--layer-popover);
+}
+
 .canvas-folding-toolbar {
   align-items: center;
   background: var(--background-primary);

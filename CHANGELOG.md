@@ -43,6 +43,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 ### Fixed
 
 - Keep a narrow toolbar horizontally touch-scrollable, isolate its pointer sequence from underlying Canvas nodes and enlarge branch controls for coarse pointers.
+- Keep Obsidian's native Canvas controls above selected node content on iOS.
 - Preserve keyboard focus after Canvas Folding actions, use depth-first branch-control order with a selected-parent entry point and handle Space explicitly in the toolbar.
 - Count automatically hidden Canvas groups correctly in the status summary.
 - Hide edge labels together with collapsed Canvas branches.
