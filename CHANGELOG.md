@@ -42,6 +42,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Preserve native tap and stylus node selection in mobile Obsidian by limiting the private Canvas interaction-layer guard to desktop mode.
 - Keep a narrow toolbar horizontally touch-scrollable, isolate its pointer sequence from underlying Canvas nodes and enlarge branch controls for coarse pointers.
 - Keep Obsidian's native Canvas controls in a dedicated compositing layer above node content on iOS.
 - Preserve keyboard focus after Canvas Folding actions, use depth-first branch-control order with a selected-parent entry point and handle Space explicitly in the toolbar.

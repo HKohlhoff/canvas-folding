@@ -24,6 +24,8 @@ export class CanvasVisibilityManager {
   >();
   private readonly managedElements = new Map<CanvasElementHandle, object>();
 
+  constructor(private readonly manageInteractionLayer = true) {}
+
   apply(
     context: ActiveCanvasContext,
     hiddenNodeIds: ReadonlySet<string>,
@@ -35,10 +37,12 @@ export class CanvasVisibilityManager {
       ...context.edgeViews.flatMap((edgeView) => edgeView.elements),
     ]);
     this.restoreMissingElements(context.leaf, currentElements);
-    this.restoreReplacedInteractionLayers(
-      context.leaf,
-      context.nodeInteractionLayer,
-    );
+    if (this.manageInteractionLayer) {
+      this.restoreReplacedInteractionLayers(
+        context.leaf,
+        context.nodeInteractionLayer,
+      );
+    }
 
     const visibility = deriveCanvasVisibility(
       context.data,
@@ -49,11 +53,13 @@ export class CanvasVisibilityManager {
       ...visibility.hiddenNodeIds,
       ...visibility.dimmedNodeIds,
     ]);
-    this.updateInteractionLayer(
-      context.nodeInteractionLayer,
-      inactiveNodeIds,
-      context.leaf,
-    );
+    if (this.manageInteractionLayer) {
+      this.updateInteractionLayer(
+        context.nodeInteractionLayer,
+        inactiveNodeIds,
+        context.leaf,
+      );
+    }
 
     let hiddenNodeCount = 0;
     let dimmedNodeCount = 0;

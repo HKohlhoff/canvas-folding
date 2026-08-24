@@ -104,6 +104,21 @@ void test("blocks the interaction layer from targeting hidden nodes", () => {
   assert.equal(interactionLayer.target, targetNode);
 });
 
+void test("preserves native interaction targeting when management is disabled", () => {
+  const { context } = createContext();
+  const hiddenNode = { id: "B" };
+  const interactionLayer = createInteractionLayer(hiddenNode);
+  context.nodeInteractionLayer = interactionLayer;
+
+  const manager = new CanvasVisibilityManager(false);
+  manager.apply(context, new Set(["B"]));
+
+  assert.equal(interactionLayer.target, hiddenNode);
+  interactionLayer.setTarget(null);
+  interactionLayer.setTarget(hiddenNode);
+  assert.equal(interactionLayer.target, hiddenNode);
+});
+
 void test("restores an interaction layer replaced during render", () => {
   const { context } = createContext();
   const hiddenNode = { id: "B" };

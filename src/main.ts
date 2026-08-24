@@ -1,4 +1,4 @@
-import { Menu, Notice, Plugin, TFile } from "obsidian";
+import { Menu, Notice, Platform, Plugin, TFile } from "obsidian";
 
 import {
   readActiveCanvasContext,
@@ -85,7 +85,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     string,
     BranchCollapseStateData
   >();
-  private readonly visibility = new CanvasVisibilityManager();
+  private readonly visibility = new CanvasVisibilityManager(Platform.isDesktop);
 
   async onload(): Promise<void> {
     await this.loadPluginData();
