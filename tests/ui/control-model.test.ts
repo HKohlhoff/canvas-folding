@@ -176,6 +176,28 @@ void test("keeps depth-first control ordering finite for a rootless cycle", () =
   );
 });
 
+void test("orders a three-node rootless cycle deterministically", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "A", type: "text", x: 0, y: 120 },
+      { id: "B", type: "text", x: 360, y: 0 },
+      { id: "C", type: "text", x: 360, y: 240 },
+    ],
+    edges: [
+      { id: "AB", fromNode: "A", toNode: "B" },
+      { id: "BC", fromNode: "B", toNode: "C" },
+      { id: "CA", fromNode: "C", toNode: "A" },
+    ],
+  });
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, new BranchCollapseState()).map(
+      (model) => model.nodeId,
+    ),
+    ["B", "C", "A"],
+  );
+});
+
 void test("visits a shared descendant control only once", () => {
   const graph = buildCanvasGraph({
     nodes: [

@@ -63,7 +63,9 @@ File: `03-shared-descendant.canvas`
 File: `04-rootless-cycle.canvas`
 
 - **Inspect active canvas graph** reports three nodes, three edges and no root.
-- **Collapse all branches** does not hide the entire Canvas.
+- The toolbar action **Collapse all branches** is disabled because the graph
+  has no rooted branch. Invoking the command-palette action instead reports
+  that there are no rooted branches and leaves the complete Canvas visible.
 - Collapse and expand each individual node; traversal remains finite.
 - Tab through the controls; every control occurs once and focus does not loop
   inside the Canvas controls indefinitely.
