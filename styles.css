@@ -8,6 +8,7 @@
 }
 
 body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
+  transform: translate3d(0, 0, 0);
   z-index: var(--layer-popover);
 }
 

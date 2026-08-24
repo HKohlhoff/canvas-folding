@@ -27,7 +27,7 @@ Die Branch-Controls sind per Tastatur in Tiefenreihenfolge erreichbar: Von einem
 
 Auf Geräten mit grobem Zeiger werden die Branch-Controls vergrößert. Die Toolbar lässt sich horizontal per Touch scrollen, ihr Griff verwendet Pointer-Events zum Verschieben. Ihre vollständige Pointer-Sequenz wird gegenüber darunterliegenden Canvas-Nodes isoliert. Das Öffnen der Ebenenauswahl per Langdruck hängt davon ab, ob die jeweilige Obsidian-/WebView-Version dabei ein Kontextmenü-Ereignis bereitstellt.
 
-Auf iOS wird die Obsidian-eigene Canvas-Toolbar innerhalb der Canvas-Ansicht auf den Popover-Layer angehoben, damit ausgewählte Node-Inhalte sie nicht überdecken. Menüs, Modale, Hinweise und Tooltips bleiben darüber; andere Plattformen sind von dieser Korrektur nicht betroffen.
+Auf iOS wird die Obsidian-eigene Canvas-Toolbar innerhalb der Canvas-Ansicht auf den Popover-Layer und in eine eigene Compositing-Ebene angehoben, damit transformierte Node-Inhalte sie nicht teilweise überdecken. Menüs, Modale, Hinweise und Tooltips bleiben darüber; andere Plattformen sind von dieser Korrektur nicht betroffen.
 
 Eine nicht leere Canvas-Gruppe wird zusammen mit ihrem Inhalt ausgeblendet, sobald alle vollständig in ihr enthaltenen Nodes ausgeblendet sind. Leere Gruppen sowie Gruppen mit mindestens einem sichtbaren enthaltenen Node bleiben sichtbar.
 
