@@ -7,7 +7,9 @@ Use this checklist before publishing an Obsidian plugin release.
 - `manifest.json` version is correct.
 - `versions.json` contains the same version and the correct minimum Obsidian version.
 - `package.json` version, description, repository, license and author data are correct.
+- `LICENSE` contains GPL v3 and `package.json` declares `GPL-3.0-or-later`.
 - `build.mjs` uses the correct plugin ID.
+- `npm run test:metadata` confirms plugin ID, versions, minimum Obsidian version and GPL metadata.
 
 ## Quality
 
@@ -34,6 +36,7 @@ npm run build:prod
 ### Canvas Folding matrix
 
 - Copy `manual-tests/` into the documented vault location and complete its V1 test matrix.
+- Copy `examples/Canvas Folding Demo/` to the vault root, open the demo Canvas and follow every explanatory card once.
 - Fold and expand branches containing text, file, image, link and group nodes.
 - Check a simple tree, multiple roots, an isolated node, a shared descendant with multiple parents and a directed cycle.
 - Add and delete nodes and edges; repeat both operations with undo and redo.

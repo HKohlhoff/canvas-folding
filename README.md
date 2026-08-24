@@ -1,74 +1,199 @@
 # Canvas Folding
 
-Canvas Folding erweitert normale Obsidian-Canvases um hierarchische Funktionen. Das Plugin klappt komplette Zweige rekursiv ein und aus, ohne Nodes, Kanten, Inhalte oder Positionen zu verändern.
+Canvas Folding adds hierarchical folding, level views, and branch focus to the
+standard Obsidian Canvas. It changes only the current view: nodes, edges,
+content, positions, and the `.canvas` file itself remain untouched.
 
-Der aktuelle Stand ist eine funktionsfähige Vorabversion in der V1-Stabilisierung. Sie unterstützt den normalen Obsidian Canvas ohne Abhängigkeit von Advanced Canvas.
+Requires Obsidian 1.13.0 or later. Canvas Folding works on desktop and mobile
+and has no dependency on Advanced Canvas.
 
-## Aktueller Funktionsumfang
+If Canvas Folding is useful to you, you can support its continued development
+by buying me a coffee.
 
-Auf einem geöffneten Canvas stehen in der Befehlspalette folgende Commands bereit:
+<a href="https://ko-fi.com/R5R2151DS7" target="_blank"><img height="36" style="border:0;height:36px" src="https://storage.ko-fi.com/cdn/kofi1.png?v=6" border="0" alt="Buy Me a Coffee at ko-fi.com"></a>
 
-- `Collapse selected branch` blendet alle gerichteten Nachfahren des einzelnen ausgewählten Nodes aus.
-- `Expand selected branch` blendet den an diesem Node effektiv ausgeblendeten Zweig wieder ein.
-- `Focus selected branch` hebt den ausgewählten Node und seine gerichteten Nachfolger hervor und dimmt den übrigen Canvas-Kontext.
-- `Exit branch focus` beendet den Fokus und stellt den darunterliegenden Collapse-/Ebenenzustand wieder her.
-- `Collapse all branches` lässt alle Root-Nodes sichtbar und klappt ihre vollständigen Teilbäume ein.
-- `Expand all branches` hebt alle Collapse-Zustände des aktiven Canvas auf.
-- `Show canvas through level…` zeigt alle Root-Zweige bis zu einer gemeinsam gewählten Ebene.
-- `Show branch controls`, `Hide branch controls` und `Toggle branch controls` steuern die `+`/`−`-Buttons für die aktuelle Sitzung.
-- `Show canvas toolbar`, `Hide canvas toolbar` und `Toggle canvas toolbar` steuern die Befehlsleiste am oberen Canvas-Rand.
-- `Reset canvas toolbar position` setzt eine verschobene Toolbar wieder an den oberen Standardplatz.
-- `Show current status` meldet zusätzlich, ob der aktuelle Zustand nur im offenen Tab gilt, dauerhaft gespeichert ist oder bei aktivierter Persistenz dem Standardzustand entspricht.
-- `Inspect active canvas graph` zeigt eine Zusammenfassung der erkannten Struktur und bei aktiviertem Debug-Logging weitere Details.
+## Features
 
-Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wechselt er zu `+`. Ein Linksklick klappt weiterhin den vollständigen Zweig ein oder aus. Ein Rechtsklick öffnet ein Kontextmenü, das den Node allein, bis zu fünf sichtbare Ebenen oder den gesamten Zweig anzeigen kann. Bei gemeinsam genutzten Nachfahren kann ein weiterhin sichtbarer Parent den verdeckten Teilbaum über sein `+` wieder freigeben. Dabei bleiben andere ausgeblendete Parent-Nodes und ihre Kanten verborgen. Die Einstellung `Show branch controls initially` legt den Zustand nach dem Laden fest; über die Befehlspalette lassen sich die Controls jederzeit anzeigen, ausblenden oder umschalten.
+- Collapse or expand one selected branch recursively.
+- Collapse every rooted branch while keeping roots and isolated nodes visible.
+- Show the complete Canvas through a chosen global level.
+- Show one node, a limited number of levels, or an entire branch from a node
+  control.
+- Focus a branch while dimming and protecting the remaining Canvas context.
+- Use `+`/`−` controls directly on parent nodes.
+- Use a movable, responsive Canvas Folding toolbar.
+- Keep state separately for each open Canvas tab.
+- Optionally restore states between sessions without modifying Canvas files.
+- React to node and edge changes, undo/redo, duplication, and Canvas re-renders.
+- Handle multiple roots, multiple parents, shared descendants, cross-links,
+  cycles, groups, text, file, image, and link nodes.
+- Expose an optional versioned API for other plugins.
 
-Die Branch-Controls sind per Tastatur in Tiefenreihenfolge erreichbar: Von einem Parent wird zuerst der obere Kind-Zweig vollständig durchlaufen, bevor der nächste, darunterliegende Geschwisterzweig folgt. Ist genau ein Parent ausgewählt, beginnt der nächste Durchlauf an dessen Control. `Enter` oder `Leertaste` klappt den Zweig ein beziehungsweise aus; die Kontextmenütaste öffnet die Ebenenauswahl. Der Griff der Canvas-Toolbar lässt sich außer durch Ziehen auch mit den Pfeiltasten bewegen. Nach einer Tastaturaktion bleibt der Fokus auf der ausgelösten Funktion.
+## How folding works
 
-Auf Geräten mit grobem Zeiger werden die Branch-Controls vergrößert. Die Toolbar lässt sich horizontal per Touch scrollen, ihr Griff verwendet Pointer-Events zum Verschieben. Ihre vollständige Pointer-Sequenz wird gegenüber darunterliegenden Canvas-Nodes isoliert. Das Öffnen der Ebenenauswahl per Langdruck hängt davon ab, ob die jeweilige Obsidian-/WebView-Version dabei ein Kontextmenü-Ereignis bereitstellt.
+Canvas Folding interprets directed Canvas edges as hierarchy:
+`fromNode` → `toNode`. A node can therefore have multiple parents, and the
+Canvas is treated as a general directed graph rather than as a strict tree.
+Traversal is deterministic and cycle-safe.
 
-Auf iOS wird die Obsidian-eigene Canvas-Toolbar innerhalb der Canvas-Ansicht auf den Popover-Layer und in eine eigene Compositing-Ebene angehoben, damit transformierte Node-Inhalte sie nicht teilweise überdecken. Menüs, Modale, Hinweise und Tooltips bleiben darüber; andere Plattformen sind von dieser Korrektur nicht betroffen.
+Parent nodes receive a `−` control. When descendants are hidden, the control
+changes to `+`:
 
-Der zusätzliche Schutz vor Verbindungshandles an verborgenen Nodes greift nur im Desktopmodus in Obsidian privaten Canvas-Interaktionslayer ein. Mobile Apps behalten ihre native Tap- und Stift-Auswahl unverändert; verborgene Nodes bleiben dort durch ihre DOM-Sichtbarkeit aus dem Hit-Testing entfernt.
+- Click or tap the control to collapse or expand the complete branch.
+- Open its context menu to show only the node, show through a selected level,
+  or show the entire branch.
+- With shared descendants, a visible alternative parent can reveal the shared
+  branch without revealing a hidden parent or its incident edge.
 
-Eine nicht leere Canvas-Gruppe wird zusammen mit ihrem Inhalt ausgeblendet, sobald alle vollständig in ihr enthaltenen Nodes ausgeblendet sind. Leere Gruppen sowie Gruppen mit mindestens einem sichtbaren enthaltenen Node bleiben sichtbar.
+Hidden nodes also hide every incident edge, including edge labels. A non-empty
+Canvas group is hidden when all non-group nodes geometrically contained by it
+are hidden. Empty groups remain visible.
 
-Änderungen an der geöffneten Canvas-Struktur, Auswahlwechsel sowie Obsidian-Re-Renders werden entprellt erkannt. Controls, Toolbar-Aktionen und bestehende Folding-Zustände werden anschließend gegen den aktuellen Graphen aktualisiert. Ein neu hinzugefügter Nachfahre eines eingeklappten Zweigs bleibt mit seiner Kante sichtbar, solange er ausgewählt ist; nach dem Deselektieren wird er entsprechend dem Folding-Zustand verborgen.
+## Canvas toolbar
 
-Der Branch-Fokus wirkt als zusätzlicher Spotlight-Filter und verändert bestehende Collapse-Zustände nicht. Der ausgewählte Node und seine Nachfolger bleiben vollständig aktiv; Gruppenrahmen um aktive Nodes bleiben ebenfalls aktiv. Alle übrigen Nodes und betroffenen Kanten werden mit einstellbarer Deckkraft gedimmt und vor Interaktionen geschützt. Bereits eingeklappte Elemente bleiben vollständig verborgen. Der Fokus gehört zum flüchtigen beziehungsweise optional persistenten Canvas-Zustand.
+The optional toolbar provides the main Canvas Folding actions directly in the
+Canvas. Drag its handle to move it, or focus the handle and use the arrow keys.
+On narrow views and mobile devices, the toolbar can be scrolled horizontally.
 
-Die optionale Canvas-Toolbar stellt die Canvas-Folding-Funktionen als Icon-Buttons direkt am oberen Rand bereit. Collapse und Expand verwenden dieselben `−`/`+`-Symbole wie die Node-Controls; Branch-Fokus wird über einen aktiven Toggle-Button gesteuert. Tooltips benennen jede Aktion, und nicht anwendbare Aktionen sind deaktiviert. Über den Griff am linken Rand lässt sich die Toolbar verschieben; ihre globale Position wird in den Plugin-Einstellungen gespeichert. Bei knapper Breite bleibt die Leiste horizontal scrollbar. `Show canvas toolbar initially` legt nur den Startzustand fest, der anschließend über Commands oder den Ausblenden-Button geändert werden kann.
+The toolbar includes actions for:
 
-Canvas Folding merkt sich Collapse-State, Sichttiefe und temporäre Freigaben flüchtig pro geöffnetem Tab. So wird der letzte Zustand wiederhergestellt, wenn man in diesem Tab zu anderen Dateien und anschließend zum Canvas zurücknavigiert. Beim Schließen des Tabs wird dieser flüchtige Zustand verworfen. `Remember canvas states between sessions` speichert den Zustand zusätzlich nach Canvas-Pfad in der Plugin-Datei `data.json`, sodass er in neu geöffneten Tabs und nach einem Neustart von Obsidian oder des Plugins verfügbar ist. Einträge gelöschter Canvas-Dateien werden automatisch entfernt. Nicht mehr vorhandene Node-IDs werden beim Plugin-Start, nach Änderungen einer Canvas-Datei und beim manuellen Aufräumen gegen die tatsächliche Canvas-JSON geprüft. Ungültige oder vorübergehend nicht lesbare Canvas-Daten führen zu keiner Löschung. Die `.canvas`-Datei selbst wird nicht verändert.
+- collapsing and expanding the selected branch;
+- toggling branch focus;
+- collapsing all rooted branches and expanding all branches;
+- selecting a global visible level;
+- showing or hiding node controls;
+- inspecting the graph and showing the current state;
+- hiding the toolbar itself.
 
-## Abgrenzung und nächste Phasen
+Unavailable actions are disabled. The toolbar can always be shown, hidden,
+toggled, or reset through the command palette.
 
-- Die Hierarchie wird aus gerichteten Canvas-Kanten (`fromNode` → `toNode`) abgeleitet; Canvas Folding behandelt die Datei dabei als allgemeinen Graphen mit mehreren Roots, mehreren Parents, Querverbindungen und Zyklen.
-- Folding bleibt reiner View-State und verändert weder Layout noch `.canvas`-Datei.
-- Eine öffentliche, versionierte Folding-API folgt erst nach der funktionalen V1-Stabilisierung.
-- Die Koexistenz mit Advanced Canvas wird anschließend separat geprüft; eine harte Abhängigkeit ist nicht vorgesehen.
-- Automatisches Layout, Navigation zwischen Verwandten und Branch-Styling sind bewusst spätere Funktionen.
+## Commands
 
-Canvas Folding ist weder Importer noch HTML-Exporter. Normale JSON-Canvas-Dateien bleiben die Source of Truth.
+All commands are available from the command palette when their Canvas context
+is valid:
 
-## Öffentliche API
+| Command | Purpose |
+| --- | --- |
+| `Collapse selected branch` | Hide all directed descendants of the selected node. |
+| `Expand selected branch` | Reveal the branch effectively hidden at the selected node. |
+| `Focus selected branch` | Keep the selected node and descendants active while dimming the rest. |
+| `Exit branch focus` | Remove focus without changing the underlying fold state. |
+| `Collapse all branches` | Collapse every rooted branch. |
+| `Expand all branches` | Clear all folding and level restrictions. |
+| `Show canvas through level…` | Set one visible depth for all rooted branches. |
+| `Show`, `Hide`, or `Toggle branch controls` | Control node buttons for the current plugin session. |
+| `Show`, `Hide`, or `Toggle canvas toolbar` | Control the Canvas Folding toolbar. |
+| `Reset canvas toolbar position` | Return the toolbar to its default position. |
+| `Show current status` | Report visible-state counts, focus, controls, and persistence status. |
+| `Inspect active canvas graph` | Report the recognized graph structure. |
 
-Andere Plugins können Canvas Folding optional über die Plugin-ID
-`canvas-folding` erkennen. Die versionierte `CanvasFoldingApi` v1 liefert für
-einen Vault-relativen Canvas-Pfad die effektiv ausgeblendeten Node- und
-Edge-IDs. Ein passender aktiver Leaf hat Vorrang vor einem persistenten Zustand;
-DOM-, View- und interne State-Objekte werden nicht exponiert. Der vollständige
-Vertrag und ein defensives Discovery-Beispiel stehen unter
-[`docs/api.md`](docs/api.md).
+## Keyboard and touch
 
-## Entwicklung
+Branch controls follow a depth-first Tab order. Upper child branches are
+visited completely before lower sibling branches. If exactly one parent is
+selected, navigation starts at that node's control.
 
-Die versionierte manuelle V1-Testmatrix liegt unter
-[`manual-tests/`](manual-tests/README.md). Sie enthält kleine Canvas-Fixtures
-für Baumtiefe, mehrere Roots, isolierte Nodes, Shared Descendants, einen
-rootlosen Zyklus sowie Gruppen mit unterschiedlichen Node-Typen.
+- `Enter` or `Space` toggles a branch control or toolbar action.
+- The keyboard context-menu key opens the branch-level menu.
+- Arrow keys move the focused toolbar handle.
+- Keyboard focus remains on the invoked control after an action.
 
-Voraussetzung ist Node.js 20.19 oder neuer.
+Touch targets are enlarged on coarse-pointer devices. The toolbar supports
+horizontal touch scrolling and dragging. Canvas node selection remains native
+on iPhone and iPad. Long-press access to the branch-level menu depends on
+whether the installed Obsidian/WebView version emits a context-menu event.
+
+## State and persistence
+
+By default, fold state, level restrictions, temporary shared-branch reveals,
+and branch focus are remembered only in the open Canvas tab. Navigating to
+another file and back in that tab restores its state; closing the tab discards
+it.
+
+Enable **Remember canvas states between sessions** to also restore state in new
+tabs and after restarting Obsidian or the plugin. The data is stored in Canvas
+Folding's local `data.json`, never in the `.canvas` file. Entries for deleted or
+renamed Canvas files and stale node IDs are cleaned automatically and can also
+be cleaned or cleared from the settings.
+
+## Demo Canvas
+
+The repository includes a documented demo covering a basic tree, a shared
+descendant, a cycle, an isolated node, groups, and different node types:
+[`examples/Canvas Folding Demo/`](examples/Canvas%20Folding%20Demo/README.md).
+
+Copy the complete **Canvas Folding Demo** folder to the root of a vault and
+open `Canvas Folding Demo/Canvas Folding Demo.canvas`. The explanatory cards
+on the Canvas suggest actions and describe the expected result.
+
+Focused regression fixtures and the full manual V1 test matrix remain
+separately available under [`manual-tests/`](manual-tests/README.md).
+
+## Installation
+
+Install Canvas Folding from Obsidian Community Plugins once it is available.
+
+For manual installation, download `main.js`, `manifest.json`, and `styles.css`
+from a GitHub release and place them in:
+
+```text
+<vault>/.obsidian/plugins/canvas-folding/
+```
+
+Then reload Obsidian and enable **Canvas Folding** under Community plugins.
+
+## Settings
+
+- **Show canvas toolbar initially** controls the toolbar's state when the plugin
+  loads. Commands can change it at any time.
+- **Background opacity during branch focus** controls how strongly unrelated
+  Canvas content is dimmed.
+- **Show branch controls initially** controls node buttons when the plugin
+  loads. Commands can change them at any time.
+- **Show status notices** enables action confirmations.
+- **Remember canvas states between sessions** enables persistent state.
+- **Clean up persisted canvas states** removes references to missing Canvases
+  and nodes.
+- **Clear all persisted canvas states** removes all saved cross-session state;
+  currently open tabs keep their session state.
+- **Debug logging** writes diagnostic details to the developer console.
+
+## Privacy and data handling
+
+Canvas Folding works entirely locally and sends no Canvas or vault data to
+external services. The Ko-fi image in this README is documentation content and
+is not loaded or contacted by the installed plugin.
+
+When persistence is enabled, local plugin data contains vault-relative Canvas
+paths, node IDs, and visibility settings. Canvas files themselves are never
+modified by Canvas Folding.
+
+## Compatibility and limitations
+
+- Obsidian Canvas currently exposes only some extension points through public
+  TypeScript APIs. Private runtime access is isolated in a compatibility layer
+  and guarded defensively.
+- Advanced Canvas is not required. Systematic coexistence testing and any
+  optional integration are intentionally planned as a separate step.
+- Long-press context menus depend on the mobile platform and WebView behavior.
+- Canvas Folding does not perform automatic layout, graph navigation, or branch
+  styling.
+
+## Public API
+
+Other plugins can optionally discover Canvas Folding by the stable plugin ID
+`canvas-folding`. The read-only `CanvasFoldingApi` v1 returns effective hidden
+node and edge IDs for a vault-relative Canvas path. It exposes no DOM elements,
+Canvas views, workspace leaves, or internal state classes.
+
+See [`docs/api.md`](docs/api.md) for the complete contract and a defensive
+discovery example. Consumers must remain functional when Canvas Folding is not
+installed, disabled, or exposes an incompatible API version.
+
+## Development
+
+Requires Node.js 20.19 or later.
 
 ```bash
 npm ci
@@ -76,23 +201,24 @@ npm test
 npm run build:prod
 ```
 
-Für ein lokales Deployment wird `OBSIDIAN_PLUGINS_DIR` auf den `.obsidian/plugins`-Ordner eines Testvaults gesetzt:
+For local deployment, set `OBSIDIAN_PLUGINS_DIR` to a test vault's plugin
+directory:
 
 ```bash
 OBSIDIAN_PLUGINS_DIR="/path/to/vault/.obsidian/plugins" npm run build:prod:deploy
 ```
 
-Der Build kopiert `main.js`, `manifest.json` und `styles.css` nach `canvas-folding` und legt dort die von Obsidian Hot Reload verwendete Datei `.hotreload` an.
+The production release contains `main.js`, `manifest.json`, and `styles.css`.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) and
+[`docs/release-checklist.md`](docs/release-checklist.md) for development and
+release checks.
 
-## Datenschutz
+## Support and feedback
 
-Canvas Folding verarbeitet Canvas-Daten lokal im Vault und sendet keine Daten an externe Dienste. Bei aktivierter Zustandsspeicherung enthält die lokale Plugin-Datei `data.json` Canvas-Pfade, Node-IDs und Sichtbarkeitseinstellungen.
+Please report reproducible problems and feature requests through the
+[GitHub issue tracker](https://github.com/HKohlhoff/canvas-folding/issues).
 
-## Grenzen
+## License
 
-- Die Canvas-Ansicht besitzt derzeit nur teilweise öffentlich typisierte Erweiterungspunkte. Interne Zugriffe werden deshalb in einem Compatibility-Layer gekapselt.
-- Advanced-Canvas-Koexistenz und eine spätere öffentliche Folding-API sind noch nicht Teil dieses Vorabstands.
-
-## Lizenz
-
-Das Projekt ist derzeit nicht lizenziert. Vor einer Veröffentlichung muss eine Lizenz festgelegt werden.
+Canvas Folding is licensed under the
+[GNU General Public License v3.0 or later](LICENSE).

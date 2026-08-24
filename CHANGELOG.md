@@ -4,10 +4,11 @@ All notable changes to this plugin should be documented in this file.
 
 The format follows the spirit of Keep a Changelog, with the newest release first.
 
-## [Unreleased]
+## [1.0.0] – release candidate
 
 ### Added
 
+- A documented, self-contained demo Canvas with local note and image nodes.
 - A versioned optional `CanvasFoldingApi` v1 that exposes effective hidden node and edge IDs through the `canvas-folding` plugin instance.
 - A versioned manual V1 test collection with focused Canvas fixtures and an explicit command, lifecycle, keyboard and touch matrix.
 - Canvas Folding project identity and local hot-reload deployment support.
@@ -20,6 +21,10 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - A level chooser for showing all rooted branches through a global canvas depth.
 - Branch spotlight commands with configurable opacity for inactive canvas context.
 - A responsive Canvas command toolbar with contextual action states and visibility commands.
+
+### Changed
+
+- Prepared the public documentation and package metadata for a first release under GPL-3.0-or-later, with support and demo instructions.
 - A draggable persisted toolbar position, focus toggle, matching +/− icons and visible graph inspection feedback.
 - Accessible branch controls for Canvas nodes with directed descendants.
 - Setting and commands to show, hide or toggle branch controls without modifying Canvas data.
@@ -28,8 +33,6 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Automatic cleanup on Canvas deletion or rename plus manual cleanup actions.
 - Plugin lifecycle and a settings tab with normalized defaults.
 - Reproducible npm installs through `package-lock.json` and `npm ci` in CI.
-
-### Changed
 
 - Improve branch-control and toolbar keyboard behavior, menu semantics and accessible labels.
 - Renamed the plugin and its technical ID from Canvas Tree (`canvas-tree`) to Canvas Folding (`canvas-folding`).
