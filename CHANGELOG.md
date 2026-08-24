@@ -24,6 +24,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Changed
 
+- Updated the public demo from its reviewed Vault layout while retaining portable local asset paths.
+- Reordered the Behavior settings and added a prominent reminder that Canvas Folding never modifies Canvas files.
 - Prepared the public documentation and package metadata for a first release under GPL-3.0-or-later, with support and demo instructions.
 - A draggable persisted toolbar position, focus toggle, matching +/− icons and visible graph inspection feedback.
 - Accessible branch controls for Canvas nodes with directed descendants.

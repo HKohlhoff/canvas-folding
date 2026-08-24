@@ -49,10 +49,13 @@ void test("demo Canvas references packaged local files", () => {
     .filter(isRecord)
     .filter((node) => node.type === "file")
     .map((node) => node.file);
-  assert.deepEqual(filePaths, [
-    "Canvas Folding Demo/Demo note.md",
-    "Canvas Folding Demo/Demo image.svg",
-  ]);
+  assert.deepEqual(
+    new Set(filePaths),
+    new Set([
+      "Canvas Folding Demo/Demo note.md",
+      "Canvas Folding Demo/Demo image.svg",
+    ]),
+  );
   for (const filePath of filePaths) {
     if (typeof filePath !== "string") {
       assert.fail("Demo Canvas file nodes must contain string paths.");

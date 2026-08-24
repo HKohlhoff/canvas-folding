@@ -145,14 +145,17 @@ Then reload Obsidian and enable **Canvas Folding** under Community plugins.
 
 ## Settings
 
+The settings page starts with a reminder that Canvas Folding never modifies
+Canvas files.
+
 - **Show canvas toolbar initially** controls the toolbar's state when the plugin
   loads. Commands can change it at any time.
-- **Background opacity during branch focus** controls how strongly unrelated
-  Canvas content is dimmed.
 - **Show branch controls initially** controls node buttons when the plugin
   loads. Commands can change them at any time.
-- **Show status notices** enables action confirmations.
+- **Background opacity during branch focus** controls how strongly unrelated
+  Canvas content is dimmed.
 - **Remember canvas states between sessions** enables persistent state.
+- **Show status notices** enables action confirmations.
 - **Clean up persisted canvas states** removes references to missing Canvases
   and nodes.
 - **Clear all persisted canvas states** removes all saved cross-session state;

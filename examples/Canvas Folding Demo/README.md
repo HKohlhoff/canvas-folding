@@ -1,7 +1,7 @@
 # Canvas Folding Demo
 
 This folder is self-contained. Copy the complete **Canvas Folding Demo** folder
-to the root of an Obsidian vault, then open `Canvas Folding Demo.canvas`.
+to your Obsidian vault, then open `Canvas Folding Demo.canvas`.
 
 The Canvas contains explanatory cards and these graph cases:
 
@@ -23,7 +23,7 @@ Suggested tour:
    cannot be selected.
 7. Try **Collapse all branches**, **Expand all branches**, and
    **Show canvas through level…** from the Canvas Folding toolbar.
-8. Enable persistence, fold a branch, close the tab, and reopen the Canvas.
+8. Enable persistence in the settings menu, fold a branch, close the tab, and reopen the Canvas.
 
 The demo is intended for learning and release smoke tests. The smaller files in
 the repository's `manual-tests/` directory remain the authoritative regression
