@@ -24,6 +24,7 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   max-width: calc(100% - 96px);
   overflow-x: auto;
   padding: 4px;
+  pointer-events: none;
   position: absolute;
   top: 8px;
   touch-action: pan-x;
@@ -33,11 +34,13 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 
 .canvas-folding-toolbar-button {
   flex: 0 0 auto;
+  pointer-events: auto;
 }
 
 .canvas-folding-toolbar-drag-handle {
   cursor: grab;
   flex: 0 0 auto;
+  pointer-events: auto;
   touch-action: none;
 }
 
