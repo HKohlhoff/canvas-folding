@@ -44,9 +44,15 @@ import {
   deriveCanvasVisibility,
   summarizeCanvasVisibility,
 } from "./tree/visibility";
-import { CanvasBranchControlManager } from "./ui/branch-controls";
+import {
+  CanvasBranchControlManager,
+  type BranchMenuPosition,
+} from "./ui/branch-controls";
 import { CanvasDepthModal } from "./ui/canvas-depth-modal";
-import { buildBranchControlModels } from "./ui/control-model";
+import {
+  buildBranchControlModels,
+  formatDescendantCount,
+} from "./ui/control-model";
 import {
   buildToolbarButtonModels,
   CanvasToolbarManager,
@@ -647,7 +653,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     const result = this.applyCollapsedState(context, graph, state);
     this.syncBranchControls(context, graph, state);
     this.debug("Collapsed branch", { selectedNodeId, ...result });
-    this.notifySuccess(`Collapsed branch with ${descendants.length} descendants.`);
+    this.notifySuccess(`Collapsed branch with ${formatDescendantCount(descendants.length)}.`);
   }
 
   private expandSelectedBranch(context: ActiveCanvasContext): void {
@@ -1009,7 +1015,7 @@ export default class CanvasFoldingPlugin extends Plugin {
   private showBranchDepthMenu(
     context: ActiveCanvasContext,
     nodeId: string,
-    event: MouseEvent,
+    position: BranchMenuPosition,
   ): void {
     const graph = buildCanvasGraph(context.data);
     const descendantDepths = getDescendantDepths(graph, nodeId);
@@ -1044,7 +1050,7 @@ export default class CanvasFoldingPlugin extends Plugin {
         this.showEntireBranch(context, nodeId);
       }),
     );
-    menu.showAtMouseEvent(event);
+    menu.showAtPosition(position);
   }
 
   private setBranchVisibleDepth(
@@ -1121,7 +1127,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.notifySuccess(
       expanding
         ? "Expanded selected branch."
-        : `Collapsed branch with ${descendants.length} descendants.`,
+        : `Collapsed branch with ${formatDescendantCount(descendants.length)}.`,
     );
   }
 

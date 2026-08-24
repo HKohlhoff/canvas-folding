@@ -2,13 +2,21 @@ import type {
   ActiveCanvasContext,
   CanvasNodeElementHandle,
 } from "../canvas/adapter";
-import type { BranchControlModel } from "./control-model";
+import {
+  formatDescendantCount,
+  type BranchControlModel,
+} from "./control-model";
 
 interface ControlEntry {
   activate: () => void;
   button: HTMLButtonElement;
   leaf: object;
-  openContextMenu: (event: MouseEvent) => void;
+  openContextMenu: (position: BranchMenuPosition) => void;
+}
+
+export interface BranchMenuPosition {
+  x: number;
+  y: number;
 }
 
 export class CanvasBranchControlManager {
@@ -21,7 +29,7 @@ export class CanvasBranchControlManager {
     onContextMenu: (
       context: ActiveCanvasContext,
       nodeId: string,
-      event: MouseEvent,
+      position: BranchMenuPosition,
     ) => void,
   ): void {
     const modelsByNodeId = new Map(models.map((model) => [model.nodeId, model]));
@@ -50,8 +58,8 @@ export class CanvasBranchControlManager {
       entry.activate = () => {
         onToggle(context, nodeView.id);
       };
-      entry.openContextMenu = (event) => {
-        onContextMenu(context, nodeView.id, event);
+      entry.openContextMenu = (position) => {
+        onContextMenu(context, nodeView.id, position);
       };
       updateButton(entry.button, model);
     }
@@ -92,6 +100,12 @@ export class CanvasBranchControlManager {
       blockCanvasInteraction(event);
       openContextMenuAfterPointerRelease(event, entry.openContextMenu);
     });
+    button.addEventListener("keydown", (event) => {
+      if (!isBranchMenuKeyboardEvent(event)) return;
+      blockCanvasInteraction(event);
+      const bounds = button.getBoundingClientRect();
+      entry.openContextMenu({ x: bounds.right, y: bounds.bottom });
+    });
 
     this.entries.set(host, entry);
     return entry;
@@ -103,13 +117,20 @@ function updateButton(
   model: BranchControlModel,
 ): void {
   const action = model.collapsed ? "Expand" : "Collapse";
-  const label = `${action} branch with ${model.descendantCount} descendants`;
-  const title = `${label}. Right-click to choose visible levels.`;
+  const label = `${action} branch with ${formatDescendantCount(model.descendantCount)}`;
+  const title = `${label}. Right-click or press Shift+F10 to choose visible levels.`;
 
   button.textContent = model.collapsed ? "+" : "−";
   button.title = title;
-  button.setAttribute("aria-label", title);
-  button.setAttribute("aria-expanded", String(!model.collapsed));
+  button.setAttribute("aria-haspopup", "menu");
+  button.setAttribute("aria-keyshortcuts", "Shift+F10");
+  button.setAttribute("aria-label", label);
+}
+
+export function isBranchMenuKeyboardEvent(
+  event: Pick<KeyboardEvent, "key" | "shiftKey">,
+): boolean {
+  return event.key === "ContextMenu" || (event.key === "F10" && event.shiftKey);
 }
 
 function blockCanvasInteraction(event: Event): void {
@@ -119,11 +140,12 @@ function blockCanvasInteraction(event: Event): void {
 
 function openContextMenuAfterPointerRelease(
   event: MouseEvent,
-  openContextMenu: (event: MouseEvent) => void,
+  openContextMenu: (position: BranchMenuPosition) => void,
 ): void {
+  const position = { x: event.clientX, y: event.clientY };
   const button = event.currentTarget as HTMLButtonElement | null;
   if (button === null || event.buttons === 0) {
-    openContextMenu(event);
+    openContextMenu(position);
     return;
   }
 
@@ -137,10 +159,10 @@ function openContextMenuAfterPointerRelease(
     );
     const ownerWindow = ownerDocument.defaultView;
     if (ownerWindow === null) {
-      openContextMenu(event);
+      openContextMenu(position);
     } else {
       ownerWindow.setTimeout(() => {
-        openContextMenu(event);
+        openContextMenu(position);
       }, 0);
     }
   };

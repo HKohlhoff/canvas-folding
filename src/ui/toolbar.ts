@@ -4,6 +4,11 @@ import type { ActiveCanvasContext } from "../canvas/adapter";
 import type {
   ToolbarAction,
   ToolbarButtonModel,
+  ToolbarPosition,
+} from "./toolbar-model";
+import {
+  getToolbarButtonAriaPressed,
+  moveToolbarPositionWithArrowKey,
 } from "./toolbar-model";
 
 export {
@@ -23,8 +28,8 @@ export class CanvasToolbarManager {
     context: ActiveCanvasContext,
     models: readonly ToolbarButtonModel[],
     onAction: (action: ToolbarAction) => void,
-    position: { xPercent: number; yPixels: number },
-    onPositionChange: (position: { xPercent: number; yPixels: number }) => void,
+    position: ToolbarPosition,
+    onPositionChange: (position: ToolbarPosition) => void,
   ): void {
     let entry = this.entries.get(context.leaf);
     if (entry !== undefined && entry.host !== context.toolbarHost) {
@@ -46,23 +51,33 @@ export class CanvasToolbarManager {
     applyPosition(entry.toolbar, position);
     const dragHandle = entry.toolbar.createEl("button", {
       cls: "clickable-icon canvas-folding-toolbar-drag-handle",
-      attr: { "aria-label": "Move canvas toolbar", title: "Move canvas toolbar", type: "button" },
+      attr: {
+        "aria-label": "Move canvas toolbar",
+        title: "Move canvas toolbar by dragging or using the arrow keys",
+        type: "button",
+      },
     });
     setIcon(dragHandle, "grip-vertical");
     installDrag(dragHandle, entry.toolbar, entry.host, onPositionChange);
     for (const model of models) {
       if (model.separatorBefore) {
-        entry.toolbar.createDiv({ cls: "canvas-folding-toolbar-separator" });
+        entry.toolbar.createDiv({
+          cls: "canvas-folding-toolbar-separator",
+          attr: { "aria-orientation": "vertical", role: "separator" },
+        });
       }
       const button = entry.toolbar.createEl("button", {
         cls: "clickable-icon canvas-folding-toolbar-button",
         attr: {
           "aria-label": model.label,
-          "aria-pressed": model.active === undefined ? "false" : String(model.active),
           title: model.label,
           type: "button",
         },
       });
+      const ariaPressed = getToolbarButtonAriaPressed(model);
+      if (ariaPressed !== null) {
+        button.setAttribute("aria-pressed", ariaPressed);
+      }
       button.disabled = model.disabled === true;
       button.classList.toggle("is-active", model.active === true);
       setIcon(button, model.icon);
@@ -71,6 +86,13 @@ export class CanvasToolbarManager {
         if (!button.disabled) onAction(model.action);
       });
     }
+    installKeyboardMove(
+      dragHandle,
+      entry.toolbar,
+      entry.host,
+      position,
+      onPositionChange,
+    );
   }
 
   removeAll(): void {
@@ -81,7 +103,7 @@ export class CanvasToolbarManager {
 
 function applyPosition(
   toolbar: HTMLElement,
-  position: { xPercent: number; yPixels: number },
+  position: ToolbarPosition,
 ): void {
   toolbar.style.left = `${position.xPercent}%`;
   toolbar.style.top = `${position.yPixels}px`;
@@ -91,7 +113,7 @@ function installDrag(
   handle: HTMLButtonElement,
   toolbar: HTMLElement,
   host: HTMLElement,
-  onPositionChange: (position: { xPercent: number; yPixels: number }) => void,
+  onPositionChange: (position: ToolbarPosition) => void,
 ): void {
   handle.addEventListener("pointerdown", (event) => {
     blockCanvasInteraction(event);
@@ -125,6 +147,33 @@ function installDrag(
     handle.addEventListener("pointermove", move);
     handle.addEventListener("pointerup", finish);
     handle.addEventListener("pointercancel", finish);
+  });
+}
+
+function installKeyboardMove(
+  handle: HTMLButtonElement,
+  toolbar: HTMLElement,
+  host: HTMLElement,
+  initialPosition: ToolbarPosition,
+  onPositionChange: (position: ToolbarPosition) => void,
+): void {
+  let position = { ...initialPosition };
+  handle.addEventListener("keydown", (event) => {
+    const hostRect = host.getBoundingClientRect();
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const halfWidthPercent = hostRect.width === 0
+      ? 0
+      : Math.min(50, (toolbarRect.width / 2 / hostRect.width) * 100);
+    const next = moveToolbarPositionWithArrowKey(position, event.key, {
+      minXPercent: halfWidthPercent,
+      maxXPercent: 100 - halfWidthPercent,
+      maxYPixels: Math.max(0, hostRect.height - toolbarRect.height),
+    });
+    if (next === null) return;
+    blockCanvasInteraction(event);
+    position = next;
+    applyPosition(toolbar, position);
+    onPositionChange(position);
   });
 }
 

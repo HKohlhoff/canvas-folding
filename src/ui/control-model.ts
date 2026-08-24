@@ -7,6 +7,10 @@ export interface BranchControlModel {
   nodeId: string;
 }
 
+export function formatDescendantCount(count: number): string {
+  return `${count} descendant${count === 1 ? "" : "s"}`;
+}
+
 export function buildBranchControlModels(
   graph: CanvasGraph,
   state: Pick<BranchCollapseState, "getHiddenNodeIds">,

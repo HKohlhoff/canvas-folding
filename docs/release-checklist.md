@@ -40,6 +40,8 @@ npm run build:prod
 - Open the same Canvas in two leaves and verify that controls, focus and visibility remain leaf-specific.
 - Navigate away and back in one leaf, then close and reopen the leaf with persistence disabled and enabled.
 - Disable and re-enable Canvas Folding and verify that no managed classes, controls or interaction handlers remain stale.
+- Reach branch controls by keyboard; use Enter/Space to toggle and Shift+F10 or the context-menu key to open the levels menu.
+- Move the toolbar handle with every arrow key and verify that it remains inside a narrow Canvas view.
 
 ## Repository Hygiene
 

@@ -3,7 +3,11 @@ import test from "node:test";
 
 import { buildCanvasGraph } from "../../src/tree/graph";
 import { BranchCollapseState } from "../../src/tree/state";
-import { buildToolbarButtonModels } from "../../src/ui/toolbar-model";
+import {
+  buildToolbarButtonModels,
+  getToolbarButtonAriaPressed,
+  moveToolbarPositionWithArrowKey,
+} from "../../src/ui/toolbar-model";
 
 const graph = buildCanvasGraph({
   nodes: [
@@ -46,5 +50,60 @@ void test("uses a closed eye while branch controls are hidden", () => {
   assert.equal(
     controls.find((control) => control.action === "toggle-controls")?.active,
     undefined,
+  );
+  assert.equal(
+    controls.find((control) => control.action === "toggle-controls")?.label,
+    "Show branch controls",
+  );
+});
+
+void test("only exposes aria-pressed for actual toggle buttons", () => {
+  const controls = buildToolbarButtonModels(
+    graph,
+    new BranchCollapseState(),
+    [],
+    true,
+  );
+
+  assert.equal(
+    getToolbarButtonAriaPressed(
+      controls.find((control) => control.action === "collapse-all") ?? {},
+    ),
+    null,
+  );
+  assert.equal(
+    getToolbarButtonAriaPressed(
+      controls.find((control) => control.action === "toggle-focus") ?? {},
+    ),
+    "false",
+  );
+});
+
+void test("moves and clamps the toolbar with arrow keys", () => {
+  const bounds = { minXPercent: 10, maxXPercent: 90, maxYPixels: 100 };
+
+  assert.deepEqual(
+    moveToolbarPositionWithArrowKey(
+      { xPercent: 50, yPixels: 20 },
+      "ArrowRight",
+      bounds,
+    ),
+    { xPercent: 52, yPixels: 20 },
+  );
+  assert.deepEqual(
+    moveToolbarPositionWithArrowKey(
+      { xPercent: 10, yPixels: 0 },
+      "ArrowLeft",
+      bounds,
+    ),
+    { xPercent: 10, yPixels: 0 },
+  );
+  assert.equal(
+    moveToolbarPositionWithArrowKey(
+      { xPercent: 50, yPixels: 20 },
+      "Enter",
+      bounds,
+    ),
+    null,
   );
 });

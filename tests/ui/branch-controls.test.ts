@@ -6,7 +6,10 @@ import type {
   CanvasElementHandle,
   CanvasNodeElementHandle,
 } from "../../src/canvas/adapter";
-import { CanvasBranchControlManager } from "../../src/ui/branch-controls";
+import {
+  CanvasBranchControlManager,
+  isBranchMenuKeyboardEvent,
+} from "../../src/ui/branch-controls";
 import type { BranchControlModel } from "../../src/ui/control-model";
 
 const MODEL: BranchControlModel = {
@@ -51,6 +54,28 @@ void test("removes controls from every managed leaf during cleanup", () => {
 
   assert.equal(first.button.removed, true);
   assert.equal(second.button.removed, true);
+});
+
+void test("uses singular descendant labels and exposes the levels menu", () => {
+  const manager = new CanvasBranchControlManager();
+  const entry = createContext("test.canvas", {});
+
+  sync(manager, entry.context);
+
+  assert.equal(entry.button.attributes.get("aria-haspopup"), "menu");
+  assert.equal(entry.button.attributes.get("aria-keyshortcuts"), "Shift+F10");
+  assert.equal(entry.button.attributes.has("aria-expanded"), false);
+  assert.equal(
+    entry.button.attributes.get("aria-label"),
+    "Collapse branch with 1 descendant",
+  );
+});
+
+void test("recognizes standard keyboard shortcuts for the levels menu", () => {
+  assert.equal(isBranchMenuKeyboardEvent({ key: "ContextMenu", shiftKey: false }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: true }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: false }), false);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "Enter", shiftKey: false }), false);
 });
 
 function sync(
@@ -122,6 +147,7 @@ function createStyle(): CanvasElementHandle["style"] {
 }
 
 class FakeButton {
+  readonly attributes = new Map<string, string>();
   className = "";
   removed = false;
   textContent: string | null = null;
@@ -137,7 +163,7 @@ class FakeButton {
     this.removed = true;
   }
 
-  setAttribute(): void {
-    // Attribute values are outside this manager-state test.
+  setAttribute(name: string, value: string): void {
+    this.attributes.set(name, value);
   }
 }
