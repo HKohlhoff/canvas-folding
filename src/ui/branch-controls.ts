@@ -35,10 +35,11 @@ export class CanvasBranchControlManager {
       position: BranchMenuPosition,
     ) => void,
   ): void {
-    this.nodeOrderByLeaf.set(
-      context.leaf,
+    const nodeOrder = getBranchControlTabOrder(
       models.map((model) => model.nodeId),
+      context.selectedNodeIds,
     );
+    this.nodeOrderByLeaf.set(context.leaf, nodeOrder);
     const modelsByNodeId = new Map(models.map((model) => [model.nodeId, model]));
     const currentHosts = new Set(context.nodeViews.map((view) => view.element));
 
@@ -73,7 +74,7 @@ export class CanvasBranchControlManager {
       updateButton(entry.button, model);
     }
 
-    const firstNodeId = models[0]?.nodeId;
+    const firstNodeId = nodeOrder[0];
     for (const entry of this.entries.values()) {
       if (entry.leaf === context.leaf) {
         entry.button.tabIndex = entry.nodeId === firstNodeId ? 0 : -1;
@@ -189,23 +190,32 @@ function updateButton(
 ): void {
   const action = model.collapsed ? "Expand" : "Collapse";
   const label = `${action} branch with ${formatDescendantCount(model.descendantCount)}`;
-  const title = `${label}. Right-click, press Shift+F10, or press Alt+Enter to choose visible levels.`;
+  const title = `${label}. Right-click or press Shift+F10 to choose visible levels.`;
 
   button.textContent = model.collapsed ? "+" : "−";
   button.title = title;
   button.setAttribute("aria-haspopup", "menu");
-  button.setAttribute("aria-keyshortcuts", "Shift+F10 Alt+Enter");
+  button.setAttribute("aria-keyshortcuts", "Shift+F10");
   button.setAttribute("aria-label", label);
 }
 
 export function isBranchMenuKeyboardEvent(
-  event: Pick<KeyboardEvent, "altKey" | "key" | "shiftKey">,
+  event: Pick<KeyboardEvent, "key" | "shiftKey">,
 ): boolean {
-  return (
-    event.key === "ContextMenu" ||
-    (event.key === "F10" && event.shiftKey) ||
-    (event.key === "Enter" && event.altKey)
-  );
+  return event.key === "ContextMenu" || (event.key === "F10" && event.shiftKey);
+}
+
+export function getBranchControlTabOrder(
+  orderedNodeIds: readonly string[],
+  selectedNodeIds: readonly string[],
+): readonly string[] {
+  if (selectedNodeIds.length !== 1) return orderedNodeIds;
+  const selectedIndex = orderedNodeIds.indexOf(selectedNodeIds[0] ?? "");
+  if (selectedIndex <= 0) return orderedNodeIds;
+  return [
+    ...orderedNodeIds.slice(selectedIndex),
+    ...orderedNodeIds.slice(0, selectedIndex),
+  ];
 }
 
 export function getAdjacentBranchControlId(

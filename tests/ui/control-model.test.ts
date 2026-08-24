@@ -83,7 +83,7 @@ void test("treats group, file, link and text nodes consistently", () => {
   );
 });
 
-void test("orders branch controls from top to bottom and left to right", () => {
+void test("orders root branch controls by their canvas position", () => {
   const graph = buildCanvasGraph({
     nodes: [
       { id: "BOTTOM", type: "text", x: 0, y: 200 },
@@ -106,7 +106,7 @@ void test("orders branch controls from top to bottom and left to right", () => {
   );
 });
 
-void test("treats slightly staggered nodes as one visual row", () => {
+void test("orders sibling branches from top to bottom", () => {
   const graph = buildCanvasGraph({
     nodes: [
       { id: "RIGHT", type: "text", x: 200, y: 0 },
@@ -125,7 +125,80 @@ void test("treats slightly staggered nodes as one visual row", () => {
     buildBranchControlModels(graph, new BranchCollapseState()).map(
       (model) => model.nodeId,
     ),
-    ["LEFT", "RIGHT", "BOTTOM"],
+    ["RIGHT", "LEFT", "BOTTOM"],
+  );
+});
+
+void test("finishes an upper child branch before visiting its lower sibling", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "ROOT", type: "text", x: 0, y: 0 },
+      { id: "LOWER", type: "text", x: 200, y: 200 },
+      { id: "UPPER", type: "text", x: 200, y: 0 },
+      { id: "UPPER_CHILD", type: "text", x: 400, y: 0 },
+      { id: "UPPER_LEAF", type: "text", x: 600, y: 0 },
+      { id: "LOWER_LEAF", type: "text", x: 400, y: 200 },
+    ],
+    edges: [
+      { id: "RU", fromNode: "ROOT", toNode: "UPPER" },
+      { id: "RL", fromNode: "ROOT", toNode: "LOWER" },
+      { id: "UU", fromNode: "UPPER", toNode: "UPPER_CHILD" },
+      { id: "UL", fromNode: "UPPER_CHILD", toNode: "UPPER_LEAF" },
+      { id: "LL", fromNode: "LOWER", toNode: "LOWER_LEAF" },
+    ],
+  });
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, new BranchCollapseState()).map(
+      (model) => model.nodeId,
+    ),
+    ["ROOT", "UPPER", "UPPER_CHILD", "LOWER"],
+  );
+});
+
+void test("keeps depth-first control ordering finite for a rootless cycle", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "A", type: "text", x: 0, y: 0 },
+      { id: "B", type: "text", x: 200, y: 0 },
+    ],
+    edges: [
+      { id: "AB", fromNode: "A", toNode: "B" },
+      { id: "BA", fromNode: "B", toNode: "A" },
+    ],
+  });
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, new BranchCollapseState()).map(
+      (model) => model.nodeId,
+    ),
+    ["A", "B"],
+  );
+});
+
+void test("visits a shared descendant control only once", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "ROOT", type: "text", x: 0, y: 0 },
+      { id: "UPPER", type: "text", x: 200, y: 0 },
+      { id: "LOWER", type: "text", x: 200, y: 200 },
+      { id: "SHARED", type: "text", x: 400, y: 100 },
+      { id: "LEAF", type: "text", x: 600, y: 100 },
+    ],
+    edges: [
+      { id: "RU", fromNode: "ROOT", toNode: "UPPER" },
+      { id: "RL", fromNode: "ROOT", toNode: "LOWER" },
+      { id: "US", fromNode: "UPPER", toNode: "SHARED" },
+      { id: "LS", fromNode: "LOWER", toNode: "SHARED" },
+      { id: "SL", fromNode: "SHARED", toNode: "LEAF" },
+    ],
+  });
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, new BranchCollapseState()).map(
+      (model) => model.nodeId,
+    ),
+    ["ROOT", "UPPER", "SHARED", "LOWER"],
   );
 });
 

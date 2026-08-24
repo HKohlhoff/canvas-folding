@@ -42,7 +42,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
-- Preserve keyboard focus after Canvas Folding actions, use spatial branch-control order and handle Space explicitly in the toolbar.
+- Preserve keyboard focus after Canvas Folding actions, use depth-first branch-control order with a selected-parent entry point and handle Space explicitly in the toolbar.
 - Count automatically hidden Canvas groups correctly in the status summary.
 - Hide edge labels together with collapsed Canvas branches.
 - Place branch controls inside nodes to avoid standard Canvas edge and resize handles.

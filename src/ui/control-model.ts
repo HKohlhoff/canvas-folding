@@ -17,7 +17,7 @@ export function buildBranchControlModels(
 ): readonly BranchControlModel[] {
   const hiddenNodeIds = state.getHiddenNodeIds(graph);
 
-  return getNodesInVisualOrder(graph.nodes).flatMap((node) => {
+  return getNodesInDepthFirstOrder(graph).flatMap((node) => {
     if (hiddenNodeIds.has(node.id)) {
       return [];
     }
@@ -38,44 +38,46 @@ export function buildBranchControlModels(
   });
 }
 
-function getNodesInVisualOrder(
-  nodes: CanvasGraph["nodes"],
-): CanvasGraph["nodes"] {
-  const indexedNodes = nodes.map((node, index) => ({ index, node }));
-  if (
-    indexedNodes.some(
-      ({ node }) => node.x === undefined || node.y === undefined,
-    )
-  ) {
-    return nodes;
-  }
-
-  const byTopEdge = [...indexedNodes].sort(
-    (left, right) =>
-      (left.node.y ?? 0) - (right.node.y ?? 0) ||
-      (left.node.x ?? 0) - (right.node.x ?? 0) ||
-      left.index - right.index,
+function getNodesInDepthFirstOrder(graph: CanvasGraph): CanvasGraph["nodes"] {
+  const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
+  const sourceIndexById = new Map(
+    graph.nodes.map((node, index) => [node.id, index]),
   );
-  const rows: Array<typeof indexedNodes> = [];
-  const rowTopEdges: number[] = [];
-  const rowTolerancePixels = 24;
-  for (const indexedNode of byTopEdge) {
-    const nodeTop = indexedNode.node.y ?? 0;
-    const lastRowTop = rowTopEdges[rowTopEdges.length - 1];
-    if (lastRowTop === undefined || nodeTop - lastRowTop > rowTolerancePixels) {
-      rows.push([indexedNode]);
-      rowTopEdges.push(nodeTop);
-    } else {
-      rows[rows.length - 1]?.push(indexedNode);
+  const orderedNodes: CanvasGraph["nodes"][number][] = [];
+  const visitedNodeIds = new Set<string>();
+  const compareNodeIds = (leftId: string, rightId: string): number => {
+    const left = nodesById.get(leftId);
+    const right = nodesById.get(rightId);
+    if (
+      left?.x !== undefined &&
+      left.y !== undefined &&
+      right?.x !== undefined &&
+      right.y !== undefined
+    ) {
+      return left.y - right.y || left.x - right.x;
     }
-  }
+    return (
+      (sourceIndexById.get(leftId) ?? 0) -
+      (sourceIndexById.get(rightId) ?? 0)
+    );
+  };
+  const visit = (startNodeIds: readonly string[]): void => {
+    const stack = [...startNodeIds].sort(compareNodeIds).reverse();
+    while (stack.length > 0) {
+      const nodeId = stack.pop();
+      if (nodeId === undefined || visitedNodeIds.has(nodeId)) continue;
+      const node = nodesById.get(nodeId);
+      if (node === undefined) continue;
+      visitedNodeIds.add(nodeId);
+      orderedNodes.push(node);
+      const children = [...(graph.childrenByNode.get(nodeId) ?? [])]
+        .sort(compareNodeIds)
+        .reverse();
+      stack.push(...children);
+    }
+  };
 
-  return rows.flatMap((row) =>
-    row
-      .sort(
-        (left, right) =>
-          (left.node.x ?? 0) - (right.node.x ?? 0) || left.index - right.index,
-      )
-      .map(({ node }) => node),
-  );
+  visit(graph.rootIds);
+  visit(graph.nodes.map((node) => node.id));
+  return orderedNodes;
 }

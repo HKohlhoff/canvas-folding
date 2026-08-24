@@ -9,6 +9,7 @@ import type {
 import {
   CanvasBranchControlManager,
   getAdjacentBranchControlId,
+  getBranchControlTabOrder,
   isBranchMenuKeyboardEvent,
 } from "../../src/ui/branch-controls";
 import type { BranchControlModel } from "../../src/ui/control-model";
@@ -66,7 +67,7 @@ void test("uses singular descendant labels and exposes the levels menu", () => {
   assert.equal(entry.button.attributes.get("aria-haspopup"), "menu");
   assert.equal(
     entry.button.attributes.get("aria-keyshortcuts"),
-    "Shift+F10 Alt+Enter",
+    "Shift+F10",
   );
   assert.equal(entry.button.attributes.has("aria-expanded"), false);
   assert.equal(
@@ -77,18 +78,29 @@ void test("uses singular descendant labels and exposes the levels menu", () => {
 });
 
 void test("recognizes standard keyboard shortcuts for the levels menu", () => {
-  assert.equal(isBranchMenuKeyboardEvent({ altKey: false, key: "ContextMenu", shiftKey: false }), true);
-  assert.equal(isBranchMenuKeyboardEvent({ altKey: false, key: "F10", shiftKey: true }), true);
-  assert.equal(isBranchMenuKeyboardEvent({ altKey: true, key: "Enter", shiftKey: false }), true);
-  assert.equal(isBranchMenuKeyboardEvent({ altKey: false, key: "Enter", shiftKey: false }), false);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "ContextMenu", shiftKey: false }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: true }), true);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "F10", shiftKey: false }), false);
+  assert.equal(isBranchMenuKeyboardEvent({ key: "Enter", shiftKey: false }), false);
 });
 
-void test("moves through the spatial branch-control order", () => {
-  const order = ["TOP_LEFT", "TOP_RIGHT", "BOTTOM"];
+void test("moves through the depth-first branch-control order", () => {
+  const order = ["ROOT", "UPPER", "UPPER_CHILD", "LOWER"];
 
-  assert.equal(getAdjacentBranchControlId(order, "TOP_LEFT", false), "TOP_RIGHT");
-  assert.equal(getAdjacentBranchControlId(order, "BOTTOM", true), "TOP_RIGHT");
-  assert.equal(getAdjacentBranchControlId(order, "BOTTOM", false), null);
+  assert.equal(getAdjacentBranchControlId(order, "UPPER", false), "UPPER_CHILD");
+  assert.equal(getAdjacentBranchControlId(order, "LOWER", true), "UPPER_CHILD");
+  assert.equal(getAdjacentBranchControlId(order, "LOWER", false), null);
+});
+
+void test("starts the tab order at the single selected parent control", () => {
+  const order = ["ROOT", "UPPER", "UPPER_CHILD", "LOWER"];
+
+  assert.deepEqual(
+    getBranchControlTabOrder(order, ["UPPER"]),
+    ["UPPER", "UPPER_CHILD", "LOWER", "ROOT"],
+  );
+  assert.equal(getBranchControlTabOrder(order, ["LEAF"]), order);
+  assert.equal(getBranchControlTabOrder(order, ["UPPER", "LOWER"]), order);
 });
 
 function sync(
