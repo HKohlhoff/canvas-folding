@@ -43,7 +43,7 @@ export class CanvasToolbarManager {
         cls: "canvas-folding-toolbar",
         attr: { "aria-label": "Canvas Folding commands", role: "toolbar" },
       });
-      toolbar.addEventListener("pointerdown", blockCanvasInteraction);
+      toolbar.addEventListener("pointerdown", stopCanvasPropagation);
       entry = { host: context.toolbarHost, toolbar };
       this.entries.set(context.leaf, entry);
     }
@@ -208,5 +208,9 @@ function installKeyboardMove(
 
 function blockCanvasInteraction(event: Event): void {
   event.preventDefault();
+  event.stopPropagation();
+}
+
+function stopCanvasPropagation(event: Event): void {
   event.stopPropagation();
 }

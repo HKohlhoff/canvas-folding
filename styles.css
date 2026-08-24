@@ -21,6 +21,7 @@
   padding: 4px;
   position: absolute;
   top: 8px;
+  touch-action: pan-x;
   transform: translateX(-50%);
   z-index: 50;
 }
@@ -77,6 +78,7 @@
   top: 8px;
   width: 20px;
   z-index: 30;
+  touch-action: manipulation;
 }
 
 .canvas-folding-branch-control:hover,
@@ -84,4 +86,12 @@
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
   color: var(--text-on-accent);
+}
+
+@media (pointer: coarse) {
+  .canvas-folding-branch-control {
+    font-size: 18px;
+    height: 32px;
+    width: 32px;
+  }
 }

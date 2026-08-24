@@ -42,6 +42,7 @@ npm run build:prod
 - Disable and re-enable Canvas Folding and verify that no managed classes, controls or interaction handlers remain stale.
 - Reach branch controls in depth-first order, with upper siblings first. Select a parent and verify that the next pass starts at its control. Use Enter/Space to toggle and Shift+F10 or the context-menu key to open the levels menu. Verify focus remains on the invoked function.
 - Move the toolbar handle with every arrow key and verify that it remains inside a narrow Canvas view.
+- On a touch device, tap a branch control, drag the toolbar handle, horizontally scroll a narrow toolbar and check whether a long press opens the branch-level menu.
 
 ## Repository Hygiene
 

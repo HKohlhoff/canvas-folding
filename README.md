@@ -25,6 +25,8 @@ Parent-Nodes erhalten einen `−`-Button; sind direkte Kinder ausgeblendet, wech
 
 Die Branch-Controls sind per Tastatur in Tiefenreihenfolge erreichbar: Von einem Parent wird zuerst der obere Kind-Zweig vollständig durchlaufen, bevor der nächste, darunterliegende Geschwisterzweig folgt. Ist genau ein Parent ausgewählt, beginnt der nächste Durchlauf an dessen Control. `Enter` oder `Leertaste` klappt den Zweig ein beziehungsweise aus; `Umschalt+F10` oder die Kontextmenütaste öffnet die Ebenenauswahl. Der Griff der Canvas-Toolbar lässt sich außer durch Ziehen auch mit den Pfeiltasten bewegen. Nach einer Tastaturaktion bleibt der Fokus auf der ausgelösten Funktion.
 
+Auf Geräten mit grobem Zeiger werden die Branch-Controls vergrößert. Die Toolbar lässt sich horizontal per Touch scrollen, ihr Griff verwendet Pointer-Events zum Verschieben. Das Öffnen der Ebenenauswahl per Langdruck hängt davon ab, ob die jeweilige Obsidian-/WebView-Version dabei ein Kontextmenü-Ereignis bereitstellt; dieser Pfad ist derzeit nicht auf einem realen Touchgerät verifiziert.
+
 Eine nicht leere Canvas-Gruppe wird zusammen mit ihrem Inhalt ausgeblendet, sobald alle vollständig in ihr enthaltenen Nodes ausgeblendet sind. Leere Gruppen sowie Gruppen mit mindestens einem sichtbaren enthaltenen Node bleiben sichtbar.
 
 Änderungen an der geöffneten Canvas-Struktur, Auswahlwechsel sowie Obsidian-Re-Renders werden entprellt erkannt. Controls, Toolbar-Aktionen und bestehende Folding-Zustände werden anschließend gegen den aktuellen Graphen aktualisiert. Ein neu hinzugefügter Nachfahre eines eingeklappten Zweigs bleibt mit seiner Kante sichtbar, solange er ausgewählt ist; nach dem Deselektieren wird er entsprechend dem Folding-Zustand verborgen.

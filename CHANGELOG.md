@@ -42,6 +42,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Keep a narrow toolbar horizontally touch-scrollable and enlarge branch controls for coarse pointers.
 - Preserve keyboard focus after Canvas Folding actions, use depth-first branch-control order with a selected-parent entry point and handle Space explicitly in the toolbar.
 - Count automatically hidden Canvas groups correctly in the status summary.
 - Hide edge labels together with collapsed Canvas branches.
