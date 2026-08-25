@@ -2,9 +2,9 @@ import { App, ItemView } from "obsidian";
 
 import type {
   CanvasGraphData,
-  CanvasGraphEdgeData,
-  CanvasGraphNodeData,
 } from "../tree/graph";
+
+import { parseCanvasGraphData } from "./graph-data";
 
 import {
   extractCanvasEdgeViews,
@@ -19,6 +19,8 @@ import {
   type CanvasNodeView,
   type CanvasSelectionRuntime,
 } from "./runtime-elements";
+
+export { parseCanvasGraphData } from "./graph-data";
 
 export type {
   CanvasEdgeView,
@@ -154,46 +156,6 @@ export function readActiveCanvasContext(
   };
 }
 
-export function parseCanvasGraphData(value: unknown): CanvasGraphData | null {
-  if (!isRecord(value) || !Array.isArray(value.nodes) || !Array.isArray(value.edges)) {
-    return null;
-  }
-
-  const nodes: CanvasGraphNodeData[] = [];
-  for (const valueNode of value.nodes) {
-    if (!isRecord(valueNode) || typeof valueNode.id !== "string") {
-      return null;
-    }
-
-    const geometry = readCanvasNodeGeometry(valueNode);
-    nodes.push({
-      id: valueNode.id,
-      type: typeof valueNode.type === "string" ? valueNode.type : "unknown",
-      ...geometry,
-    });
-  }
-
-  const edges: CanvasGraphEdgeData[] = [];
-  for (const valueEdge of value.edges) {
-    if (
-      !isRecord(valueEdge) ||
-      typeof valueEdge.id !== "string" ||
-      typeof valueEdge.fromNode !== "string" ||
-      typeof valueEdge.toNode !== "string"
-    ) {
-      return null;
-    }
-
-    edges.push({
-      id: valueEdge.id,
-      fromNode: valueEdge.fromNode,
-      toNode: valueEdge.toNode,
-    });
-  }
-
-  return { nodes, edges };
-}
-
 function isCanvasRuntime(value: unknown): value is CanvasRuntime {
   return isRecord(value) && typeof value.getData === "function";
 }
@@ -220,26 +182,4 @@ function isRuntimeValueCollection(value: unknown): value is RuntimeValueCollecti
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-function readCanvasNodeGeometry(
-  node: Record<string, unknown>,
-): Pick<CanvasGraphNodeData, "x" | "y" | "width" | "height"> | undefined {
-  const { x, y, width, height } = node;
-  if (
-    typeof x !== "number" ||
-    !Number.isFinite(x) ||
-    typeof y !== "number" ||
-    !Number.isFinite(y) ||
-    typeof width !== "number" ||
-    !Number.isFinite(width) ||
-    width < 0 ||
-    typeof height !== "number" ||
-    !Number.isFinite(height) ||
-    height < 0
-  ) {
-    return undefined;
-  }
-
-  return { x, y, width, height };
 }

@@ -50,6 +50,9 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Recognize nodes and edges retained in a collapsed Advanced Canvas group after
+  Advanced Canvas is disabled, keeping Folding controls stable so standard
+  Canvas restores the complete group when the file is reopened.
 - Explain Folding branches with any descendants hidden inside collapsed Advanced Canvas groups in one consistent Obsidian tooltip, and omit runtime-empty depths from their level menus without changing external group state.
 - Preserve persisted folding state when Obsidian briefly exposes an empty Canvas runtime during view opening.
 - Remove the retired Shift+F10 branch-menu shortcut and its tooltip hint while retaining the context-menu key.

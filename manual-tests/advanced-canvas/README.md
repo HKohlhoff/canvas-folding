@@ -58,18 +58,24 @@ children.
 
 ## A – Lifecycle and load order
 
-- [ ] **AC-A01 · Folding first:** Disable both plugins, enable Canvas Folding,
+- [x] **AC-A01 · Folding first:** Disable both plugins, enable Canvas Folding,
   then Advanced Canvas, and reload. One Folding toolbar and one control per
   eligible node appear; selection, moving, resizing, and edge creation work.
-- [ ] **AC-A02 · Advanced first:** Repeat with the reverse enable order. The
+- [x] **AC-A02 · Advanced first:** Repeat with the reverse enable order. The
   result is identical.
-- [ ] **AC-A03 · Restart:** Restart Obsidian with both plugins enabled. No
+- [x] **AC-A03 · Restart:** Restart Obsidian with both plugins enabled. No
   duplicate controls, stale classes, observers, notices, or console errors
   appear.
-- [ ] **AC-A04 · Disable Advanced:** Collapse the inner group with Advanced
+- [x] **AC-A04 · Disable Advanced:** Collapse the inner group with Advanced
   Canvas, then disable Advanced Canvas while Folding remains active. Standard
   Canvas renders the stored nodes normally and Folding controls remain usable.
-- [ ] **AC-A05 · Re-enable Advanced:** Re-enable Advanced Canvas. Its group
+  The already open view may retain Advanced Canvas' transient collapsed-group
+  runtime and controls until the Canvas is closed and reopened; after that
+  standard Canvas must render all stored nodes normally.
+  **Verified:** With Folding persistence disabled, `C1` retains its `−` and
+  reopening restores the three contained nodes and their edges in standard
+  Canvas.
+- [x] **AC-A05 · Re-enable Advanced:** Re-enable Advanced Canvas. Its group
   state returns without changing the Canvas Folding state.
 - [ ] **AC-A06 · Disable Folding:** With an Advanced group collapsed, disable
   and re-enable Canvas Folding. Advanced state and controls remain intact; no
