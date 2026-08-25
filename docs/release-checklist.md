@@ -55,6 +55,9 @@ npm run build:prod
 
 Complete this gate before claiming unrestricted Advanced Canvas compatibility:
 
+- Complete and record every applicable required case in
+  `manual-tests/advanced-canvas/README.md` using its focused fixture and the
+  captured reference settings profile.
 - Record the tested Obsidian and Advanced Canvas versions.
 - Enable both plugins in both load orders, then reload Obsidian and restart it once.
 - Repeat the core folding matrix with text, file, image, link and group nodes, shared descendants and a cycle.

@@ -13,6 +13,12 @@ Before a clean pass:
    fresh state.
 4. Record platform, Obsidian version and result next to each test case.
 
+For the separate release gate with Advanced Canvas enabled, use the focused
+fixture, captured settings profile, and full matrix under
+[`advanced-canvas/`](advanced-canvas/README.md). The baseline cases below still
+start with Advanced Canvas disabled so regressions in standard Canvas remain
+independently visible.
+
 ## 01 – Basic tree
 
 File: `01-basic-tree.canvas`

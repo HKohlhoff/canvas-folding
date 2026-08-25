@@ -1,0 +1,17 @@
+{
+  "nodes": [
+    {"id":"ac00000000000002","type":"group","label":"Advanced outer group","x":300,"y":0,"width":900,"height":520,"color":"3"},
+    {"id":"ac00000000000003","type":"group","label":"Advanced inner group","x":620,"y":80,"width":520,"height":380,"color":"2"},
+    {"id":"ac00000000000001","type":"text","text":"Adv.Canvas root","dynamicHeight":true,"styleAttributes":{},"x":0,"y":220,"width":220,"height":60,"color":"2"},
+    {"id":"ac00000000000004","type":"text","text":"C1","dynamicHeight":true,"styleAttributes":{"border":null},"x":340,"y":220,"width":220,"height":60,"color":"2"},
+    {"id":"ac00000000000005","type":"text","text":"C2.1 · pill","dynamicHeight":true,"styleAttributes":{"shape":"pill"},"x":660,"y":120,"width":260,"height":60,"color":"2"},
+    {"id":"ac00000000000006","type":"text","text":"C2.2 · process","dynamicHeight":true,"styleAttributes":{"shape":"predefined-process"},"x":660,"y":230,"width":260,"height":60,"color":"2"},
+    {"id":"ac00000000000007","type":"text","text":"C2.3 · database","dynamicHeight":true,"styleAttributes":{"shape":"database"},"x":660,"y":340,"width":260,"height":60,"color":"2"}
+  ],
+  "edges": [
+    {"id":"ae00000000000001","fromNode":"ac00000000000001","fromSide":"right","toNode":"ac00000000000004","toSide":"left","color":"2","styleAttributes":{},"toFloating":false},
+    {"id":"ae00000000000002","fromNode":"ac00000000000004","fromSide":"right","toNode":"ac00000000000005","toSide":"left","color":"2","styleAttributes":{},"toFloating":false},
+    {"id":"ae00000000000003","fromNode":"ac00000000000004","fromSide":"right","toNode":"ac00000000000006","toSide":"left","color":"2","styleAttributes":{},"toFloating":false},
+    {"id":"ae00000000000004","fromNode":"ac00000000000004","fromSide":"right","toNode":"ac00000000000007","toSide":"left","color":"2","styleAttributes":{},"toFloating":false}
+  ]
+}
