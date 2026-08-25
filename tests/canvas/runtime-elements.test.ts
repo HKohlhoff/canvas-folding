@@ -3,10 +3,33 @@ import test from "node:test";
 
 import {
   extractCanvasEdgeViews,
+  extractCanvasNodeViews,
   extractCanvasPathFromViewState,
   resolveCanvasKey,
   type CanvasElementHandle,
 } from "../../src/canvas/runtime-elements";
+
+void test("recognizes an externally collapsed group defensively", () => {
+  const nodeViews = extractCanvasNodeViews([
+    {
+      getData: () => ({
+        collapsed: true,
+        collapsedData: { nodes: [{ id: "CHILD" }] },
+        type: "group",
+      }),
+      id: "GROUP",
+      nodeEl: createNodeElement(),
+    },
+    {
+      getData: () => ({ collapsed: true, type: "text" }),
+      id: "TEXT",
+      nodeEl: createNodeElement(),
+    },
+  ]);
+
+  assert.deepEqual(nodeViews[0]?.externallyCollapsedNodeIds, ["CHILD"]);
+  assert.equal(nodeViews[1]?.externallyCollapsedNodeIds, undefined);
+});
 
 void test("extracts all visible and interactive elements from an edge", () => {
   const line = createElement();
@@ -69,5 +92,14 @@ function createElement(): CanvasElementHandle {
       removeProperty: () => "",
       setProperty: () => undefined,
     },
+  };
+}
+
+function createNodeElement(): CanvasElementHandle & {
+  createEl(): HTMLElement;
+} {
+  return {
+    ...createElement(),
+    createEl: () => ({}) as HTMLElement,
   };
 }

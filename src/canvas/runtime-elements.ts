@@ -12,6 +12,7 @@ export interface CanvasElementHandle {
 export interface CanvasNodeView {
   id: string;
   element: CanvasNodeElementHandle;
+  externallyCollapsedNodeIds?: readonly string[];
 }
 
 export interface CanvasNodeElementHandle extends CanvasElementHandle {
@@ -35,6 +36,10 @@ export interface CanvasSelectionRuntime {
   updateSelection(update: () => void): void;
 }
 
+interface CanvasNodeDataRuntime {
+  getData(): unknown;
+}
+
 export function extractCanvasNodeViews(
   values: Iterable<unknown>,
 ): CanvasNodeView[] {
@@ -46,10 +51,40 @@ export function extractCanvasNodeViews(
 
     const element = asCanvasNodeElement(value.nodeEl);
     if (element !== null) {
-      nodeViews.push({ id: value.id, element });
+      const externallyCollapsedNodeIds = readExternallyCollapsedNodeIds(value);
+      nodeViews.push({
+        id: value.id,
+        element,
+        ...(externallyCollapsedNodeIds.length > 0
+          ? { externallyCollapsedNodeIds }
+          : {}),
+      });
     }
   }
   return nodeViews;
+}
+
+function readExternallyCollapsedNodeIds(
+  value: Record<string, unknown>,
+): readonly string[] {
+  if (typeof value.getData !== "function") return [];
+  try {
+    const data = (value as unknown as CanvasNodeDataRuntime).getData();
+    if (
+      !isRecord(data) ||
+      data.type !== "group" ||
+      data.collapsed !== true ||
+      !isRecord(data.collapsedData) ||
+      !Array.isArray(data.collapsedData.nodes)
+    ) {
+      return [];
+    }
+    return data.collapsedData.nodes.flatMap((node) =>
+      isRecord(node) && typeof node.id === "string" ? [node.id] : [],
+    );
+  } catch {
+    return [];
+  }
 }
 
 export function extractCanvasEdgeViews(

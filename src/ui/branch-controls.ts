@@ -190,13 +190,17 @@ function updateButton(
 ): void {
   const action = model.collapsed ? "Expand" : "Collapse";
   const label = `${action} branch with ${formatDescendantCount(model.descendantCount)}`;
-  const title = `${label}. Open the context menu to choose visible levels.`;
+  const externalGroupHint = model.externallyCollapsedDescendantCount !== undefined
+    ? ` Advanced Canvas currently hides ${formatDescendantCount(model.externallyCollapsedDescendantCount)} inside collapsed groups. Canvas Folding preserves those group states when this branch is collapsed or expanded.`
+    : "";
+  const tooltip = `${label}.${externalGroupHint} Open the context menu for branch display options.`;
 
   button.textContent = model.collapsed ? "+" : "−";
-  button.title = title;
+  button.removeAttribute("title");
   button.setAttribute("aria-haspopup", "menu");
   button.setAttribute("aria-keyshortcuts", "ContextMenu");
-  button.setAttribute("aria-label", label);
+  button.setAttribute("aria-label", tooltip);
+  button.removeAttribute("aria-description");
 }
 
 export function isBranchMenuKeyboardEvent(

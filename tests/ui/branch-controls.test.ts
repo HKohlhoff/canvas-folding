@@ -72,9 +72,35 @@ void test("uses singular descendant labels and exposes the levels menu", () => {
   assert.equal(entry.button.attributes.has("aria-expanded"), false);
   assert.equal(
     entry.button.attributes.get("aria-label"),
-    "Collapse branch with 1 descendant",
+    "Collapse branch with 1 descendant. Open the context menu for branch display options.",
   );
+  assert.equal(entry.button.title, "");
   assert.equal(entry.button.tabIndex, 0);
+});
+
+void test("explains descendants hidden by an Advanced Canvas group", () => {
+  const manager = new CanvasBranchControlManager();
+  const entry = createContext("test.canvas", {});
+
+  sync(manager, entry.context, {
+    ...MODEL,
+    externallyCollapsedDescendantCount: 1,
+  });
+
+  assert.match(
+    entry.button.attributes.get("aria-label") ?? "",
+    /Advanced Canvas currently hides/,
+  );
+  assert.match(
+    entry.button.attributes.get("aria-label") ?? "",
+    /preserves those group states/,
+  );
+  assert.match(
+    entry.button.attributes.get("aria-label") ?? "",
+    /branch display options/,
+  );
+  assert.equal(entry.button.attributes.has("aria-description"), false);
+  assert.equal(entry.button.title, "");
 });
 
 void test("recognizes only the context-menu key for the levels menu", () => {
@@ -105,10 +131,11 @@ void test("starts the tab order at the single selected parent control", () => {
 function sync(
   manager: CanvasBranchControlManager,
   context: ActiveCanvasContext,
+  model: BranchControlModel = MODEL,
 ): void {
   manager.sync(
     context,
-    [MODEL],
+    [model],
     () => undefined,
     () => undefined,
   );
@@ -186,6 +213,11 @@ class FakeButton {
 
   remove(): void {
     this.removed = true;
+  }
+
+  removeAttribute(name: string): void {
+    this.attributes.delete(name);
+    if (name === "title") this.title = "";
   }
 
   setAttribute(name: string, value: string): void {

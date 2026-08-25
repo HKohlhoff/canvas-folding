@@ -11,6 +11,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - A documented, self-contained demo Canvas with local note and image nodes.
 - A versioned optional `CanvasFoldingApi` v1 that exposes effective hidden node and edge IDs through the `canvas-folding` plugin instance.
 - A versioned manual V1 test collection with focused Canvas fixtures and an explicit command, lifecycle, keyboard and touch matrix.
+- A dedicated Advanced Canvas coexistence matrix, reproducible settings profile, and nested-group/style fixture.
 - Canvas Folding project identity and local hot-reload deployment support.
 - A read-only active Canvas adapter and graph diagnostics command.
 - Pure graph analysis with focused unit tests for roots, cycles, isolated nodes and dangling edges.
@@ -49,6 +50,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Explain Folding branches with any descendants hidden inside collapsed Advanced Canvas groups in one consistent Obsidian tooltip, and omit runtime-empty depths from their level menus without changing external group state.
 - Preserve persisted folding state when Obsidian briefly exposes an empty Canvas runtime during view opening.
 - Remove the retired Shift+F10 branch-menu shortcut and its tooltip hint while retaining the context-menu key.
 - Keep a Canvas group active during branch focus when it geometrically contains an active focused node.

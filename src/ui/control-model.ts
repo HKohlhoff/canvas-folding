@@ -1,10 +1,19 @@
-import { getDescendantIds, type CanvasGraph } from "../tree/graph";
+import {
+  getDescendantDepths,
+  getDescendantIds,
+  type CanvasGraph,
+} from "../tree/graph";
 import type { BranchCollapseState } from "../tree/state";
 
 export interface BranchControlModel {
   collapsed: boolean;
   descendantCount: number;
+  externallyCollapsedDescendantCount?: number;
   nodeId: string;
+}
+
+export interface BranchControlRuntimeState {
+  externallyCollapsedNodeIds: ReadonlySet<string>;
 }
 
 export function formatDescendantCount(count: number): string {
@@ -14,6 +23,7 @@ export function formatDescendantCount(count: number): string {
 export function buildBranchControlModels(
   graph: CanvasGraph,
   state: Pick<BranchCollapseState, "getHiddenNodeIds">,
+  runtime?: BranchControlRuntimeState,
 ): readonly BranchControlModel[] {
   const hiddenNodeIds = state.getHiddenNodeIds(graph);
 
@@ -26,16 +36,36 @@ export function buildBranchControlModels(
       return [];
     }
 
-    return [
-      {
-        nodeId: node.id,
-        collapsed: (graph.childrenByNode.get(node.id) ?? []).some((childId) =>
-          hiddenNodeIds.has(childId),
-        ),
-        descendantCount: descendantIds.length,
-      },
-    ];
+    const collapsed = (graph.childrenByNode.get(node.id) ?? []).some(
+      (childId) => hiddenNodeIds.has(childId),
+    );
+    const externallyCollapsedDescendantCount = runtime === undefined
+      ? 0
+      : descendantIds.filter((descendantId) =>
+        runtime.externallyCollapsedNodeIds.has(descendantId),
+      ).length;
+
+    return [{
+      nodeId: node.id,
+      collapsed,
+      ...(externallyCollapsedDescendantCount > 0
+        ? { externallyCollapsedDescendantCount }
+        : {}),
+      descendantCount: descendantIds.length,
+    }];
   });
+}
+
+export function getRenderedDescendantDepths(
+  graph: CanvasGraph,
+  nodeId: string,
+  renderedNodeIds: ReadonlySet<string>,
+): readonly number[] {
+  const depths = new Set<number>();
+  for (const [descendantId, depth] of getDescendantDepths(graph, nodeId)) {
+    if (renderedNodeIds.has(descendantId)) depths.add(depth);
+  }
+  return [...depths].sort((left, right) => left - right);
 }
 
 function getNodesInDepthFirstOrder(graph: CanvasGraph): CanvasGraph["nodes"] {

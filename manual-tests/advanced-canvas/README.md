@@ -89,7 +89,8 @@ Start with both Advanced groups expanded and Canvas Folding fully expanded.
   with Advanced Canvas. The three `C2` nodes and their edges disappear while
   the collapsed inner group and `C1` remain visible. `C1` keeps a `−` because
   its Folding branch is still open. Its Quickinfo explains that Advanced
-  Canvas currently hides all descendants.
+  Canvas currently hides descendants. The level menu offers only depths that
+  still contain Runtime-visible descendant nodes.
 - [ ] **AC-B04 · Fold over collapsed inner group:** Click the `−` on `C1`.
   The collapsed inner group disappears. Click `+`; it returns still collapsed.
   Open it with the Advanced Canvas group control; all three shaped nodes and
@@ -98,6 +99,10 @@ Start with both Advanced groups expanded and Canvas Folding fully expanded.
   Only `Adv.Canvas root` and the collapsed outer group remain. The root keeps a
   `−` with the Advanced Canvas Quickinfo. Folding `−` hides the collapsed group;
   Folding `+` restores it still collapsed.
+- [ ] **AC-B05a · Mixed visible children:** Add a second child to
+  `Adv.Canvas root` outside both groups, then collapse the outer group. The
+  Advanced Canvas Quickinfo remains present although the second child is still
+  visible. The level menu omits depths represented only by group-hidden nodes.
 - [ ] **AC-B06 · Nested persistence:** Collapse the inner group, then the outer
   group. Reopen the outer group and verify that the inner group is still
   collapsed. Repeat after closing and reopening the Canvas.

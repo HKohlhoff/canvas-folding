@@ -4,7 +4,10 @@ import test from "node:test";
 import { buildCanvasGraph } from "../../src/tree/graph";
 import type { CanvasGraphData } from "../../src/tree/graph";
 import { BranchCollapseState } from "../../src/tree/state";
-import { buildBranchControlModels } from "../../src/ui/control-model";
+import {
+  buildBranchControlModels,
+  getRenderedDescendantDepths,
+} from "../../src/ui/control-model";
 
 void test("creates controls only for nodes with descendants", () => {
   const graph = buildCanvasGraph(createData());
@@ -25,6 +28,41 @@ void test("reflects collapsed state without changing graph structure", () => {
     { nodeId: "A", collapsed: false, descendantCount: 3 },
     { nodeId: "B", collapsed: true, descendantCount: 1 },
   ]);
+});
+
+void test("marks a branch with any descendants hidden by an external collapsed group", () => {
+  const graph = buildCanvasGraph(createData());
+  const state = new BranchCollapseState();
+
+  const models = buildBranchControlModels(graph, state, {
+    externallyCollapsedNodeIds: new Set(["C"]),
+  });
+
+  assert.equal(models[0]?.collapsed, false);
+  assert.equal(models[0]?.externallyCollapsedDescendantCount, 1);
+  assert.equal(
+    buildBranchControlModels(graph, state, {
+      externallyCollapsedNodeIds: new Set(["OTHER"]),
+    })[0]?.externallyCollapsedDescendantCount,
+    undefined,
+  );
+});
+
+void test("lists only descendant depths represented by rendered nodes", () => {
+  const graph = buildCanvasGraph(createData());
+
+  assert.deepEqual(
+    getRenderedDescendantDepths(graph, "A", new Set(["A", "C"])),
+    [1],
+  );
+  assert.deepEqual(
+    getRenderedDescendantDepths(graph, "A", new Set(["A", "D"])),
+    [2],
+  );
+  assert.deepEqual(
+    getRenderedDescendantDepths(graph, "A", new Set(["A"])),
+    [],
+  );
 });
 
 void test("omits controls hosted by hidden descendant nodes", () => {

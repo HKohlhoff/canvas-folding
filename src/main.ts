@@ -60,6 +60,7 @@ import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import {
   buildBranchControlModels,
   formatDescendantCount,
+  getRenderedDescendantDepths,
 } from "./ui/control-model";
 import {
   buildToolbarButtonModels,
@@ -978,7 +979,13 @@ export default class CanvasFoldingPlugin extends Plugin {
 
     this.branchControls.sync(
       context,
-      buildBranchControlModels(graph, state),
+      buildBranchControlModels(graph, state, {
+        externallyCollapsedNodeIds: new Set(
+          context.nodeViews.flatMap(
+            (nodeView) => nodeView.externallyCollapsedNodeIds ?? [],
+          ),
+        ),
+      }),
       (controlContext, nodeId) => {
         this.toggleBranchFromControl(
           this.refreshControlContext(controlContext),
@@ -1098,14 +1105,14 @@ export default class CanvasFoldingPlugin extends Plugin {
     position: BranchMenuPosition,
   ): void {
     const graph = buildCanvasGraph(context.data);
-    const descendantDepths = getDescendantDepths(graph, nodeId);
-    let maximumDepth = 0;
-    for (const depth of descendantDepths.values()) {
-      maximumDepth = Math.max(maximumDepth, depth);
-    }
-    if (maximumDepth === 0) {
+    if (getDescendantDepths(graph, nodeId).size === 0) {
       return;
     }
+    const renderedDepths = getRenderedDescendantDepths(
+      graph,
+      nodeId,
+      new Set(context.nodeViews.map((nodeView) => nodeView.id)),
+    ).filter((depth) => depth <= MAX_DEPTH_MENU_LEVELS);
 
     const menu = new Menu();
     menu.addItem((item) =>
@@ -1113,15 +1120,15 @@ export default class CanvasFoldingPlugin extends Plugin {
         this.setBranchVisibleDepth(context, nodeId, 0);
       }),
     );
-    menu.addSeparator();
-
-    const listedDepth = Math.min(maximumDepth, MAX_DEPTH_MENU_LEVELS);
-    for (let depth = 1; depth <= listedDepth; depth += 1) {
-      menu.addItem((item) =>
-        item.setTitle(`Show through level ${depth}`).onClick(() => {
-          this.setBranchVisibleDepth(context, nodeId, depth);
-        }),
-      );
+    if (renderedDepths.length > 0) {
+      menu.addSeparator();
+      for (const depth of renderedDepths) {
+        menu.addItem((item) =>
+          item.setTitle(`Show through level ${depth}`).onClick(() => {
+            this.setBranchVisibleDepth(context, nodeId, depth);
+          }),
+        );
+      }
     }
 
     menu.addSeparator();
