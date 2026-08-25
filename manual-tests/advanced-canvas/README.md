@@ -179,21 +179,26 @@ Start with both Advanced groups expanded and Canvas Folding fully expanded.
 
 ## E – Focus, navigation, and modes
 
-- [ ] **AC-E01 · Folding focus:** Focus `C1` with Canvas Folding. Both group
+- [x] **AC-E01 · Folding focus:** Focus `C1` with Canvas Folding. Both group
   frames containing active descendants remain active; unrelated Advanced shapes
   and edges are dimmed and cannot be selected.
-- [ ] **AC-E02 · Advanced focus:** Exit Folding focus, activate Advanced Canvas
+- [x] **AC-E02 · Advanced focus:** Exit Folding focus, activate Advanced Canvas
   Focus Mode on `C1`, then fold and expand `C1`. Both visual effects clean up
   completely when their owning mode exits.
-- [ ] **AC-E03 · Combined focus:** Activate the two focus modes in both orders.
+- [x] **AC-E03 · Combined focus:** Activate the two focus modes in both orders.
   Exiting one must not clear or strand classes belonging to the other.
-- [ ] **AC-E04 · Popup, pan, and zoom guards:** Test the fixture with **Disable
-  node popup**, **Disable pan**, and **Disable zoom** individually enabled and
-  disabled. Folding toolbar scrolling/dragging and branch controls remain usable.
-- [ ] **AC-E05 · Better readonly:** Enable **Better readonly**, enter readonly
-  mode, and verify the documented read-only actions. Leaving readonly restores
-  normal selection and both plugins' controls without duplicates.
-- [ ] **AC-E06 · Presentation:** Enable **Presentations**, create a temporary
+- [x] **AC-E04 · Popup, pan, and zoom guards:** Enable **Better readonly**,
+  reload if requested, and enter the native Canvas read-only mode. The three
+  Advanced Canvas control-menu toggles **Disable node popup**, **Disable pan**,
+  and **Disable zoom** are available only in this mode; test each individually
+  enabled and disabled. Folding toolbar scrolling/dragging and branch controls
+  remain usable.
+- [x] **AC-E05 · Better readonly lifecycle:** With **Better readonly** enabled,
+  test **Hide background grid when in readonly**, the hidden native card/edit
+  controls, and Folding's non-destructive visibility actions in read-only mode.
+  Leaving read-only restores the grid and normal edit controls as configured;
+  selection and both plugins' controls return without duplicates.
+- [x] **AC-E06 · Presentation:** Enable **Presentations**, create a temporary
   slide around the fixture, enter and exit presentation, and verify viewport,
   toolbar, controls, and folding state afterward.
 
