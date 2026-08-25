@@ -38,7 +38,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Reproducible npm installs through `package-lock.json` and `npm ci` in CI.
 
 - Improve branch-control and toolbar keyboard behavior, menu semantics and accessible labels.
-- Renamed the plugin and its technical ID from Canvas Tree (`canvas-tree`) to Canvas Folding (`canvas-folding`).
+- Standardized the plugin name and technical ID as Canvas Folding (`canvas-folding`) across code, packaging and documentation.
 - Separated neutral graph types and edge-visibility rules from the Obsidian adapter and DOM integration while keeping Canvas Folding independently deployable.
 - Keep controls, toolbar actions and folding visibility synchronized after live Canvas structure, selection and render changes.
 - Keep a newly inserted selected node visible for editing until it is deselected, and use eye icons for the branch-control toggle.
@@ -50,6 +50,9 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Hide an opened Advanced Canvas portal's virtual nodes, internal edges and
+  labels together with its folded portal file node, while keeping the portal's
+  read-only contents free of Folding controls.
 - Recognize nodes and edges retained in a collapsed Advanced Canvas group after
   Advanced Canvas is disabled, keeping Folding controls stable so standard
   Canvas restores the complete group when the file is reopened.

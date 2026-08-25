@@ -1,7 +1,9 @@
 import type {
   ActiveCanvasContext,
+  CanvasEdgeView,
   CanvasElementHandle,
   CanvasNodeInteractionLayer,
+  CanvasNodeView,
 } from "./adapter";
 import { extractCanvasItemId } from "./runtime-elements";
 import { deriveCanvasVisibility } from "../tree/visibility";
@@ -49,9 +51,40 @@ export class CanvasVisibilityManager {
       hiddenNodeIds,
       dimmedNodeIds,
     );
+    const storedNodeIds = new Set(context.data.nodes.map((node) => node.id));
+    const storedEdgeIds = new Set(context.data.edges.map((edge) => edge.id));
+    const nodeViewVisibility = context.nodeViews.map((nodeView) => ({
+      nodeView,
+      visibility: resolveViewVisibility(
+        nodeView,
+        storedNodeIds,
+        visibility.hiddenNodeIds,
+        visibility.dimmedNodeIds,
+        storedNodeIds,
+        visibility.hiddenNodeIds,
+        visibility.dimmedNodeIds,
+      ),
+    }));
+    const edgeViewVisibility = context.edgeViews.map((edgeView) => ({
+      edgeView,
+      visibility: resolveViewVisibility(
+        edgeView,
+        storedEdgeIds,
+        visibility.hiddenEdgeIds,
+        visibility.dimmedEdgeIds,
+        storedNodeIds,
+        visibility.hiddenNodeIds,
+        visibility.dimmedNodeIds,
+      ),
+    }));
     const inactiveNodeIds = new Set([
       ...visibility.hiddenNodeIds,
       ...visibility.dimmedNodeIds,
+      ...nodeViewVisibility
+        .filter(({ visibility: viewVisibility }) =>
+          viewVisibility.hidden || viewVisibility.dimmed,
+        )
+        .map(({ nodeView }) => nodeView.id),
     ]);
     if (this.manageInteractionLayer) {
       this.updateInteractionLayer(
@@ -63,9 +96,8 @@ export class CanvasVisibilityManager {
 
     let hiddenNodeCount = 0;
     let dimmedNodeCount = 0;
-    for (const nodeView of context.nodeViews) {
-      const hidden = visibility.hiddenNodeIds.has(nodeView.id);
-      const dimmed = visibility.dimmedNodeIds.has(nodeView.id);
+    for (const { nodeView, visibility: viewVisibility } of nodeViewVisibility) {
+      const { hidden, dimmed } = viewVisibility;
       this.setHidden(nodeView.element, hidden, context.leaf);
       this.setDimmed(
         nodeView.element,
@@ -81,9 +113,8 @@ export class CanvasVisibilityManager {
 
     let hiddenEdgeCount = 0;
     let dimmedEdgeCount = 0;
-    for (const edgeView of context.edgeViews) {
-      const hidden = visibility.hiddenEdgeIds.has(edgeView.id);
-      const dimmed = visibility.dimmedEdgeIds.has(edgeView.id);
+    for (const { edgeView, visibility: viewVisibility } of edgeViewVisibility) {
+      const { hidden, dimmed } = viewVisibility;
 
       for (const element of edgeView.elements) {
         this.setHidden(element, hidden, context.leaf);
@@ -227,4 +258,42 @@ interface ManagedInteractionLayer {
   hiddenNodeIds: Set<string>;
   leaf: object;
   originalSetTarget: CanvasNodeInteractionLayer["setTarget"];
+}
+
+interface RuntimeViewWithVisibilityOwner {
+  id: string;
+  visibilityOwnerNodeId?: string;
+}
+
+interface RuntimeViewVisibility {
+  dimmed: boolean;
+  hidden: boolean;
+}
+
+function resolveViewVisibility(
+  view: CanvasNodeView | CanvasEdgeView | RuntimeViewWithVisibilityOwner,
+  storedViewIds: ReadonlySet<string>,
+  directlyHiddenIds: ReadonlySet<string>,
+  directlyDimmedIds: ReadonlySet<string>,
+  storedNodeIds: ReadonlySet<string>,
+  hiddenNodeIds: ReadonlySet<string>,
+  dimmedNodeIds: ReadonlySet<string>,
+): RuntimeViewVisibility {
+  const directlyHidden = directlyHiddenIds.has(view.id);
+  const directlyDimmed = directlyDimmedIds.has(view.id);
+  const ownerNodeId = view.visibilityOwnerNodeId;
+  const inheritsOwnerVisibility =
+    !storedViewIds.has(view.id) &&
+    ownerNodeId !== undefined &&
+    ownerNodeId.length > 0 &&
+    storedNodeIds.has(ownerNodeId);
+  const hidden =
+    directlyHidden ||
+    (inheritsOwnerVisibility && hiddenNodeIds.has(ownerNodeId));
+  const dimmed =
+    !hidden &&
+    (directlyDimmed ||
+      (inheritsOwnerVisibility && dimmedNodeIds.has(ownerNodeId)));
+
+  return { dimmed, hidden };
 }

@@ -51,6 +51,42 @@ void test("extracts all visible and interactive elements from an edge", () => {
   assert.deepEqual(edgeViews[0]?.elements, [line, arrow, interaction, label]);
 });
 
+void test("annotates valid portal runtime views with their outer visibility owner", () => {
+  const nestedRuntimeId = "acportal||PORTAL||NESTED||child";
+  const nodeViews = extractCanvasNodeViews([
+    {
+      id: nestedRuntimeId,
+      nodeEl: createNodeElement(),
+    },
+  ]);
+  const edgeViews = extractCanvasEdgeViews([
+    {
+      id: "acportal||PORTAL||edge",
+      lineGroupEl: createElement(),
+    },
+  ]);
+
+  assert.equal(nodeViews[0]?.visibilityOwnerNodeId, "PORTAL");
+  assert.equal(edgeViews[0]?.visibilityOwnerNodeId, "PORTAL");
+});
+
+void test("does not annotate malformed or unanchored portal runtime ids", () => {
+  const ids = [
+    "prefix-acportal||PORTAL||child",
+    "acportal||||child",
+    "acportal||PORTAL||",
+    "acportal||PORTAL",
+  ];
+  const nodeViews = extractCanvasNodeViews(
+    ids.map((id) => ({ id, nodeEl: createNodeElement() })),
+  );
+
+  assert.deepEqual(
+    nodeViews.map((view) => view.visibilityOwnerNodeId),
+    [undefined, undefined, undefined, undefined],
+  );
+});
+
 void test("extracts a canvas path from an Obsidian view state", () => {
   assert.equal(
     extractCanvasPathFromViewState({ file: "Folder/Test.canvas" }),

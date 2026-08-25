@@ -154,6 +154,231 @@ void test("dims and blocks nodes outside branch focus", () => {
   assert.equal(elements.nodeA.has("canvas-folding-dimmed"), true);
 });
 
+void test("inherits hidden portal-owner visibility for virtual nodes and all edge elements", () => {
+  const elements = createContext();
+  const virtualNode = new FakeClassList();
+  const virtualEdgeLine = new FakeClassList();
+  const virtualEdgeArrow = new FakeClassList();
+  const virtualEdgeInteraction = new FakeClassList();
+  const virtualEdgeLabel = new FakeClassList();
+  const virtualNodeId = "acportal||B||child";
+  elements.context.nodeViews = [
+    ...elements.context.nodeViews,
+    {
+      id: virtualNodeId,
+      element: createNodeElement(virtualNode),
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+  elements.context.edgeViews = [
+    ...elements.context.edgeViews,
+    {
+      id: "acportal||B||edge",
+      elements: [
+        createElement(virtualEdgeLine),
+        createElement(virtualEdgeArrow),
+        createElement(virtualEdgeInteraction),
+        createElement(virtualEdgeLabel),
+      ],
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+  const interactionLayer = createInteractionLayer({ id: virtualNodeId });
+  elements.context.nodeInteractionLayer = interactionLayer;
+
+  const result = new CanvasVisibilityManager().apply(
+    elements.context,
+    new Set(["B"]),
+  );
+
+  assert.equal(result.hiddenNodeCount, 2);
+  assert.equal(result.hiddenEdgeCount, 3);
+  assert.equal(virtualNode.has("canvas-folding-hidden"), true);
+  for (const edgeElement of [
+    virtualEdgeLine,
+    virtualEdgeArrow,
+    virtualEdgeInteraction,
+    virtualEdgeLabel,
+  ]) {
+    assert.equal(edgeElement.has("canvas-folding-hidden"), true);
+  }
+  assert.equal(interactionLayer.target, null);
+  interactionLayer.setTarget({ id: virtualNodeId });
+  assert.equal(interactionLayer.target, null);
+});
+
+void test("cleans up closed portal views and manages reopened replacements", () => {
+  const elements = createContext();
+  const manager = new CanvasVisibilityManager();
+  const virtualNodeId = "acportal||B||child";
+  const virtualEdgeId = "acportal||B||edge";
+  const closedNode = new FakeClassList();
+  const closedEdge = new FakeClassList();
+  const interactionLayer = createInteractionLayer(null);
+  elements.context.nodeInteractionLayer = interactionLayer;
+  elements.context.nodeViews = [
+    ...elements.context.nodeViews,
+    {
+      id: virtualNodeId,
+      element: createNodeElement(closedNode),
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+  elements.context.edgeViews = [
+    ...elements.context.edgeViews,
+    {
+      id: virtualEdgeId,
+      elements: [createElement(closedEdge)],
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+
+  manager.apply(elements.context, new Set(["B"]));
+  assert.equal(closedNode.has("canvas-folding-hidden"), true);
+  assert.equal(closedEdge.has("canvas-folding-hidden"), true);
+
+  elements.context.nodeViews = elements.context.nodeViews.filter(
+    (nodeView) => nodeView.id !== virtualNodeId,
+  );
+  elements.context.edgeViews = elements.context.edgeViews.filter(
+    (edgeView) => edgeView.id !== virtualEdgeId,
+  );
+  manager.apply(elements.context, new Set(["B"]));
+
+  assert.equal(closedNode.has("canvas-folding-hidden"), false);
+  assert.equal(closedEdge.has("canvas-folding-hidden"), false);
+  const closedTarget = { id: virtualNodeId };
+  interactionLayer.setTarget(closedTarget);
+  assert.equal(interactionLayer.target, closedTarget);
+
+  const reopenedNode = new FakeClassList();
+  const reopenedEdge = new FakeClassList();
+  elements.context.nodeViews = [
+    ...elements.context.nodeViews,
+    {
+      id: virtualNodeId,
+      element: createNodeElement(reopenedNode),
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+  elements.context.edgeViews = [
+    ...elements.context.edgeViews,
+    {
+      id: virtualEdgeId,
+      elements: [createElement(reopenedEdge)],
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+  manager.apply(elements.context, new Set(["B"]));
+
+  assert.equal(reopenedNode.has("canvas-folding-hidden"), true);
+  assert.equal(reopenedEdge.has("canvas-folding-hidden"), true);
+  interactionLayer.setTarget({ id: virtualNodeId });
+  assert.equal(interactionLayer.target, null);
+});
+
+void test("inherits dimmed portal-owner visibility without also hiding virtual views", () => {
+  const elements = createContext();
+  const virtualNode = new FakeClassList();
+  const virtualEdge = new FakeClassList();
+  elements.context.nodeViews = [
+    ...elements.context.nodeViews,
+    {
+      id: "acportal||A||child",
+      element: createNodeElement(virtualNode),
+      visibilityOwnerNodeId: "A",
+    },
+  ];
+  elements.context.edgeViews = [
+    ...elements.context.edgeViews,
+    {
+      id: "acportal||A||edge",
+      elements: [createElement(virtualEdge)],
+      visibilityOwnerNodeId: "A",
+    },
+  ];
+
+  const result = new CanvasVisibilityManager().apply(
+    elements.context,
+    new Set(),
+    new Set(["A"]),
+  );
+
+  assert.equal(result.dimmedNodeCount, 2);
+  assert.equal(result.dimmedEdgeCount, 2);
+  assert.equal(virtualNode.has("canvas-folding-dimmed"), true);
+  assert.equal(virtualNode.has("canvas-folding-hidden"), false);
+  assert.equal(virtualEdge.has("canvas-folding-dimmed"), true);
+  assert.equal(virtualEdge.has("canvas-folding-hidden"), false);
+});
+
+void test("does not inherit owner visibility for stored-id collisions or unknown owners", () => {
+  const elements = createContext();
+  const collidingNode = new FakeClassList();
+  const collidingEdge = new FakeClassList();
+  const unknownOwnerNode = new FakeClassList();
+  const collidingNodeId = "acportal||B||stored-node";
+  const collidingEdgeId = "acportal||B||stored-edge";
+  elements.context.data.nodes = [
+    ...elements.context.data.nodes,
+    { id: collidingNodeId, type: "text" },
+  ];
+  elements.context.data.edges = [
+    ...elements.context.data.edges,
+    { id: collidingEdgeId, fromNode: "A", toNode: "C" },
+  ];
+  elements.context.nodeViews = [
+    ...elements.context.nodeViews,
+    {
+      id: collidingNodeId,
+      element: createNodeElement(collidingNode),
+      visibilityOwnerNodeId: "B",
+    },
+    {
+      id: "acportal||UNKNOWN||child",
+      element: createNodeElement(unknownOwnerNode),
+      visibilityOwnerNodeId: "UNKNOWN",
+    },
+  ];
+  elements.context.edgeViews = [
+    ...elements.context.edgeViews,
+    {
+      id: collidingEdgeId,
+      elements: [createElement(collidingEdge)],
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+
+  new CanvasVisibilityManager().apply(elements.context, new Set(["B"]));
+
+  assert.equal(collidingNode.has("canvas-folding-hidden"), false);
+  assert.equal(collidingEdge.has("canvas-folding-hidden"), false);
+  assert.equal(unknownOwnerNode.has("canvas-folding-hidden"), false);
+});
+
+void test("hidden portal-owner visibility takes precedence over direct dimming", () => {
+  const elements = createContext();
+  const virtualNode = new FakeClassList();
+  const virtualNodeId = "acportal||B||child";
+  elements.context.nodeViews = [
+    ...elements.context.nodeViews,
+    {
+      id: virtualNodeId,
+      element: createNodeElement(virtualNode),
+      visibilityOwnerNodeId: "B",
+    },
+  ];
+
+  new CanvasVisibilityManager().apply(
+    elements.context,
+    new Set(["B"]),
+    new Set([virtualNodeId]),
+  );
+
+  assert.equal(virtualNode.has("canvas-folding-hidden"), true);
+  assert.equal(virtualNode.has("canvas-folding-dimmed"), false);
+});
+
 function createContext(): {
   context: ActiveCanvasContext;
   edgeAB: FakeClassList;

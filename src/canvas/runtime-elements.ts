@@ -13,6 +13,7 @@ export interface CanvasNodeView {
   id: string;
   element: CanvasNodeElementHandle;
   externallyCollapsedNodeIds?: readonly string[];
+  visibilityOwnerNodeId?: string;
 }
 
 export interface CanvasNodeElementHandle extends CanvasElementHandle {
@@ -24,7 +25,10 @@ export interface CanvasNodeElementHandle extends CanvasElementHandle {
 export interface CanvasEdgeView {
   id: string;
   elements: readonly CanvasElementHandle[];
+  visibilityOwnerNodeId?: string;
 }
+
+const ADVANCED_CANVAS_PORTAL_ID_PREFIX = "acportal||";
 
 export interface CanvasNodeInteractionLayer {
   target?: unknown;
@@ -52,12 +56,14 @@ export function extractCanvasNodeViews(
     const element = asCanvasNodeElement(value.nodeEl);
     if (element !== null) {
       const externallyCollapsedNodeIds = readExternallyCollapsedNodeIds(value);
+      const visibilityOwnerNodeId = readPortalVisibilityOwnerNodeId(value.id);
       nodeViews.push({
         id: value.id,
         element,
         ...(externallyCollapsedNodeIds.length > 0
           ? { externallyCollapsedNodeIds }
           : {}),
+        ...(visibilityOwnerNodeId === null ? {} : { visibilityOwnerNodeId }),
       });
     }
   }
@@ -111,10 +117,31 @@ export function extractCanvasEdgeViews(
       .map(asCanvasElement)
       .filter((element): element is CanvasElementHandle => element !== null);
     if (elements.length > 0) {
-      edgeViews.push({ id: value.id, elements: [...new Set(elements)] });
+      const visibilityOwnerNodeId = readPortalVisibilityOwnerNodeId(value.id);
+      edgeViews.push({
+        id: value.id,
+        elements: [...new Set(elements)],
+        ...(visibilityOwnerNodeId === null ? {} : { visibilityOwnerNodeId }),
+      });
     }
   }
   return edgeViews;
+}
+
+function readPortalVisibilityOwnerNodeId(runtimeId: string): string | null {
+  if (!runtimeId.startsWith(ADVANCED_CANVAS_PORTAL_ID_PREFIX)) return null;
+
+  const ownerStart = ADVANCED_CANVAS_PORTAL_ID_PREFIX.length;
+  const separatorIndex = runtimeId.indexOf("||", ownerStart);
+  if (
+    separatorIndex === ownerStart ||
+    separatorIndex < 0 ||
+    separatorIndex + 2 >= runtimeId.length
+  ) {
+    return null;
+  }
+
+  return runtimeId.slice(ownerStart, separatorIndex);
 }
 
 export function extractSelectedNodeIds(selection: Iterable<unknown>): string[] {

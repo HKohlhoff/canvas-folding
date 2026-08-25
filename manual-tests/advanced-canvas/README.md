@@ -206,13 +206,21 @@ Start with both Advanced groups expanded and Canvas Folding fully expanded.
 
 Run these on disposable copies because they intentionally modify Canvas data.
 
-- [ ] **AC-F01 · Encapsulation:** Enable **Canvas encapsulation**, encapsulate
+- [x] **AC-F01 · Encapsulation:** Enable **Canvas encapsulation**, encapsulate
   `C1` and its children, and confirm the resulting source and target Canvases
   can each be folded without stale IDs or controls.
-- [ ] **AC-F02 · Portal:** Enable **Portals**, create an enabled portal to a
-  copy of the basic-tree fixture, and fold source and portal branches. Disable
-  and re-enable the portal and repeat with **Show edges into disabled portals**
-  both ways.
+- [x] **AC-F02 · Portal:** Enable **Portals**, create an enabled portal to a
+  copy of the basic-tree fixture, and confirm its virtual contents remain
+  read-only and receive no Folding controls. Connect a local parent to the
+  portal file node and fold the complete portal as one branch. Close and reopen
+  the portal without stale runtime IDs or controls, then repeat with **Show
+  edges into disabled portals** both ways. Advanced Canvas 6.5.4 loses a newly
+  created edge from a local node to a virtual portal node when the portal is
+  closed, even with Canvas Folding disabled and **Show edges into disabled
+  portals** enabled; the saved portal node contains no `interdimensionalEdges`.
+  Treat that isolated Advanced failure as `N/A`, not a Folding regression;
+  it is reported upstream as
+  [Advanced Canvas #419](https://github.com/Developer-Mike/obsidian-advanced-canvas/issues/419).
 - [ ] **AC-F03 · Metadata compatibility:** Toggle Canvas metadata compatibility
   and single-node links. Reload, edit, fold, and inspect the graph; Folding never
   changes the Advanced metadata fields.
