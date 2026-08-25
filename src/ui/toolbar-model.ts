@@ -44,15 +44,6 @@ export const TOOLBAR_POINTER_EVENT_NAMES = [
   "pointercancel",
 ] as const;
 
-export function getMeasuredToolbarWidth(
-  scrollWidth: number,
-  offsetWidth: number,
-  clientWidth: number,
-): number {
-  const borderWidth = Math.max(0, offsetWidth - clientWidth);
-  return Math.max(0, Math.ceil(scrollWidth + borderWidth));
-}
-
 export function getToolbarLeftPosition(
   xPercent: number,
   renderedWidth: number,

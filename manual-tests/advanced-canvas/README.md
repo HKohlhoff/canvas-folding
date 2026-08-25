@@ -123,24 +123,33 @@ Start with both Advanced groups expanded and Canvas Folding fully expanded.
 
 ## C – Styling, resize, and node controls
 
-- [ ] **AC-C01 · Node styling:** With **Node styling** enabled, exercise every
+- [x] **AC-C01 · Node styling:** With **Node styling** enabled, exercise every
   shaped `C2` node. Folding controls, native connection handles, resize handles,
   and Advanced popup actions do not overlap or block one another.
-- [ ] **AC-C02 · Styling toggle:** Disable and re-enable **Node styling** while
+- [x] **AC-C02 · Styling toggle:** Disable and re-enable **Node styling** while
   a Folding branch is collapsed and after it is expanded. Folding state and
   control ownership remain stable.
-- [ ] **AC-C03 · Auto resize:** With **Auto resize node** and its default
-  enabled, add several lines to `C1` and to a shaped child. Controls follow the
-  resized node. Collapse/expand and undo/redo retain the new geometry.
-- [ ] **AC-C04 · Auto resize disabled:** Disable **Auto resize node**, resize
+  Apply the Obsidian reload requested by Advanced Canvas after each toggle;
+  Folding state and controls must remain stable across that reload.
+- [x] **AC-C03 · Auto resize:** With **Auto resize node** and its default
+  enabled, explicitly choose **Enable auto-resize** from the Advanced popup for
+  the existing `C1` and shaped child before adding several lines. The default
+  applies only to newly created nodes and may have been stripped from existing
+  nodes during the disable/reload lifecycle tests. Controls follow the resized
+  node. Collapse/expand and undo/redo retain the new geometry.
+- [x] **AC-C04 · Auto resize disabled:** Disable **Auto resize node**, resize
   the same nodes manually, and repeat folding. Behavior matches standard Canvas.
-- [ ] **AC-C05 · Popup additions:** Enable **Z ordering controls**, **Aspect
-  ratio control**, and the node-reference popup button one at a time. Every
-  Advanced popup action remains clickable with Folding controls and toolbar
+- [x] **AC-C05 · Context-menu and popup additions:** Enable **Z ordering
+  controls**, **Aspect ratio control**, and the node-reference popup button one
+  at a time. Z ordering and aspect ratio appear in the native Canvas node
+  context menu; the node-reference button appears in the horizontal selection
+  popup. Every action remains clickable with Folding controls and toolbar
   visible.
-- [ ] **AC-C06 · Variable breakpoint and text rendering:** Enable **Variable
+- [x] **AC-C06 · Variable breakpoint and text rendering:** Enable **Variable
   breakpoint** and **Alternative text rendering** separately. Zoom through the
-  rendering breakpoint, edit text, and fold the branch without stale controls.
+  rendering breakpoint, edit node text, and fold the branch. Canvas has no
+  separate preview/edit mode; the relevant result is that Advanced's internal
+  text rendering causes no stale, displaced, or duplicate Folding controls.
 
 ## D – Edges and live graph changes
 

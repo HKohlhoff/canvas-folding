@@ -6,7 +6,6 @@ import { BranchCollapseState } from "../../src/tree/state";
 import {
   buildToolbarButtonModels,
   getToolbarButtonAriaPressed,
-  getMeasuredToolbarWidth,
   getToolbarLeftPosition,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
@@ -125,11 +124,6 @@ void test("isolates the complete toolbar pointer sequence", () => {
     "pointerup",
     "pointercancel",
   ]);
-});
-
-void test("measures the complete toolbar content including its border", () => {
-  assert.equal(getMeasuredToolbarWidth(420.2, 302, 300), 423);
-  assert.equal(getMeasuredToolbarWidth(0, 0, 0), 0);
 });
 
 void test("centers the toolbar without a CSS transform", () => {

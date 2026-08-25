@@ -28,7 +28,12 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   position: absolute;
   top: 8px;
   touch-action: pan-x;
+  width: max-content;
   z-index: 50;
+}
+
+.canvas-folding-toolbar.is-initializing {
+  visibility: hidden;
 }
 
 .canvas-folding-toolbar-button {

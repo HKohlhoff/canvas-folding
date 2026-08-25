@@ -8,7 +8,6 @@ import type {
 } from "./toolbar-model";
 import {
   getToolbarButtonAriaPressed,
-  getMeasuredToolbarWidth,
   getToolbarLeftPosition,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
@@ -25,6 +24,8 @@ interface ToolbarEntry {
   toolbar: HTMLElement;
 }
 
+const INITIAL_POSITION_DELAY_MS = 75;
+
 export class CanvasToolbarManager {
   private readonly entries = new Map<object, ToolbarEntry>();
 
@@ -36,6 +37,7 @@ export class CanvasToolbarManager {
     onPositionChange: (position: ToolbarPosition) => void,
   ): void {
     let entry = this.entries.get(context.leaf);
+    let isNewEntry = false;
     if (entry !== undefined && entry.host !== context.toolbarHost) {
       entry.toolbar.remove();
       this.entries.delete(context.leaf);
@@ -43,12 +45,13 @@ export class CanvasToolbarManager {
     }
     if (entry === undefined) {
       const toolbar = context.toolbarHost.createDiv({
-        cls: "canvas-folding-toolbar",
+        cls: "canvas-folding-toolbar is-initializing",
         attr: { "aria-label": "Canvas Folding commands", role: "toolbar" },
       });
       isolateToolbarPointerSequence(toolbar);
       entry = { host: context.toolbarHost, toolbar };
       this.entries.set(context.leaf, entry);
+      isNewEntry = true;
     }
 
     const focusedControlKey = getFocusedToolbarControlKey(entry.toolbar);
@@ -100,8 +103,8 @@ export class CanvasToolbarManager {
         if (!event.repeat && model.disabled !== true) onAction(model.action);
       });
     }
-    applyMeasuredWidth(entry.toolbar);
-    applyPosition(entry.toolbar, position);
+    if (isNewEntry) revealAtInitialPosition(entry.toolbar, position);
+    else applyPosition(entry.toolbar, position);
     installKeyboardMove(
       dragHandle,
       entry.toolbar,
@@ -118,13 +121,21 @@ export class CanvasToolbarManager {
   }
 }
 
-function applyMeasuredWidth(toolbar: HTMLElement): void {
-  toolbar.style.removeProperty("width");
-  toolbar.style.width = `${getMeasuredToolbarWidth(
-    toolbar.scrollWidth,
-    toolbar.offsetWidth,
-    toolbar.clientWidth,
-  )}px`;
+function revealAtInitialPosition(
+  toolbar: HTMLElement,
+  position: ToolbarPosition,
+): void {
+  const view = toolbar.ownerDocument.defaultView;
+  if (view === null) {
+    applyPosition(toolbar, position);
+    toolbar.removeClass("is-initializing");
+    return;
+  }
+  view.setTimeout(() => {
+    if (!toolbar.isConnected) return;
+    applyPosition(toolbar, position);
+    toolbar.removeClass("is-initializing");
+  }, INITIAL_POSITION_DELAY_MS);
 }
 
 function getFocusedToolbarControlKey(toolbar: HTMLElement): string | null {
