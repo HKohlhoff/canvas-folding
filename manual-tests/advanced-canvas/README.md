@@ -221,7 +221,7 @@ Run these on disposable copies because they intentionally modify Canvas data.
   Treat that isolated Advanced failure as `N/A`, not a Folding regression;
   it is reported upstream as
   [Advanced Canvas #419](https://github.com/Developer-Mike/obsidian-advanced-canvas/issues/419).
-- [ ] **AC-F03 · Metadata compatibility:** Toggle Canvas metadata compatibility
+- [x] **AC-F03 · Metadata compatibility:** Toggle Canvas metadata compatibility
   and single-node links. Reload, edit, fold, and inspect the graph; Folding never
   changes the Advanced metadata fields.
 
