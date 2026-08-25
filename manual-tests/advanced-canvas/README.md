@@ -153,24 +153,29 @@ Start with both Advanced groups expanded and Canvas Folding fully expanded.
 
 ## D – Edges and live graph changes
 
-- [ ] **AC-D01 · Styled edges:** Apply several Advanced path and arrow styles.
+- [x] **AC-D01 · Styled edges:** Apply several Advanced path and arrow styles.
   Folding hides and restores the complete edge, arrow, interaction path, and
   label without losing its style.
-- [ ] **AC-D02 · Floating edges:** Create floating edges with both creation
+- [x] **AC-D02 · Floating edges:** Create floating edges with both creation
   options enabled, then with each disabled. Collapse/expand after every case;
   no endpoint or invisible interaction path remains active.
-- [ ] **AC-D03 · Flip edge:** Flip `Adv.Canvas root → C1`. Folding graph
+- [x] **AC-D03 · Flip edge:** Flip `Adv.Canvas root → C1`. Folding graph
   direction, root controls, toolbar availability, and Quickinfos update live.
   Undo and redo the flip without selecting a node.
-- [ ] **AC-D04 · Edge highlight:** Enable outgoing and incoming **Edge
+- [x] **AC-D04 · Edge highlight:** Enable outgoing and incoming **Edge
   highlight** variants. Folding focus still dims and protects unrelated edges;
   collapse still hides highlighted edges completely.
-- [ ] **AC-D05 · Edge selection:** Use all connected/incoming/outgoing edge
+- [x] **AC-D05 · Edge selection:** Use all connected/incoming/outgoing edge
   selection actions. Collapse the selected branch; hidden or dimmed edges cannot
   open either plugin's edge toolbar.
-- [ ] **AC-D06 · Auto file node edges:** On a copy of the mixed-node core
-  fixture, enable **Auto file node edges**, create and remove a frontmatter
-  connection, and verify live Folding controls plus undo/redo.
+- [x] **AC-D06 · Auto file node edges:** On a copy of the mixed-node core
+  fixture, create the notes `CF auto source` and `CF auto target` through
+  Obsidian without typing the `.md` suffix, then enable **Auto file node
+  edges**. Create and remove a resolvable `[[CF auto target]]` frontmatter
+  connection and verify live Folding controls plus undo/redo. Advanced Canvas
+  6.5.4 incorrectly connects an unresolved frontmatter target to every
+  non-file Canvas node; this is reproducible with Folding disabled and is not a
+  valid compatibility result.
 
 ## E – Focus, navigation, and modes
 
