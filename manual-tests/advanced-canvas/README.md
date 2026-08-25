@@ -77,7 +77,7 @@ children.
   Canvas.
 - [x] **AC-A05 · Re-enable Advanced:** Re-enable Advanced Canvas. Its group
   state returns without changing the Canvas Folding state.
-- [ ] **AC-A06 · Disable Folding:** With an Advanced group collapsed, disable
+- [x] **AC-A06 · Disable Folding:** With an Advanced group collapsed, disable
   and re-enable Canvas Folding. Advanced state and controls remain intact; no
   Folding DOM or interaction guard remains while Folding is disabled.
 
