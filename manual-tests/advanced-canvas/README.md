@@ -85,39 +85,39 @@ children.
 
 Start with both Advanced groups expanded and Canvas Folding fully expanded.
 
-- [ ] **AC-B01 · Folding outer branch:** Collapse `Adv.Canvas root`. All four
+- [x] **AC-B01 · Folding outer branch:** Collapse `Adv.Canvas root`. All four
   descendants, four incident edges, and both non-empty group frames disappear.
   Expand it; Advanced shapes, sizes, edge metadata, and group frames return.
-- [ ] **AC-B02 · Folding inner branch:** Collapse `C1`. The three `C2` nodes,
+- [x] **AC-B02 · Folding inner branch:** Collapse `C1`. The three `C2` nodes,
   their incident edges, and the inner group disappear. The outer group remains
   because it still contains visible `C1`. Expand `C1` to restore them.
-- [ ] **AC-B03 · Advanced inner collapse:** Collapse `Advanced inner group`
+- [x] **AC-B03 · Advanced inner collapse:** Collapse `Advanced inner group`
   with Advanced Canvas. The three `C2` nodes and their edges disappear while
   the collapsed inner group and `C1` remain visible. `C1` keeps a `−` because
   its Folding branch is still open. Its Quickinfo explains that Advanced
   Canvas currently hides descendants. The level menu offers only depths that
   still contain Runtime-visible descendant nodes.
-- [ ] **AC-B04 · Fold over collapsed inner group:** Click the `−` on `C1`.
+- [x] **AC-B04 · Fold over collapsed inner group:** Click the `−` on `C1`.
   The collapsed inner group disappears. Click `+`; it returns still collapsed.
   Open it with the Advanced Canvas group control; all three shaped nodes and
   edges return and the special Folding Quickinfo disappears.
-- [ ] **AC-B05 · Advanced outer collapse:** Collapse `Advanced outer group`.
+- [x] **AC-B05 · Advanced outer collapse:** Collapse `Advanced outer group`.
   Only `Adv.Canvas root` and the collapsed outer group remain. The root keeps a
   `−` with the Advanced Canvas Quickinfo. Folding `−` hides the collapsed group;
   Folding `+` restores it still collapsed.
-- [ ] **AC-B05a · Mixed visible children:** Add a second child to
+- [x] **AC-B05a · Mixed visible children:** Add a second child to
   `Adv.Canvas root` outside both groups, then collapse the outer group. The
   Advanced Canvas Quickinfo remains present although the second child is still
   visible. The level menu omits depths represented only by group-hidden nodes.
-- [ ] **AC-B06 · Nested persistence:** Collapse the inner group, then the outer
+- [x] **AC-B06 · Nested persistence:** Collapse the inner group, then the outer
   group. Reopen the outer group and verify that the inner group is still
   collapsed. Repeat after closing and reopening the Canvas.
-- [ ] **AC-B07 · Undo/redo:** Undo and redo each Advanced group collapse. The
+- [x] **AC-B07 · Undo/redo:** Undo and redo each Advanced group collapse. The
   correct Folding Quickinfo and controls update without selecting a node.
-- [ ] **AC-B08 · Preview while dragging:** Repeat dragging a node across a
+- [x] **AC-B08 · Preview while dragging:** Repeat dragging a node across a
   collapsed group with **Collapsed group preview on drag** enabled and disabled.
   Folding controls must not duplicate, move to another host, or intercept drag.
-- [ ] **AC-B09 · Collapsible groups disabled:** Disable **Collapsible groups**
+- [x] **AC-B09 · Collapsible groups disabled:** Disable **Collapsible groups**
   and reload. The fixture behaves like standard Canvas; all Folding group rules
   and controls remain unchanged.
 
