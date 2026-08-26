@@ -138,13 +138,17 @@ is valid:
 | `Focus selected branch` | Keep the selected node and descendants active while dimming the rest. |
 | `Exit branch focus` | Remove focus without changing the underlying fold state. |
 | `Collapse all branches` | Collapse every rooted branch. |
-| `Expand all branches` | Clear all folding and level restrictions. |
 | `Show canvas through level…` | Set one visible depth for all rooted branches. |
-| `Show`, `Hide`, or `Toggle branch controls` | Control node buttons for the current plugin session. |
-| `Show`, `Hide`, or `Toggle canvas toolbar` | Control the Canvas Folding toolbar. |
+| `Expand all branches` | Clear all folding and level restrictions. |
+| `Show branch controls` | Display `+`/`−` controls on parent nodes. |
+| `Hide branch controls` | Remove the `+`/`−` controls from the current session. |
+| `Toggle branch controls` | Switch the branch controls between visible and hidden. |
+| `Show canvas toolbar` | Display the Canvas Folding toolbar. |
+| `Hide canvas toolbar` | Hide the Canvas Folding toolbar. |
+| `Toggle canvas toolbar` | Switch the Canvas Folding toolbar between visible and hidden. |
 | `Reset canvas toolbar position` | Return the toolbar to its default position. |
-| `Show current status` | Report visible-state counts, focus, controls, and persistence status. |
 | `Inspect active canvas graph` | Report the recognized graph structure. |
+| `Show current status` | Report visible-state counts, focus, controls, and persistence status. |
 
 ## Keyboard and touch
 
