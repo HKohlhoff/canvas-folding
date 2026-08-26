@@ -62,10 +62,11 @@ the number of descendants, and points to the branch display menu.
 
 The Quickinfo is especially useful with Advanced Canvas: if an Advanced Canvas
 group currently hides descendants, it says how many are hidden there and
-explains that Canvas Folding preserves the group's own collapsed state. On
-touch devices, where hover is unavailable, long-press the control; an Advanced
-Canvas notice with the hidden-descendant count appears at the top of the branch
-display menu.
+explains that Canvas Folding preserves the group's own collapsed state.
+
+On touch devices, where hover is unavailable, long-press the control; an
+Advanced Canvas notice with the hidden-descendant count appears at the top of
+the branch display menu.
 
 ### Choose visible branch levels
 
