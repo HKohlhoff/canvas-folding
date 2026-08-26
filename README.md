@@ -54,6 +54,19 @@ shows that descendants are hidden and expands them again.
 
 ![An expanded Canvas branch beside the same branch collapsed by Canvas Folding](docs/images/branch-folding.svg)
 
+### Notice the control Quickinfo
+
+On desktop, pause the pointer over a `+` or `−` control. Its tooltip
+(Quickinfo) states whether the click will collapse or expand the branch, shows
+the number of descendants, and points to the branch display menu.
+
+The Quickinfo is especially useful with Advanced Canvas: if an Advanced Canvas
+group currently hides descendants, it says how many are hidden there and
+explains that Canvas Folding preserves the group's own collapsed state. On
+touch devices, where hover is unavailable, long-press the control; an Advanced
+Canvas notice with the hidden-descendant count appears at the top of the branch
+display menu.
+
 ### Choose visible branch levels
 
 Right-click or long-press a node control to show only the parent, reveal a
@@ -80,6 +93,8 @@ Parent nodes receive a `−` control. When descendants are hidden, the control
 changes to `+`:
 
 - Click or tap the control to collapse or expand the complete branch.
+- On desktop, hover over it to read its action, descendant count, and any
+  additional Advanced Canvas collapsed-group information.
 - Open its context menu to show only the node, show through a selected level,
   or show the entire branch.
 - With shared descendants, a visible alternative parent can reveal the shared
@@ -247,8 +262,8 @@ When both mechanisms are used, check which control owns the hidden content:
 - A Canvas Folding `+` means that Folding currently hides descendants.
 - A Canvas Folding `−` can remain visible while an Advanced Canvas group hides
   descendants inside it; the control's tooltip explains this case.
-- On touch devices, long-press that control to see the same Advanced Canvas
-  explanation at the top of the branch display menu.
+- On touch devices, long-press that control to see an Advanced Canvas notice
+  with the hidden-descendant count at the top of the branch display menu.
 - Expanding one mechanism does not automatically expand the other.
 
 After enabling or disabling Advanced Canvas while one of its groups is

@@ -29,6 +29,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
   visual guides for branch folding, the level menu, and focus mode.
 - Clarify that persisted states are device-local unless an external sync setup
   also synchronizes Canvas Folding's plugin data.
+- Point users to the `+`/`−` control Quickinfos, including the additional
+  Advanced Canvas collapsed-group explanation and its touch equivalent.
 - Show the Advanced Canvas collapsed-group explanation in the branch menu so
   it remains available on touch devices without hover.
 - Replace the separate persisted-state cleanup actions with a manager that
