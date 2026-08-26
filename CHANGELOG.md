@@ -34,6 +34,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
   Advanced Canvas collapsed-group explanation and its touch equivalent.
 - Add a quick start, define global Canvas levels, streamline repeated
   compatibility text, and place installation before the demo.
+- Expose the Ko-fi support link through Obsidian's official `fundingUrl` field
+  and make the default `build` script reproducibly generate production output.
 - Show the Advanced Canvas collapsed-group explanation in the branch menu so
   it remains available on touch devices without hover.
 - Replace the separate persisted-state cleanup actions with a manager that
