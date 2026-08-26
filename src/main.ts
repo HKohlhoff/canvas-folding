@@ -928,8 +928,8 @@ export default class CanvasFoldingPlugin extends Plugin {
     const result = this.readActiveCanvasContext();
     if (!result.ok) {
       this.canvasLiveSync.disconnect();
-      this.branchControls.removeAll();
-      this.canvasToolbar.removeAll();
+      this.branchControls.removeDetached();
+      this.canvasToolbar.removeDetached();
       return;
     }
 

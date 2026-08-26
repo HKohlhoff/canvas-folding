@@ -50,6 +50,9 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Fixed
 
+- Keep connected branch controls and the Canvas toolbar visible while keyboard
+  focus moves through Obsidian's native tab controls, while still pruning UI
+  belonging to genuinely detached Canvas views.
 - Hide an opened Advanced Canvas portal's virtual nodes, internal edges and
   labels together with its folded portal file node, while keeping the portal's
   read-only contents free of Folding controls.

@@ -39,7 +39,11 @@ export class CanvasBranchControlManager {
       models.map((model) => model.nodeId),
       context.selectedNodeIds,
     );
-    this.nodeOrderByLeaf.set(context.leaf, nodeOrder);
+    if (nodeOrder.length === 0) {
+      this.nodeOrderByLeaf.delete(context.leaf);
+    } else {
+      this.nodeOrderByLeaf.set(context.leaf, nodeOrder);
+    }
     const modelsByNodeId = new Map(models.map((model) => [model.nodeId, model]));
     const currentHosts = new Set(context.nodeViews.map((view) => view.element));
 
@@ -88,6 +92,22 @@ export class CanvasBranchControlManager {
     }
     this.entries.clear();
     this.nodeOrderByLeaf.clear();
+  }
+
+  removeDetached(): void {
+    const affectedLeaves = new Set<object>();
+    for (const [host, entry] of this.entries) {
+      if (entry.button.isConnected) continue;
+      entry.button.remove();
+      this.entries.delete(host);
+      affectedLeaves.add(entry.leaf);
+    }
+    for (const leaf of affectedLeaves) {
+      const hasRemainingEntry = [...this.entries.values()].some(
+        (entry) => entry.leaf === leaf,
+      );
+      if (!hasRemainingEntry) this.nodeOrderByLeaf.delete(leaf);
+    }
   }
 
   private getOrCreateEntry(

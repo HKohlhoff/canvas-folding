@@ -19,6 +19,9 @@ if (testFiles.length === 0) {
 let exitCode;
 try {
   await esbuild.build({
+    alias: {
+      obsidian: path.resolve("tests/stubs/obsidian.ts"),
+    },
     entryPoints: testFiles,
     outbase: TEST_DIR,
     outdir: OUTPUT_DIR,

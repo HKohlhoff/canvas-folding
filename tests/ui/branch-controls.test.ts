@@ -58,6 +58,49 @@ void test("removes controls from every managed leaf during cleanup", () => {
   assert.equal(second.button.removed, true);
 });
 
+void test("keeps connected controls when the active canvas is temporarily unavailable", () => {
+  const manager = new CanvasBranchControlManager();
+  const entry = createContext("test.canvas", {});
+
+  sync(manager, entry.context);
+  manager.removeDetached();
+
+  assert.equal(entry.button.removed, false);
+});
+
+void test("removes detached controls without affecting another managed leaf", () => {
+  const manager = new CanvasBranchControlManager();
+  const connectedLeaf = {};
+  const detachedLeaf = {};
+  const connected = createContext("shared.canvas", connectedLeaf);
+  const detached = createContext("shared.canvas", detachedLeaf);
+
+  sync(manager, connected.context);
+  sync(manager, detached.context);
+  detached.button.isConnected = false;
+  manager.removeDetached();
+
+  assert.equal(connected.button.removed, false);
+  assert.equal(detached.button.removed, true);
+  assert.equal(getNodeOrderByLeaf(manager).has(connectedLeaf), true);
+  assert.equal(getNodeOrderByLeaf(manager).has(detachedLeaf), false);
+});
+
+void test("does not retain an empty tab order for a leaf without controls", () => {
+  const manager = new CanvasBranchControlManager();
+  const leaf = {};
+  const entry = createContext("test.canvas", leaf);
+
+  manager.sync(
+    entry.context,
+    [],
+    () => undefined,
+    () => undefined,
+  );
+
+  assert.equal(getNodeOrderByLeaf(manager).has(leaf), false);
+});
+
 void test("uses singular descendant labels and exposes the levels menu", () => {
   const manager = new CanvasBranchControlManager();
   const entry = createContext("test.canvas", {});
@@ -197,9 +240,18 @@ function createStyle(): CanvasElementHandle["style"] {
   };
 }
 
+function getNodeOrderByLeaf(
+  manager: CanvasBranchControlManager,
+): Map<object, readonly string[]> {
+  return (
+    manager as unknown as { nodeOrderByLeaf: Map<object, readonly string[]> }
+  ).nodeOrderByLeaf;
+}
+
 class FakeButton {
   readonly attributes = new Map<string, string>();
   className = "";
+  isConnected = true;
   removed = false;
   textContent: string | null = null;
   tabIndex = -1;
@@ -213,6 +265,7 @@ class FakeButton {
 
   remove(): void {
     this.removed = true;
+    this.isConnected = false;
   }
 
   removeAttribute(name: string): void {

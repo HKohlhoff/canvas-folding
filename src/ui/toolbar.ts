@@ -119,6 +119,14 @@ export class CanvasToolbarManager {
     for (const entry of this.entries.values()) entry.toolbar.remove();
     this.entries.clear();
   }
+
+  removeDetached(): void {
+    for (const [leaf, entry] of this.entries) {
+      if (entry.host.isConnected && entry.toolbar.isConnected) continue;
+      entry.toolbar.remove();
+      this.entries.delete(leaf);
+    }
+  }
 }
 
 function revealAtInitialPosition(
