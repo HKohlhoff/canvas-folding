@@ -26,7 +26,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 ### Changed
 
 - Expand the README with a prominent Advanced Canvas coexistence summary and
-  visual guides for branch folding, the level menu, and focus mode.
+  visual guides for branch folding, the level menu, focus mode, and the Canvas
+  toolbar.
 - Clarify that persisted states are device-local unless an external sync setup
   also synchronizes Canvas Folding's plugin data.
 - Point users to the `+`/`−` control Quickinfos, including the additional

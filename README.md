@@ -111,14 +111,16 @@ The optional toolbar provides the main Canvas Folding actions directly in the
 Canvas. Drag its handle to move it, or focus the handle and use the arrow keys.
 On narrow views and mobile devices, the toolbar can be scrolled horizontally.
 
+![The movable Canvas Folding toolbar with its actions arranged from left to right](docs/images/canvas-toolbar.svg)
+
 The toolbar includes actions for:
 
-- collapsing and expanding the selected branch;
-- toggling branch focus;
-- collapsing all rooted branches and expanding all branches;
-- selecting a global visible level;
+- the selected branch: collapse, expand, and toggle focus;
+- the whole Canvas: collapse all rooted branches, select a global visible
+  level, and expand all branches;
 - showing or hiding node controls;
-- inspecting the graph and showing the current state;
+- inspecting the graph;
+- showing the current state;
 - hiding the toolbar itself.
 
 Unavailable actions are disabled. The toolbar can always be shown, hidden,
