@@ -54,13 +54,13 @@ shows that descendants are hidden and expands them again.
 
 ![An expanded Canvas branch beside the same branch collapsed by Canvas Folding](docs/images/branch-folding.svg)
 
-### Notice the control Quickinfo
+### Use the control tooltips
 
 On desktop, pause the pointer over a `+` or `−` control. Its tooltip
-(Quickinfo) states whether the click will collapse or expand the branch, shows
-the number of descendants, and points to the branch display menu.
+states whether the click will collapse or expand the branch, shows the number
+of descendants, and points to the branch display menu.
 
-The Quickinfo is especially useful with Advanced Canvas: if an Advanced Canvas
+The tooltip is especially useful with Advanced Canvas: if an Advanced Canvas
 group currently hides descendants, it says how many are hidden there and
 explains that Canvas Folding preserves the group's own collapsed state.
 
@@ -83,12 +83,29 @@ from the branch being worked on.
 
 ![A focused Canvas branch with unrelated nodes and edges dimmed in the background](docs/images/branch-focus.svg)
 
+## Quick start
+
+1. [Install Canvas Folding](#installation), enable it, and open a Canvas.
+2. Use directed edges from parent to child to define the hierarchy.
+3. Click or tap a parent's `−` control to collapse its branch, or select the
+   parent and use the Canvas Folding toolbar. Right-click or long-press the
+   control to choose a visible branch level.
+4. Optionally enable **Remember canvas states between sessions** to restore
+   folding states after closing a tab or restarting Obsidian.
+
 ## How folding works
 
 Canvas Folding interprets directed Canvas edges as hierarchy:
 `fromNode` → `toNode`. A node can therefore have multiple parents, and the
 Canvas is treated as a general directed graph rather than as a strict tree.
 Traversal is deterministic and cycle-safe.
+
+Global Canvas levels are measured from root nodes, meaning nodes without an
+incoming edge. Level 0 contains the roots, level 1 their direct children, and
+each following level the next generation of directed descendants. If a node is
+reachable through multiple roots or paths, its shortest directed distance from
+any root determines its level. A Canvas without a root has no global level
+view, but its individual branch controls remain available.
 
 Parent nodes receive a `−` control. When descendants are hidden, the control
 changes to `+`:
@@ -134,7 +151,7 @@ is valid:
 | Command | Purpose |
 | --- | --- |
 | `Collapse selected branch` | Hide all directed descendants of the selected node. |
-| `Expand selected branch` | Reveal the branch effectively hidden at the selected node. |
+| `Expand selected branch` | Reveal the folded branch at the selected node. |
 | `Focus selected branch` | Keep the selected node and descendants active while dimming the rest. |
 | `Exit branch focus` | Remove focus without changing the underlying fold state. |
 | `Collapse all branches` | Collapse every rooted branch. |
@@ -187,6 +204,20 @@ plugin settings and data, it may also transfer Canvas Folding's `data.json`;
 that behavior is controlled by the synchronization setup, not by Canvas
 Folding.
 
+## Installation
+
+After Canvas Folding is listed, install it directly from Obsidian Community
+Plugins.
+
+Until then, or for a manual installation, download `main.js`, `manifest.json`,
+and `styles.css` from a GitHub release and place them in:
+
+```text
+<vault>/.obsidian/plugins/canvas-folding/
+```
+
+Then reload Obsidian and enable **Canvas Folding** under Community plugins.
+
 ## Demo Canvas
 
 The repository includes a documented demo covering a basic tree, a shared
@@ -199,19 +230,6 @@ on the Canvas suggest actions and describe the expected result.
 
 Focused regression fixtures and the full manual V1 test matrix remain
 separately available under [`manual-tests/`](manual-tests/README.md).
-
-## Installation
-
-Install Canvas Folding from Obsidian Community Plugins once it is available.
-
-For manual installation, download `main.js`, `manifest.json`, and `styles.css`
-from a GitHub release and place them in:
-
-```text
-<vault>/.obsidian/plugins/canvas-folding/
-```
-
-Then reload Obsidian and enable **Canvas Folding** under Community plugins.
 
 ## Settings
 
@@ -246,9 +264,6 @@ modified by Canvas Folding.
 - Obsidian Canvas currently exposes only some extension points through public
   TypeScript APIs. Private runtime access is isolated in a compatibility layer
   and guarded defensively.
-- Advanced Canvas is not required. Canvas Folding 1.0.0 passed its systematic
-  coexistence gate with Advanced Canvas 6.5.4 on macOS, iPadOS, and iOS and
-  works without restrictions for the supported standard Canvas features.
 - Advanced Canvas portals and presentations are not part of this compatibility
   guarantee because those experimental features currently have upstream
   limitations of their own.
