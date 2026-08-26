@@ -1,10 +1,12 @@
-.canvas-folding-hidden {
-  display: none !important;
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-hidden.canvas-folding-hidden {
+  display: none;
 }
 
-.canvas-folding-dimmed {
-  opacity: var(--canvas-folding-focus-opacity, 0.2) !important;
-  pointer-events: none !important;
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-dimmed.canvas-folding-dimmed {
+  opacity: var(--canvas-folding-focus-opacity, 0.2);
+  pointer-events: none;
 }
 
 body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
@@ -122,8 +124,9 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   border-top: 2px solid var(--background-modifier-border);
 }
 
-.canvas-folding-persisted-states-modal .setting-item.canvas-folding-persisted-states-remove-all {
-  border-top: 0 !important;
+.canvas-folding-persisted-states-modal
+  .setting-item.canvas-folding-persisted-states-remove-all.canvas-folding-persisted-states-remove-all {
+  border-top: 0;
 }
 
 .canvas-folding-persisted-states-remove-all .setting-item-name {

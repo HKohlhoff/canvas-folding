@@ -11,6 +11,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Align the plugin description with the Community Directory manifest rules.
 - Produce the standard root `main.js` during builds while retaining the
   existing synchronized release artifacts in `release/`.
+- Replace CSS `!important` overrides with Canvas-scoped selectors of sufficient
+  specificity.
 
 ## [1.0.0] – release candidate
 
