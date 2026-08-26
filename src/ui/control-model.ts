@@ -20,6 +20,16 @@ export function formatDescendantCount(count: number): string {
   return `${count} descendant${count === 1 ? "" : "s"}`;
 }
 
+export function getExternallyCollapsedDescendantCount(
+  graph: CanvasGraph,
+  nodeId: string,
+  externallyCollapsedNodeIds: ReadonlySet<string>,
+): number {
+  return getDescendantIds(graph, nodeId).filter((descendantId) =>
+    externallyCollapsedNodeIds.has(descendantId),
+  ).length;
+}
+
 export function buildBranchControlModels(
   graph: CanvasGraph,
   state: Pick<BranchCollapseState, "getHiddenNodeIds">,
@@ -41,9 +51,11 @@ export function buildBranchControlModels(
     );
     const externallyCollapsedDescendantCount = runtime === undefined
       ? 0
-      : descendantIds.filter((descendantId) =>
-        runtime.externallyCollapsedNodeIds.has(descendantId),
-      ).length;
+      : getExternallyCollapsedDescendantCount(
+          graph,
+          node.id,
+          runtime.externallyCollapsedNodeIds,
+        );
 
     return [{
       nodeId: node.id,

@@ -25,6 +25,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Changed
 
+- Show the Advanced Canvas collapsed-group explanation in the branch menu so
+  it remains available on touch devices without hover.
 - Replace the separate persisted-state cleanup actions with a manager that
   lists stored Canvas paths and removes individual or all restoration states.
 - Updated the public demo from its reviewed Vault layout while retaining portable local asset paths.

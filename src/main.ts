@@ -61,6 +61,7 @@ import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import {
   buildBranchControlModels,
   formatDescendantCount,
+  getExternallyCollapsedDescendantCount,
   getRenderedDescendantDepths,
 } from "./ui/control-model";
 import {
@@ -1114,8 +1115,29 @@ export default class CanvasFoldingPlugin extends Plugin {
       nodeId,
       new Set(context.nodeViews.map((nodeView) => nodeView.id)),
     ).filter((depth) => depth <= MAX_DEPTH_MENU_LEVELS);
+    const externallyCollapsedDescendantCount =
+      getExternallyCollapsedDescendantCount(
+        graph,
+        nodeId,
+        new Set(
+          context.nodeViews.flatMap(
+            (nodeView) => nodeView.externallyCollapsedNodeIds ?? [],
+          ),
+        ),
+      );
 
     const menu = new Menu();
+    if (externallyCollapsedDescendantCount > 0) {
+      menu.addItem((item) =>
+        item
+          .setTitle(
+            `Advanced Canvas hides ${formatDescendantCount(externallyCollapsedDescendantCount)} inside collapsed groups.`,
+          )
+          .setIcon("info")
+          .setDisabled(true),
+      );
+      menu.addSeparator();
+    }
     menu.addItem((item) =>
       item.setTitle("Show node only").onClick(() => {
         this.setBranchVisibleDepth(context, nodeId, 0);

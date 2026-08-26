@@ -176,9 +176,12 @@ modified by Canvas Folding.
 - Obsidian Canvas currently exposes only some extension points through public
   TypeScript APIs. Private runtime access is isolated in a compatibility layer
   and guarded defensively.
-- Advanced Canvas is not required. Its systematic coexistence test is in
-  progress; an unrestricted compatibility statement will be added only after
-  that release gate has passed.
+- Advanced Canvas is not required. Canvas Folding 1.0.0 passed its systematic
+  coexistence gate with Advanced Canvas 6.5.4 on macOS, iPadOS, and iOS and
+  works without restrictions for the supported standard Canvas features.
+- Advanced Canvas portals and presentations are not part of this compatibility
+  guarantee because those experimental features currently have upstream
+  limitations of their own.
 - Long-press context menus depend on the mobile platform and WebView behavior.
 - Canvas Folding does not perform automatic layout, graph navigation, or branch
   styling.
@@ -196,6 +199,8 @@ When both mechanisms are used, check which control owns the hidden content:
 - A Canvas Folding `+` means that Folding currently hides descendants.
 - A Canvas Folding `−` can remain visible while an Advanced Canvas group hides
   descendants inside it; the control's tooltip explains this case.
+- On touch devices, long-press that control to see the same Advanced Canvas
+  explanation at the top of the branch display menu.
 - Expanding one mechanism does not automatically expand the other.
 
 After enabling or disabling Advanced Canvas while one of its groups is

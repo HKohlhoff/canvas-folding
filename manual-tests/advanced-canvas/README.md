@@ -15,9 +15,9 @@ Record one row for every complete run:
 
 | Date | Platform | Obsidian | Canvas Folding | Advanced Canvas | Profile | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-08-25 | macOS 26.6.2 | 1.13.7 | 1.0.0 | 6.5.4 | reference | _open_ | Initial compatibility gate |
-| _fill in_ | iPadOS | _fill in_ | 1.0.0 | _fill in_ | reference | _open_ | |
-| _fill in_ | iOS | _fill in_ | 1.0.0 | _fill in_ | reference | _open_ | |
+| 2026-08-25 | macOS 26.6.2 | 1.13.7 | 1.0.0 | 6.5.4 | reference | PASS | Complete compatibility gate |
+| 2026-08-26 | iPadOS 26.6.1 | 1.13.7 | 1.0.0 | 6.5.4 | reference | PASS | Mobile compatibility subset AC-G06 |
+| 2026-08-26 | iOS 26.6 | 1.13.7 | 1.0.0 | 6.5.4 | reference | PASS | Mobile compatibility subset AC-G06 |
 
 Use `PASS`, `FAIL`, or `N/A` for each case. A failure must include the fixture,
 the exact settings delta, the action, and the observed result.
@@ -227,7 +227,7 @@ Run these on disposable copies because they intentionally modify Canvas data.
 
 ## G – Core regression, persistence, API, and mobile
 
-- [ ] **AC-G01 · Core fixtures:** With the reference profile active, complete
+- [x] **AC-G01 · Core fixtures:** With the reference profile active, complete
   every case in the parent `manual-tests/README.md`: basic tree, multiple roots,
   shared descendant, rootless cycle, mixed node types, lifecycle, commands,
   keyboard, and touch.
@@ -237,14 +237,14 @@ Run these on disposable copies because they intentionally modify Canvas data.
 - [x] **AC-G03 · Persistence off:** Navigate away/back, close/reopen the tab,
   and restart with Folding persistence disabled. Advanced group state remains
   its own file state; closed Folding tab state does not return.
-- [ ] **AC-G04 · Persistence on:** Repeat with Folding persistence enabled.
+- [x] **AC-G04 · Persistence on:** Repeat with Folding persistence enabled.
   Both independently owned states return and clearing Folding state does not
   expand Advanced groups.
-- [ ] **AC-G05 · API v1:** Compare `getFoldState()` while groups are expanded,
+- [x] **AC-G05 · API v1:** Compare `getFoldState()` while groups are expanded,
   collapsed by Advanced Canvas, collapsed by Folding, and collapsed by both.
   The API reports only effective Canvas Folding state and never exposes
   `collapsedData` or private runtime objects.
-- [ ] **AC-G06 · iPad and iPhone:** Repeat AC-B03 through AC-B05, node selection,
+- [x] **AC-G06 · iPad and iPhone:** Repeat AC-B03 through AC-B05, node selection,
   toolbar tapping/scrolling/dragging, group controls, and focus on both devices.
   Short tap and stylus selection remain native.
 

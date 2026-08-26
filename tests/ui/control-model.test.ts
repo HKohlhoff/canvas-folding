@@ -6,6 +6,7 @@ import type { CanvasGraphData } from "../../src/tree/graph";
 import { BranchCollapseState } from "../../src/tree/state";
 import {
   buildBranchControlModels,
+  getExternallyCollapsedDescendantCount,
   getRenderedDescendantDepths,
 } from "../../src/ui/control-model";
 
@@ -45,6 +46,23 @@ void test("marks a branch with any descendants hidden by an external collapsed g
       externallyCollapsedNodeIds: new Set(["OTHER"]),
     })[0]?.externallyCollapsedDescendantCount,
     undefined,
+  );
+});
+
+void test("counts externally collapsed descendants for touch menu information", () => {
+  const graph = buildCanvasGraph(createData());
+
+  assert.equal(
+    getExternallyCollapsedDescendantCount(
+      graph,
+      "A",
+      new Set(["C", "D", "OTHER"]),
+    ),
+    2,
+  );
+  assert.equal(
+    getExternallyCollapsedDescendantCount(graph, "B", new Set(["D"])),
+    1,
   );
 });
 

@@ -9,8 +9,8 @@ Before a clean pass:
 
 1. Disable Advanced Canvas and other plugins that modify Canvas DOM or events.
 2. Enable Canvas Folding and reload Obsidian after deploying the current build.
-3. Use **Clear all saved canvas states** in the settings when a case requires a
-   fresh state.
+3. Use **Manage persisted canvas states → Remove all** in the settings when a
+   case requires a fresh state.
 4. Record platform, Obsidian version and result next to each test case.
 
 For the separate release gate with Advanced Canvas enabled, use the focused
