@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="300" viewBox="0 0 960 400" role="img" aria-labelledby="title desc">
+  <title id="title">Canvas Folding branch context menu</title>
+  <desc id="desc">A parent node and its branch control beside a menu for selecting the visible branch depth.</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.3" fill="#cbd1dc"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="10" flood-color="#202636" flood-opacity="0.18"/>
+    </filter>
+    <style>
+      .heading { font: 600 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #4d5668; }
+      .node-text { font: 500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #3f485d; }
+      .menu-text { font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #333b4c; }
+      .hint { font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #687386; }
+      .control { font: 700 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475269; text-anchor: middle; dominant-baseline: central; }
+    </style>
+  </defs>
+  <rect width="960" height="400" rx="18" fill="#f6f7fa"/>
+  <rect width="960" height="400" rx="18" fill="url(#grid)"/>
+  <text class="heading" x="48" y="43">Choose how much of a branch is visible</text>
+
+  <rect x="48" y="148" width="290" height="88" rx="14" fill="#e7f2fa" stroke="#268bd2" stroke-width="3"/>
+  <text class="node-text" x="72" y="200">Project</text>
+  <circle cx="306" cy="174" r="18" fill="#d4d9e3" stroke="#bdc4d1"/>
+  <text class="control" x="306" y="174">−</text>
+  <text class="hint" x="48" y="267">Right-click or long-press the control.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="424" y="69" width="470" height="275" rx="13" fill="#ffffff" stroke="#c7ccd6"/>
+    <rect x="438" y="84" width="442" height="47" rx="8" fill="#eef4fb"/>
+    <text class="menu-text" x="461" y="113">Show node only</text>
+    <text class="menu-text" x="461" y="161">Show through level 1</text>
+    <text class="menu-text" x="461" y="209">Show through level 2</text>
+    <line x1="445" y1="231" x2="873" y2="231" stroke="#d9dde5"/>
+    <text class="menu-text" x="461" y="265">Show entire branch</text>
+    <line x1="445" y1="286" x2="873" y2="286" stroke="#d9dde5"/>
+    <text class="hint" x="461" y="318">Only levels containing visible nodes are offered.</text>
+  </g>
+</svg>

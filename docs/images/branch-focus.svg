@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="300" viewBox="0 0 960 400" role="img" aria-labelledby="title desc">
+  <title id="title">Canvas Folding branch focus mode</title>
+  <desc id="desc">One selected branch remains fully visible while unrelated Canvas content is dimmed but stays in context.</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.3" fill="#cbd1dc"/>
+    </pattern>
+    <marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#268bd2"/>
+    </marker>
+    <marker id="gray-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7e8795"/>
+    </marker>
+    <style>
+      .heading { font: 600 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #4d5668; }
+      .node-text { font: 500 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #3f485d; }
+      .caption { font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #687386; }
+      .control { font: 700 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475269; text-anchor: middle; dominant-baseline: central; }
+    </style>
+  </defs>
+  <rect width="960" height="400" rx="18" fill="#f6f7fa"/>
+  <rect width="960" height="400" rx="18" fill="url(#grid)"/>
+  <text class="heading" x="48" y="43">Branch focus keeps the surrounding Canvas visible as context</text>
+
+  <path d="M 247 199 C 294 199 302 120 350 120" fill="none" stroke="#268bd2" stroke-width="4" marker-end="url(#blue-arrow)"/>
+  <path d="M 247 199 C 294 199 302 278 350 278" fill="none" stroke="#268bd2" stroke-width="4" marker-end="url(#blue-arrow)"/>
+  <rect x="48" y="157" width="200" height="84" rx="14" fill="#e7f2fa" stroke="#268bd2" stroke-width="3"/>
+  <text class="node-text" x="70" y="207">Focused root</text>
+  <circle cx="220" cy="183" r="17" fill="#d4d9e3" stroke="#bdc4d1"/>
+  <text class="control" x="220" y="183">−</text>
+  <rect x="353" y="83" width="210" height="74" rx="13" fill="#ffffff" stroke="#268bd2" stroke-width="3"/>
+  <text class="node-text" x="375" y="127">Upper child</text>
+  <rect x="353" y="241" width="210" height="74" rx="13" fill="#ffffff" stroke="#268bd2" stroke-width="3"/>
+  <text class="node-text" x="375" y="285">Lower child</text>
+
+  <g opacity="0.25">
+    <path d="M 679 133 C 724 133 730 206 775 206" fill="none" stroke="#7e8795" stroke-width="4" marker-end="url(#gray-arrow)"/>
+    <rect x="594" y="91" width="180" height="74" rx="13" fill="#ffffff" stroke="#7e8795" stroke-width="3"/>
+    <text class="node-text" x="616" y="135">Other root</text>
+    <rect x="778" y="169" width="145" height="74" rx="13" fill="#ffffff" stroke="#7e8795" stroke-width="3"/>
+    <text class="node-text" x="800" y="213">Context</text>
+  </g>
+  <text class="caption" x="594" y="283">Dimmed and protected from interaction</text>
+</svg>

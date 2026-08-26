@@ -7,6 +7,22 @@ content, positions, and the `.canvas` file itself remain untouched.
 Requires Obsidian 1.13.0 or later. Canvas Folding works on desktop and mobile
 and has no dependency on Advanced Canvas.
 
+## Tested alongside Advanced Canvas
+
+Canvas Folding does not require Advanced Canvas, but both plugins can remain
+enabled and work alongside each other. Canvas Folding 1.0.0 completed an
+extensive coexistence matrix with Advanced Canvas 6.5.4 and Obsidian 1.13.7 on
+macOS, iPadOS, and iOS.
+
+The tests covered plugin load order and restarts, node and edge editing,
+different node types and shapes, nested groups, shared descendants, cycles,
+focus, levels, persistence, multiple Canvas tabs, undo/redo, and desktop and
+touch interaction. No unintended mutual interference was found in the
+supported standard Canvas features: each plugin retains its own controls and
+state, and using one plugin does not silently change the state owned by the
+other. See [Using Canvas Folding with Advanced Canvas](#using-canvas-folding-with-advanced-canvas)
+for the few details worth knowing when both plugins hide content.
+
 If Canvas Folding is useful to you, you can support its continued development
 by buying me a coffee.
 
@@ -28,6 +44,30 @@ by buying me a coffee.
 - Handle multiple roots, multiple parents, shared descendants, cross-links,
   cycles, groups, text, file, image, and link nodes.
 - Expose an optional versioned API for other plugins.
+
+## Visual guide
+
+### Collapse and expand branches
+
+The `−` control collapses the complete directed branch. Its `+` replacement
+shows that descendants are hidden and expands them again.
+
+![An expanded Canvas branch beside the same branch collapsed by Canvas Folding](docs/images/branch-folding.svg)
+
+### Choose visible branch levels
+
+Right-click or long-press a node control to show only the parent, reveal a
+specific number of descendant levels, or show the entire branch.
+
+![The Canvas Folding branch context menu with node-only, level, and entire-branch actions](docs/images/branch-context-menu.svg)
+
+### Focus a branch
+
+Focus mode keeps the selected branch fully active while dimming and protecting
+the surrounding Canvas. The wider context remains visible without distracting
+from the branch being worked on.
+
+![A focused Canvas branch with unrelated nodes and edges dimmed in the background](docs/images/branch-focus.svg)
 
 ## How folding works
 
