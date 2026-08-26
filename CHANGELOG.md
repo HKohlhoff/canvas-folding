@@ -4,6 +4,14 @@ All notable changes to this plugin should be documented in this file.
 
 The format follows the spirit of Keep a Changelog, with the newest release first.
 
+## [1.0.1]
+
+### Changed
+
+- Align the plugin description with the Community Directory manifest rules.
+- Produce the standard root `main.js` during builds while retaining the
+  existing synchronized release artifacts in `release/`.
+
 ## [1.0.0] – release candidate
 
 ### Added

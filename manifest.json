@@ -1,9 +1,9 @@
 {
   "id": "canvas-folding",
   "name": "Canvas Folding",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.13.0",
-  "description": "Collapse and expand hierarchical branches in Obsidian Canvas.",
+  "description": "Collapse and expand hierarchical branches in Canvas.",
   "author": "Holger Kohlhoff",
   "authorUrl": "https://github.com/HKohlhoff",
   "fundingUrl": "https://ko-fi.com/R5R2151DS7",

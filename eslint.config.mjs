@@ -10,6 +10,7 @@ export default defineConfig(
     "TestVault/**",
     "documentation/**",
     "examples/**",
+    "main.js",
     "node_modules/**",
     "release/**",
   ]),

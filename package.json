@@ -1,7 +1,7 @@
 {
   "name": "canvas-folding",
-  "version": "1.0.0",
-  "description": "Collapse and expand hierarchical branches in Obsidian Canvas.",
+  "version": "1.0.1",
+  "description": "Collapse and expand hierarchical branches in Canvas.",
   "main": "main.js",
   "type": "module",
   "engines": {

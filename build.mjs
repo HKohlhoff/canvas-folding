@@ -8,6 +8,7 @@ const watchMode = process.argv.includes("--watch");
 const deployMode = process.argv.includes("--deploy");
 
 const RELEASE_DIR = "release";
+const MAIN_OUTPUT = "main.js";
 const ENTRY = "src/main.ts";
 const PLUGIN_ID = "canvas-folding";
 
@@ -103,6 +104,17 @@ function copyStaticToRelease() {
   );
 }
 
+function copyMainToRelease() {
+  const copiedMain = safeCopy(
+    MAIN_OUTPUT,
+    path.join(RELEASE_DIR, "main.js")
+  );
+
+  console.log(
+    `[main] release sync: main.js=${copiedMain ? "copied" : "missing"}`
+  );
+}
+
 function ensureHotReloadMarker() {
   if (!VAULT_PLUGIN_DIR) return;
   ensureDir(VAULT_PLUGIN_DIR);
@@ -187,7 +199,7 @@ if (deployMode && !OBSIDIAN_PLUGINS_DIR) {
 const common = {
   banner: { js: banner },
   entryPoints: [ENTRY],
-  outfile: path.join(RELEASE_DIR, "main.js"),
+  outfile: MAIN_OUTPUT,
   bundle: true,
   format: "cjs",
   platform: "node",
@@ -205,6 +217,7 @@ const common = {
           copyStaticToRelease();
 
           if (result.errors.length === 0) {
+            copyMainToRelease();
             deployToVault();
           } else {
             console.log("[deploy] skipped because the build reported errors");
@@ -218,7 +231,7 @@ const common = {
 if (!watchMode) {
   await esbuild.build(common);
   console.log(
-    `✅ Build finished — release/main.js created${
+    `✅ Build finished — main.js and release/main.js created${
       isProd ? " (production)" : ""
     }.`
   );
