@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  getSortedCanvasStatePaths,
   normalizePluginData,
   PLUGIN_DATA_VERSION,
   removePathEntries,
@@ -75,6 +76,20 @@ void test("removes saved states for deleted files and folders", () => {
 
   assert.equal(removePathEntries(states, "Folder"), 2);
   assert.deepEqual([...states], [["Other.canvas", 3]]);
+});
+
+void test("sorts persisted canvas paths for the settings manager", () => {
+  const states = new Map([
+    ["Z.canvas", 1],
+    ["Folder/B.canvas", 2],
+    ["Folder/A.canvas", 3],
+  ]);
+
+  assert.deepEqual(getSortedCanvasStatePaths(states), [
+    "Folder/A.canvas",
+    "Folder/B.canvas",
+    "Z.canvas",
+  ]);
 });
 
 void test("migrates saved states when files or folders are renamed", () => {

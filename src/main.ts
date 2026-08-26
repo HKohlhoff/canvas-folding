@@ -24,6 +24,7 @@ import {
   type VisibilityResult,
 } from "./canvas/visibility";
 import {
+  getSortedCanvasStatePaths,
   isCanvasPath,
   normalizePluginData,
   PLUGIN_DATA_VERSION,
@@ -404,8 +405,8 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
   }
 
-  hasSavedCanvasStates(): boolean {
-    return this.savedCanvasStates.size > 0;
+  getSavedCanvasStatePaths(): readonly string[] {
+    return getSortedCanvasStatePaths(this.savedCanvasStates);
   }
 
   async cleanupSavedCanvasStates(): Promise<void> {
@@ -415,17 +416,17 @@ export default class CanvasFoldingPlugin extends Plugin {
     if (removedCount > 0) {
       await this.flushPluginDataSave();
     }
-    new Notice(
-      removedCount === 0
-        ? "Canvas Folding: no stale saved states found."
-        : `Canvas Folding: cleaned ${removedCount} saved canvas state${removedCount === 1 ? "" : "s"}.`,
-    );
+  }
+
+  async removeSavedCanvasState(canvasPath: string): Promise<void> {
+    if (!this.savedCanvasStates.delete(canvasPath)) return;
+    await this.flushPluginDataSave();
   }
 
   async clearSavedCanvasStates(): Promise<void> {
+    if (this.savedCanvasStates.size === 0) return;
     this.savedCanvasStates.clear();
     await this.flushPluginDataSave();
-    new Notice("Cleared all persisted canvas states.");
   }
 
   private async loadPluginData(): Promise<void> {

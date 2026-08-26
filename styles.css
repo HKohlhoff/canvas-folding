@@ -105,3 +105,27 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
     width: 32px;
   }
 }
+.canvas-folding-persisted-states-modal .setting-item-control {
+  flex: 0 0 7rem;
+  justify-content: flex-end;
+}
+
+.canvas-folding-persisted-states-modal .setting-item-control button {
+  width: 7rem;
+  justify-content: center;
+}
+
+.canvas-folding-persisted-states-separator {
+  height: 0;
+  margin: var(--size-4-4) 0 var(--size-4-2);
+  border: 0;
+  border-top: 2px solid var(--background-modifier-border);
+}
+
+.canvas-folding-persisted-states-modal .setting-item.canvas-folding-persisted-states-remove-all {
+  border-top: 0 !important;
+}
+
+.canvas-folding-persisted-states-remove-all .setting-item-name {
+  font-weight: var(--font-semibold);
+}

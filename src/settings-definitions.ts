@@ -6,15 +6,8 @@ import {
 
 type CanvasFoldingSettingKey = keyof CanvasFoldingSettings;
 
-export interface CanvasFoldingSettingsDefinitionHost {
-  cleanupSavedCanvasStates(): Promise<void>;
-  clearSavedCanvasStates(): Promise<void>;
-  hasSavedCanvasStates(): boolean;
-}
-
 export function getCanvasFoldingSettingDefinitions(
-  plugin: CanvasFoldingSettingsDefinitionHost,
-  update: () => void = () => {},
+  openPersistedCanvasStates: () => void = () => {},
 ): SettingDefinitionItem<CanvasFoldingSettingKey>[] {
   return [
     {
@@ -82,33 +75,13 @@ export function getCanvasFoldingSettingDefinitions(
       heading: "Persisted canvas states",
       items: [
         {
-          name: "Clean up persisted canvas states",
-          desc: "Remove persisted entries for canvas files and nodes that no longer exist.",
+          name: "Manage persisted canvas states",
+          desc: "Review or remove folding states stored for restoration between sessions.",
           render: (setting) => {
             setting.addButton((button) => {
               button
-                .setButtonText("Clean up")
-                .setDisabled(!plugin.hasSavedCanvasStates())
-                .onClick(async () => {
-                  await plugin.cleanupSavedCanvasStates();
-                  update();
-                });
-            });
-          },
-        },
-        {
-          name: "Clear all persisted canvas states",
-          desc: "Delete all states stored between sessions. States and visibility in currently open tabs remain unchanged.",
-          render: (setting) => {
-            setting.addButton((button) => {
-              button
-                .setButtonText("Clear all")
-                .setDestructive()
-                .setDisabled(!plugin.hasSavedCanvasStates())
-                .onClick(async () => {
-                  await plugin.clearSavedCanvasStates();
-                  update();
-                });
+                .setButtonText("Manage")
+                .onClick(openPersistedCanvasStates);
             });
           },
         },

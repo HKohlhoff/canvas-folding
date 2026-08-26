@@ -51,6 +51,12 @@ export function isCanvasPath(path: string): boolean {
   return path.toLowerCase().endsWith(".canvas");
 }
 
+export function getSortedCanvasStatePaths<T>(
+  entries: ReadonlyMap<string, T>,
+): readonly string[] {
+  return [...entries.keys()].sort((left, right) => left.localeCompare(right));
+}
+
 export function removePathEntries<T>(
   entries: Map<string, T>,
   path: string,

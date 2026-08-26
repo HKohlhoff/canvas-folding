@@ -1,9 +1,9 @@
 import { App, Plugin, PluginSettingTab } from "obsidian";
 import {
   getCanvasFoldingSettingDefinitions,
-  type CanvasFoldingSettingsDefinitionHost,
 } from "./settings-definitions";
 import type { CanvasFoldingSettings } from "./settings-data";
+import { PersistedCanvasStatesModal } from "./ui/persisted-canvas-states-modal";
 
 export {
   DEFAULT_SETTINGS,
@@ -13,9 +13,12 @@ export {
 
 type CanvasFoldingSettingKey = keyof CanvasFoldingSettings;
 
-interface CanvasFoldingSettingsHost
-  extends Plugin, CanvasFoldingSettingsDefinitionHost {
+interface CanvasFoldingSettingsHost extends Plugin {
   settings: CanvasFoldingSettings;
+  cleanupSavedCanvasStates(): Promise<void>;
+  clearSavedCanvasStates(): Promise<void>;
+  getSavedCanvasStatePaths(): readonly string[];
+  removeSavedCanvasState(canvasPath: string): Promise<void>;
   updateSettings(update: Partial<CanvasFoldingSettings>): Promise<void>;
 }
 
@@ -25,7 +28,14 @@ export class CanvasFoldingSettingTab extends PluginSettingTab {
   }
 
   getSettingDefinitions() {
-    return getCanvasFoldingSettingDefinitions(this.plugin, () => this.update());
+    return getCanvasFoldingSettingDefinitions(() => {
+      new PersistedCanvasStatesModal(this.app, {
+        cleanup: () => this.plugin.cleanupSavedCanvasStates(),
+        clearAll: () => this.plugin.clearSavedCanvasStates(),
+        getPaths: () => this.plugin.getSavedCanvasStatePaths(),
+        remove: (canvasPath) => this.plugin.removeSavedCanvasState(canvasPath),
+      }).open();
+    });
   }
 
   getControlValue(key: string): unknown {

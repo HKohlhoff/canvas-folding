@@ -43,6 +43,9 @@ npm run build:prod
 - Add a child to a collapsed branch: it remains visible while selected and folds after deselection.
 - Open the same Canvas in two leaves and verify that controls, focus and visibility remain leaf-specific.
 - Navigate away and back in one leaf, then close and reopen the leaf with persistence disabled and enabled.
+- Open the persisted-state manager after saving a new state and after reopening
+  the settings tab. Verify stale entries are cleaned, paths are sorted, one
+  state and all states can be removed, and currently open tabs stay unchanged.
 - Disable and re-enable Canvas Folding and verify that no managed classes, controls or interaction handlers remain stale.
 - Focus a branch and verify that neither dimmed nodes nor dimmed edges can be selected or open Obsidian's item toolbar.
 - Focus a branch whose descendants are inside a Canvas group and verify that the group frame remains active.

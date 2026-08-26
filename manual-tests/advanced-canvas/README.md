@@ -231,10 +231,10 @@ Run these on disposable copies because they intentionally modify Canvas data.
   every case in the parent `manual-tests/README.md`: basic tree, multiple roots,
   shared descendant, rootless cycle, mixed node types, lifecycle, commands,
   keyboard, and touch.
-- [ ] **AC-G02 · Two leaves:** Open the Advanced fixture in two leaves. Advanced
+- [x] **AC-G02 · Two leaves:** Open the Advanced fixture in two leaves. Advanced
   group state may be file-wide; Canvas Folding collapse/focus remains isolated
   per leaf and reconciles each re-render correctly.
-- [ ] **AC-G03 · Persistence off:** Navigate away/back, close/reopen the tab,
+- [x] **AC-G03 · Persistence off:** Navigate away/back, close/reopen the tab,
   and restart with Folding persistence disabled. Advanced group state remains
   its own file state; closed Folding tab state does not return.
 - [ ] **AC-G04 · Persistence on:** Repeat with Folding persistence enabled.
