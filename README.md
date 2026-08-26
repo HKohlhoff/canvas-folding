@@ -157,6 +157,14 @@ Folding's local `data.json`, never in the `.canvas` file. Entries for deleted or
 renamed Canvas files and stale node IDs are cleaned automatically and can also
 be reviewed or removed from the settings.
 
+Canvas Folding does not synchronize settings or persisted states between
+devices. They belong to the local Obsidian plugin configuration, so the same
+Canvas can intentionally have different folding states on a Mac, iPhone, and
+iPad. If Obsidian Sync or another synchronization system is configured to sync
+plugin settings and data, it may also transfer Canvas Folding's `data.json`;
+that behavior is controlled by the synchronization setup, not by Canvas
+Folding.
+
 ## Demo Canvas
 
 The repository includes a documented demo covering a basic tree, a shared
