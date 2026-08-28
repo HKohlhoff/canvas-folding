@@ -28,4 +28,6 @@ This update makes folding and focus controls more informative, flexible, and con
 Canvas Folding still changes only the current view. It never writes folding data into your Canvas files.
 
 This update description appears automatically once. You can reopen it at any time with **Show last update** at the bottom of the Canvas Folding settings. Closing it leaves no note or other content file in your Vault.
+
+If Canvas Folding makes your Canvas work easier and you would like to support its continued development, you can [buy me a coffee on Ko-fi](https://ko-fi.com/hokdev). Thank you!
 `;

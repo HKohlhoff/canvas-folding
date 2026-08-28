@@ -6,6 +6,7 @@ import tseslint from "typescript-eslint";
 export default defineConfig(
   globalIgnores([
     ".test-build/**",
+    "_local/**",
     "TestVault/**",
     "documentation/**",
     "examples/**",
