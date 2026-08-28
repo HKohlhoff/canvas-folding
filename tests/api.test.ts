@@ -130,6 +130,27 @@ void test("returns only the collapsed connection when a shared branch remains re
   );
 });
 
+void test("includes unconnected contents of a structurally hidden group", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "ROOT", type: "group", x: 0, y: 0, width: 200, height: 160 },
+      { id: "GROUP", type: "group", x: 300, y: 0, width: 240, height: 180 },
+      { id: "CARD", type: "text", x: 320, y: 20, width: 100, height: 60 },
+    ],
+    edges: [{ id: "ROOT_GROUP", fromNode: "ROOT", toNode: "GROUP" }],
+  });
+
+  const snapshot = createCanvasFoldStateSnapshot(
+    "Folder/Groups.canvas",
+    "active-leaf",
+    { revealedBranches: {}, visibleDepths: { ROOT: 0 } },
+    graph,
+  );
+
+  assert.deepEqual(snapshot.hiddenNodeIds, ["GROUP", "CARD"]);
+  assert.deepEqual(snapshot.hiddenEdgeIds, ["ROOT_GROUP"]);
+});
+
 void test("keeps the complete B1 branch when the asymmetric A1 branch collapses", () => {
   const graph = buildCanvasGraph({
     nodes: ["A1", "A2", "B1", "B2", "LEAF"].map((id) => ({

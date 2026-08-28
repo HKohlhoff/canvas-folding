@@ -28,6 +28,16 @@ The format follows the spirit of Keep a Changelog, with the newest release first
   connections.
 - Treat groups connected by directed edges like regular folding nodes,
   including clickable folding controls and recursive group branches.
+- Hide geometrically contained nodes together with a group hidden through a
+  directed parent branch, even when those contained nodes have no parent edge.
+- Keep a connected group visible when a separate branch hides all nodes
+  geometrically contained by it; the group frame follows its own directed
+  branch.
+- Keep a visible node's folding control in place but disabled while all of its
+  descendants are hidden by a folded group, preserving its branch state until
+  the group is expanded.
+- Remove Canvas Folding controls from a group while Advanced Canvas has that
+  group collapsed and restore them after the group is expanded.
 
 ## [1.0.1]
 

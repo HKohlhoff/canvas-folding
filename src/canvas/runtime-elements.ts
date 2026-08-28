@@ -12,6 +12,7 @@ export interface CanvasElementHandle {
 export interface CanvasNodeView {
   id: string;
   element: CanvasNodeElementHandle;
+  externallyCollapsed?: boolean;
   externallyCollapsedNodeIds?: readonly string[];
   visibilityOwnerNodeId?: string;
 }
@@ -56,13 +57,16 @@ export function extractCanvasNodeViews(
 
     const element = asCanvasNodeElement(value.nodeEl);
     if (element !== null) {
-      const externallyCollapsedNodeIds = readExternallyCollapsedNodeIds(value);
+      const externalCollapse = readExternalCollapseState(value);
       const visibilityOwnerNodeId = readPortalVisibilityOwnerNodeId(value.id);
       nodeViews.push({
         id: value.id,
         element,
-        ...(externallyCollapsedNodeIds.length > 0
-          ? { externallyCollapsedNodeIds }
+        ...(externalCollapse.collapsed
+          ? { externallyCollapsed: true }
+          : {}),
+        ...(externalCollapse.nodeIds.length > 0
+          ? { externallyCollapsedNodeIds: externalCollapse.nodeIds }
           : {}),
         ...(visibilityOwnerNodeId === null ? {} : { visibilityOwnerNodeId }),
       });
@@ -71,26 +75,30 @@ export function extractCanvasNodeViews(
   return nodeViews;
 }
 
-function readExternallyCollapsedNodeIds(
+function readExternalCollapseState(
   value: Record<string, unknown>,
-): readonly string[] {
-  if (typeof value.getData !== "function") return [];
+): { collapsed: boolean; nodeIds: readonly string[] } {
+  if (typeof value.getData !== "function") {
+    return { collapsed: false, nodeIds: [] };
+  }
   try {
     const data = (value as unknown as CanvasNodeDataRuntime).getData();
     if (
       !isRecord(data) ||
       data.type !== "group" ||
-      data.collapsed !== true ||
-      !isRecord(data.collapsedData) ||
-      !Array.isArray(data.collapsedData.nodes)
+      data.collapsed !== true
     ) {
-      return [];
+      return { collapsed: false, nodeIds: [] };
     }
-    return data.collapsedData.nodes.flatMap((node) =>
-      isRecord(node) && typeof node.id === "string" ? [node.id] : [],
-    );
+    const nodeIds = isRecord(data.collapsedData) &&
+      Array.isArray(data.collapsedData.nodes)
+      ? data.collapsedData.nodes.flatMap((node) =>
+        isRecord(node) && typeof node.id === "string" ? [node.id] : [],
+      )
+      : [];
+    return { collapsed: true, nodeIds };
   } catch {
-    return [];
+    return { collapsed: false, nodeIds: [] };
   }
 }
 

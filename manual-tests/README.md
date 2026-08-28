@@ -102,6 +102,18 @@ File: `05-groups-and-node-types.canvas`
 - Connect groups through directed edges. Verify that their folding controls are
   clickable, collapsing a parent hides the complete connected group branch,
   and every visible group has a working focus control.
+- Put an unconnected node inside a connected child group. Collapsing the parent
+  group must hide both the child group and that geometrically contained node.
+- Put the child of a separate node branch inside that connected child group.
+  Collapsing the separate node branch must hide its child but keep the group
+  frame visible; collapsing the connected group parent must hide both.
+- While that connected group parent is collapsed, confirm the separate visible
+  parent keeps its folding control in place but disabled with **Branch hidden
+  by folded group**. Expanding the group must restore the control without
+  changing the separate branch's previous state.
+- With Advanced Canvas active, collapse a group through Advanced Canvas and
+  confirm both Canvas Folding controls disappear from its compact frame; expand
+  it and confirm the controls return exactly once.
 - Add an empty group: it remains visible when nearby branches are collapsed.
 
 ## Cross-file and lifecycle matrix

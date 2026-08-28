@@ -54,6 +54,21 @@ void test("removes an obsolete control container after a render in the same leaf
   assert.equal(replacement.host.container?.removed, false);
 });
 
+void test("removes controls while their Advanced Canvas group is collapsed", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+
+  sync(manager, entry.context);
+  const container = requireContainer(entry.host);
+  const nodeView = entry.context.nodeViews[0];
+  assert.ok(nodeView !== undefined);
+  nodeView.externallyCollapsed = true;
+  sync(manager, entry.context);
+
+  assert.equal(container.removed, true);
+  assert.equal(getControlOrderByLeaf(manager).has(entry.context.leaf), false);
+});
+
 void test("removes controls from every managed leaf during cleanup", () => {
   const manager = new CanvasNodeControlManager();
   const first = createContext("first.canvas", {});
@@ -246,6 +261,32 @@ void test("explains descendants hidden by an Advanced Canvas group", () => {
   assert.equal(button.attributes.has("aria-description"), false);
 });
 
+void test("keeps a group-hidden branch control visible but disabled", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+
+  sync(manager, entry.context, {
+    ...BRANCH_MODEL,
+    disabledByHiddenGroup: true,
+  });
+
+  const button = requireChild(
+    requireContainer(entry.host),
+    "canvas-folding-branch-control",
+  );
+  assert.equal(button.disabled, true);
+  assert.equal(button.title, "Branch hidden by folded group");
+  assert.equal(
+    button.attributes.get("aria-label"),
+    "Branch hidden by folded group.",
+  );
+  assert.equal(button.attributes.has("aria-haspopup"), false);
+  assert.deepEqual(
+    getControlOrderByLeaf(manager).get(entry.context.leaf),
+    ["A:focus"],
+  );
+});
+
 void test("recognizes only the context-menu key for the levels menu", () => {
   assert.equal(isBranchMenuKeyboardEvent({ key: "ContextMenu" }), true);
   assert.equal(isBranchMenuKeyboardEvent({ key: "F10" }), false);
@@ -387,6 +428,7 @@ class FakeElement {
   readonly children: FakeElement[] = [];
   readonly classes = new Set<string>();
   className = "";
+  disabled = false;
   isConnected = true;
   removed = false;
   textContent: string | null = null;

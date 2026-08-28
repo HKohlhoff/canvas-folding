@@ -98,6 +98,7 @@ void test("marks a branch with any descendants hidden by an external collapsed g
 
   const models = buildBranchControlModels(graph, state, {
     externallyCollapsedNodeIds: new Set(["C"]),
+    groupHiddenNodeIds: new Set(),
   });
 
   assert.equal(models[0]?.collapsed, false);
@@ -105,7 +106,31 @@ void test("marks a branch with any descendants hidden by an external collapsed g
   assert.equal(
     buildBranchControlModels(graph, state, {
       externallyCollapsedNodeIds: new Set(["OTHER"]),
+      groupHiddenNodeIds: new Set(),
     })[0]?.externallyCollapsedDescendantCount,
+    undefined,
+  );
+});
+
+void test("disables a branch only while every descendant is hidden by a folded group", () => {
+  const graph = buildCanvasGraph(createData());
+  const state = new BranchCollapseState();
+
+  const fullyHidden = buildBranchControlModels(graph, state, {
+    externallyCollapsedNodeIds: new Set(),
+    groupHiddenNodeIds: new Set(["D"]),
+  });
+  assert.equal(
+    fullyHidden.find((model) => model.nodeId === "B")?.disabledByHiddenGroup,
+    true,
+  );
+
+  const partlyHidden = buildBranchControlModels(graph, state, {
+    externallyCollapsedNodeIds: new Set(),
+    groupHiddenNodeIds: new Set(["C"]),
+  });
+  assert.equal(
+    partlyHidden.find((model) => model.nodeId === "A")?.disabledByHiddenGroup,
     undefined,
   );
 });

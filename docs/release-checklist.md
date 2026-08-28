@@ -51,6 +51,12 @@ npm run build:prod
 - Fold and expand branches containing text, file, image, link and group nodes.
 - Connect multiple groups through directed edges and verify clickable folding
   and focus controls plus recursive collapse and expand for the group branch.
+- Hide the only geometrically contained node through a separate branch and
+  verify that a connected group frame remains visible until its own directed
+  parent branch is collapsed.
+- While all descendants of another visible node are hidden by that group,
+  verify its folding control remains visible but disabled, explains why, and
+  becomes active again without a latent state change after expanding the group.
 - Check a simple tree, multiple roots, an isolated node, a shared descendant
   with multiple parents and a directed cycle. In `TestCanvas`, collapsing `A1`
   must hide `A2` and the two `A1`/`A2` connections to `B2` while keeping the
@@ -91,6 +97,10 @@ Complete this gate before claiming unrestricted Advanced Canvas compatibility:
 - Record the tested Obsidian and Advanced Canvas versions.
 - Enable both plugins in both load orders, then reload Obsidian and restart it once.
 - Repeat the core folding matrix with text, file, image, link and group nodes, shared descendants and a cycle.
+- Collapse and expand an Advanced Canvas group and confirm Canvas Folding's
+  branch and focus controls are absent only while that group is collapsed.
+- Fold a parent of a connected group containing an unconnected node and verify
+  the contained node follows the hidden group.
 - Verify node selection, editing, moving, resizing, connecting, creation, deletion, undo and redo with both plugins active.
 - Check that branch controls, both toolbars, native handles and Advanced Canvas controls neither overlap incorrectly nor intercept unrelated pointer or touch input.
 - Test toolbar tapping, dragging and horizontal scrolling, node selection and branch controls on desktop, iPad and iPhone where Advanced Canvas supports the device.

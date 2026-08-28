@@ -52,6 +52,7 @@ import {
 } from "./tree/state";
 import {
   deriveCanvasVisibility,
+  getNodeIdsHiddenByGroups,
   summarizeCanvasVisibility,
 } from "./tree/visibility";
 import {
@@ -1067,6 +1068,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       return;
     }
 
+    const hiddenNodeIds = state.getHiddenNodeIds(graph);
     this.nodeControls.sync(
       context,
       this.branchControlsVisible
@@ -1075,6 +1077,10 @@ export default class CanvasFoldingPlugin extends Plugin {
               context.nodeViews.flatMap(
                 (nodeView) => nodeView.externallyCollapsedNodeIds ?? [],
               ),
+            ),
+            groupHiddenNodeIds: getNodeIdsHiddenByGroups(
+              graph.nodes,
+              hiddenNodeIds,
             ),
           })
         : [],
@@ -1316,6 +1322,14 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
 
     const state = this.getCollapseState(context, graph);
+    const groupHiddenNodeIds = getNodeIdsHiddenByGroups(
+      graph.nodes,
+      state.getHiddenNodeIds(graph),
+    );
+    if (descendants.every((descendantId) => groupHiddenNodeIds.has(descendantId))) {
+      this.syncNodeControls(context, graph, state);
+      return;
+    }
     const expanding = state.isBranchCollapsed(graph, nodeId);
     if (expanding) {
       if (state.isCollapsed(nodeId)) {

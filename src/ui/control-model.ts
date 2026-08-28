@@ -8,6 +8,7 @@ import type { BranchCollapseState } from "../tree/state";
 export interface BranchControlModel {
   collapsed: boolean;
   descendantCount: number;
+  disabledByHiddenGroup?: boolean;
   externallyCollapsedDescendantCount?: number;
   hiddenConnectionCount?: number;
   hiddenDescendantCount?: number;
@@ -22,6 +23,7 @@ export interface FocusControlModel {
 
 export interface BranchControlRuntimeState {
   externallyCollapsedNodeIds: ReadonlySet<string>;
+  groupHiddenNodeIds: ReadonlySet<string>;
 }
 
 export function formatDescendantCount(count: number): string {
@@ -76,6 +78,10 @@ export function buildBranchControlModels(
           node.id,
           runtime.externallyCollapsedNodeIds,
         );
+    const disabledByHiddenGroup = runtime !== undefined &&
+      descendantIds.every((descendantId) =>
+        runtime.groupHiddenNodeIds.has(descendantId),
+      );
     const branchSourceIds = new Set([node.id, ...descendantIds]);
     const branchTargetIds = new Set(descendantIds);
     const hiddenConnectionCount = graph.edges.filter(
@@ -88,6 +94,7 @@ export function buildBranchControlModels(
     return [{
       nodeId: node.id,
       collapsed,
+      ...(disabledByHiddenGroup ? { disabledByHiddenGroup: true } : {}),
       ...(externallyCollapsedDescendantCount > 0
         ? { externallyCollapsedDescendantCount }
         : {}),

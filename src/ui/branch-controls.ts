@@ -45,17 +45,25 @@ export class CanvasNodeControlManager {
       position: BranchMenuPosition,
     ) => void,
   ): void {
+    const controlHostNodeIds = new Set(
+      context.nodeViews
+        .filter((nodeView) => nodeView.externallyCollapsed !== true)
+        .map((nodeView) => nodeView.id),
+    );
     const branchModelsByNodeId = new Map(
-      branchModels.map((model) => [model.nodeId, model]),
+      branchModels
+        .filter((model) => controlHostNodeIds.has(model.nodeId))
+        .map((model) => [model.nodeId, model]),
     );
     const focusModelsByNodeId = new Map(
-      focusModels.map((model) => [model.nodeId, model]),
+      focusModels
+        .filter((model) => controlHostNodeIds.has(model.nodeId))
+        .map((model) => [model.nodeId, model]),
     );
     const orderedNodeIds = getNodeControlTabOrder(
       [
-        ...focusModels.map((model) => model.nodeId),
-        ...branchModels
-          .map((model) => model.nodeId)
+        ...focusModelsByNodeId.keys(),
+        ...[...branchModelsByNodeId.keys()]
           .filter((nodeId) => !focusModelsByNodeId.has(nodeId)),
       ],
       context.selectedNodeIds,
@@ -65,6 +73,7 @@ export class CanvasNodeControlManager {
         ? [getControlKey(nodeId, "focus")]
         : []),
       ...(branchModelsByNodeId.has(nodeId)
+        && branchModelsByNodeId.get(nodeId)?.disabledByHiddenGroup !== true
         ? [getControlKey(nodeId, "branch")]
         : []),
     ]);
@@ -215,11 +224,13 @@ export class CanvasNodeControlManager {
       this.installSharedButtonEvents(button, entry, "branch");
       button.addEventListener("contextmenu", (event) => {
         blockCanvasInteraction(event);
+        if (button.disabled) return;
         openContextMenuAfterPointerRelease(event, entry.openContextMenu);
       });
       button.addEventListener("keydown", (event) => {
         if (!isBranchMenuKeyboardEvent(event)) return;
         blockCanvasInteraction(event);
+        if (button.disabled) return;
         const bounds = button.getBoundingClientRect();
         entry.openContextMenu({ x: bounds.right, y: bounds.bottom });
       });
@@ -236,6 +247,7 @@ export class CanvasNodeControlManager {
     button.addEventListener("pointerdown", blockCanvasInteraction);
     button.addEventListener("click", (event) => {
       blockCanvasInteraction(event);
+      if (button.disabled) return;
       if (kind === "focus") entry.activateFocus();
       else entry.activateBranch();
       if (event.detail === 0) this.restoreControlFocus(entry, kind);
@@ -243,6 +255,7 @@ export class CanvasNodeControlManager {
     button.addEventListener("keydown", (event) => {
       if (event.key === " ") {
         blockCanvasInteraction(event);
+        if (button.disabled) return;
         if (!event.repeat) {
           if (kind === "focus") entry.activateFocus();
           else entry.activateBranch();
@@ -318,6 +331,8 @@ function updateBranchButton(
   button: HTMLButtonElement,
   model: BranchControlModel,
 ): void {
+  const disabledByHiddenGroup = model.disabledByHiddenGroup === true;
+  const disabledLabel = "Branch hidden by folded group";
   const action = model.collapsed ? "Expand" : "Collapse";
   const hiddenNodeLabel = model.hiddenDescendantCount === undefined
     ? null
@@ -329,7 +344,9 @@ function updateBranchButton(
   const externalGroupHint = model.externallyCollapsedDescendantCount !== undefined
     ? ` Advanced Canvas currently hides ${formatDescendantCount(model.externallyCollapsedDescendantCount)} inside collapsed groups. Canvas Folding preserves those group states when this branch is collapsed or expanded.`
     : "";
-  const tooltip = `${label}.${externalGroupHint} Open the context menu for branch display options.`;
+  const tooltip = disabledByHiddenGroup
+    ? `${disabledLabel}.`
+    : `${label}.${externalGroupHint} Open the context menu for branch display options.`;
 
   button.textContent = model.hiddenDescendantCount === undefined
     ? model.collapsed ? "+" : "−"
@@ -338,9 +355,16 @@ function updateBranchButton(
     "has-hidden-count",
     model.hiddenDescendantCount !== undefined,
   );
-  button.removeAttribute("title");
-  button.setAttribute("aria-haspopup", "menu");
-  button.setAttribute("aria-keyshortcuts", "ContextMenu");
+  button.disabled = disabledByHiddenGroup;
+  if (disabledByHiddenGroup) {
+    button.setAttribute("title", disabledLabel);
+    button.removeAttribute("aria-haspopup");
+    button.removeAttribute("aria-keyshortcuts");
+  } else {
+    button.removeAttribute("title");
+    button.setAttribute("aria-haspopup", "menu");
+    button.setAttribute("aria-keyshortcuts", "ContextMenu");
+  }
   button.setAttribute("aria-label", tooltip);
   button.removeAttribute("aria-description");
 }

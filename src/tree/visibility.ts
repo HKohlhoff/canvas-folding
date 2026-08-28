@@ -20,7 +20,12 @@ export function deriveCanvasVisibility(
   restrictedEdgeIds: ReadonlySet<string> = new Set(),
 ): CanvasVisibility {
   const normalizedHiddenNodeIds = new Set(hiddenNodeIds);
-  addGroupsWithOnlyHiddenContents(graph.nodes, normalizedHiddenNodeIds);
+  addContentsOfHiddenGroups(graph.nodes, normalizedHiddenNodeIds);
+  addGroupsWithOnlyHiddenContents(
+    graph.nodes,
+    graph.edges,
+    normalizedHiddenNodeIds,
+  );
   const normalizedDimmedNodeIds = new Set(
     [...dimmedNodeIds].filter((nodeId) => !normalizedHiddenNodeIds.has(nodeId)),
   );
@@ -51,6 +56,58 @@ export function deriveCanvasVisibility(
     hiddenEdgeIds,
     hiddenNodeIds: normalizedHiddenNodeIds,
   };
+}
+
+function addContentsOfHiddenGroups(
+  nodes: readonly CanvasGraphNodeData[],
+  hiddenNodeIds: Set<string>,
+): void {
+  for (const nodeId of getNodeIdsHiddenByGroups(nodes, hiddenNodeIds)) {
+    hiddenNodeIds.add(nodeId);
+  }
+}
+
+export function getNodeIdsHiddenByGroups(
+  nodes: readonly CanvasGraphNodeData[],
+  hiddenNodeIds: ReadonlySet<string>,
+): ReadonlySet<string> {
+  const nodesById = new Map(nodes.map((node) => [node.id, node]));
+  const containedNodeIdsByGroup = new Map<string, readonly string[]>();
+  for (const group of nodes) {
+    if (group.type !== "group" || !hasCompleteBounds(group)) continue;
+    containedNodeIdsByGroup.set(
+      group.id,
+      nodes
+        .filter(
+          (node) =>
+            node.id !== group.id &&
+            hasCompleteBounds(node) &&
+            isFullyContained(node, group),
+        )
+        .map((node) => node.id),
+    );
+  }
+
+  const pendingGroupIds = [...hiddenNodeIds].filter(
+    (nodeId) => nodesById.get(nodeId)?.type === "group",
+  );
+  const processedGroupIds = new Set<string>();
+  const groupHiddenNodeIds = new Set<string>();
+  for (let index = 0; index < pendingGroupIds.length; index += 1) {
+    const groupId = pendingGroupIds[index];
+    if (groupId === undefined || processedGroupIds.has(groupId)) continue;
+    processedGroupIds.add(groupId);
+    for (const nodeId of containedNodeIdsByGroup.get(groupId) ?? []) {
+      groupHiddenNodeIds.add(nodeId);
+      if (
+        nodesById.get(nodeId)?.type === "group" &&
+        !processedGroupIds.has(nodeId)
+      ) {
+        pendingGroupIds.push(nodeId);
+      }
+    }
+  }
+  return groupHiddenNodeIds;
 }
 
 export function summarizeCanvasVisibility(
@@ -102,12 +159,26 @@ function keepGroupsActiveWithActiveContents(
 
 function addGroupsWithOnlyHiddenContents(
   nodes: readonly CanvasGraphNodeData[],
+  edges: CanvasGraph["edges"],
   hiddenNodeIds: Set<string>,
 ): void {
   const contentNodes = nodes.filter((node) => node.type !== "group");
+  const knownNodeIds = new Set(nodes.map((node) => node.id));
+  const graphControlledGroupIds = new Set<string>();
+  for (const edge of edges) {
+    if (!knownNodeIds.has(edge.fromNode) || !knownNodeIds.has(edge.toNode)) {
+      continue;
+    }
+    graphControlledGroupIds.add(edge.fromNode);
+    graphControlledGroupIds.add(edge.toNode);
+  }
 
   for (const group of nodes) {
-    if (group.type !== "group" || !hasCompleteBounds(group)) {
+    if (
+      group.type !== "group" ||
+      graphControlledGroupIds.has(group.id) ||
+      !hasCompleteBounds(group)
+    ) {
       continue;
     }
 

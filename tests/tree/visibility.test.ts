@@ -4,6 +4,7 @@ import test from "node:test";
 import { buildCanvasGraph, type CanvasGraphData } from "../../src/tree/graph";
 import {
   deriveCanvasVisibility,
+  getNodeIdsHiddenByGroups,
   summarizeCanvasVisibility,
 } from "../../src/tree/visibility";
 
@@ -68,6 +69,40 @@ void test("hides a non-empty group when all contained nodes are hidden", () => {
   assert.deepEqual([...visibility.hiddenNodeIds], ["A", "B", "G"]);
 });
 
+void test("hides unconnected nodes contained by a hidden group", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "O", type: "text", x: 400, y: 20, width: 80, height: 50 },
+    ],
+    edges: [],
+  });
+
+  const visibility = deriveCanvasVisibility(groupGraph, new Set(["G"]));
+
+  assert.deepEqual([...visibility.hiddenNodeIds], ["G", "A"]);
+});
+
+void test("propagates hidden group contents through nested groups", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "INNER", type: "group", x: 40, y: 40, width: 200, height: 120 },
+      { id: "A", type: "text", x: 60, y: 60, width: 80, height: 50 },
+      { id: "OUTER", type: "group", x: 0, y: 0, width: 300, height: 200 },
+    ],
+    edges: [],
+  });
+
+  const visibility = deriveCanvasVisibility(groupGraph, new Set(["OUTER"]));
+
+  assert.deepEqual([...visibility.hiddenNodeIds], ["OUTER", "INNER", "A"]);
+  assert.deepEqual(
+    [...getNodeIdsHiddenByGroups(groupGraph.nodes, new Set(["OUTER"]))],
+    ["INNER", "A"],
+  );
+});
+
 void test("includes automatically hidden groups in the status summary", () => {
   const groupGraph = buildCanvasGraph({
     nodes: [
@@ -98,6 +133,36 @@ void test("keeps a group visible while any fully contained node is visible", () 
   const visibility = deriveCanvasVisibility(groupGraph, new Set(["A"]));
 
   assert.deepEqual([...visibility.hiddenNodeIds], ["A"]);
+});
+
+void test("keeps a connected group visible when a separate branch hides its only content", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "GROUP_CHILD_1", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "GROUP_GRANDCHILD", type: "group", x: 400, y: 0, width: 300, height: 200 },
+      { id: "D1", type: "text", x: 0, y: 300, width: 80, height: 50 },
+      { id: "D2.1", type: "text", x: 420, y: 20, width: 80, height: 50 },
+    ],
+    edges: [
+      { id: "GROUP_BRANCH", fromNode: "GROUP_CHILD_1", toNode: "GROUP_GRANDCHILD" },
+      { id: "D_BRANCH", fromNode: "D1", toNode: "D2.1" },
+    ],
+  });
+
+  const separateBranchFold = deriveCanvasVisibility(
+    groupGraph,
+    new Set(["D2.1"]),
+  );
+  assert.deepEqual([...separateBranchFold.hiddenNodeIds], ["D2.1"]);
+
+  const groupBranchFold = deriveCanvasVisibility(
+    groupGraph,
+    new Set(["GROUP_GRANDCHILD"]),
+  );
+  assert.deepEqual(
+    [...groupBranchFold.hiddenNodeIds],
+    ["GROUP_GRANDCHILD", "D2.1"],
+  );
 });
 
 void test("keeps a group active while it contains an active focused node", () => {

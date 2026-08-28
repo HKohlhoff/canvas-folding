@@ -28,7 +28,22 @@ void test("recognizes an externally collapsed group defensively", () => {
   ]);
 
   assert.deepEqual(nodeViews[0]?.externallyCollapsedNodeIds, ["CHILD"]);
+  assert.equal(nodeViews[0]?.externallyCollapsed, true);
+  assert.equal(nodeViews[1]?.externallyCollapsed, undefined);
   assert.equal(nodeViews[1]?.externallyCollapsedNodeIds, undefined);
+});
+
+void test("recognizes a collapsed group even without readable collapsed children", () => {
+  const nodeViews = extractCanvasNodeViews([
+    {
+      getData: () => ({ collapsed: true, type: "group" }),
+      id: "GROUP",
+      nodeEl: createNodeElement(),
+    },
+  ]);
+
+  assert.equal(nodeViews[0]?.externallyCollapsed, true);
+  assert.equal(nodeViews[0]?.externallyCollapsedNodeIds, undefined);
 });
 
 void test("extracts all visible and interactive elements from an edge", () => {

@@ -12,6 +12,8 @@ This update makes folding and focus controls more informative, flexible, and con
 - **State stays intact:** hiding controls does not expand folded branches or end an active focus.
 - **Clear branch size:** an expanded branch still shows a minus sign. After folding, the control shows the number of hidden content nodes; if shared nodes remain visible through another parent, a plus sign reports the hidden branch connection.
 - **Predictable shared branches:** shared descendants stay visible while another open parent branch still reaches them. Only exclusive descendants and the collapsed branch connections disappear.
+- **Complete group branches:** hiding a connected group also hides the nodes geometrically contained by it, even when they have no separate parent edge. The group frame itself follows its own directed branch and stays visible when only a separate branch inside it is folded. If a visible node's complete branch is unavailable behind a folded group, its folding control stays in place but is disabled until the group is expanded.
+- **Clean Advanced Canvas groups:** Canvas Folding controls disappear while Advanced Canvas has a group collapsed and return when it is expanded.
 - **Readable large counts:** controls grow for two- or three-digit counts without covering the focus control or node content.
 - **Consistent node layout:** focus stays to the left of folding, with the same order for pointer and keyboard use.
 - **Clear toolbar grouping:** the focus-control visibility action sits directly before the focus action in its own toolbar section.

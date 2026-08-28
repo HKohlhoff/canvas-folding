@@ -134,11 +134,23 @@ and focus controls can be hidden independently through the toolbar or command
 palette. Hiding either kind of control changes only the interface: it does not
 expand branches or end an active focus.
 
+When Advanced Canvas collapses one of its groups, Canvas Folding removes both
+of its controls from that compact group representation. The controls return
+after Advanced Canvas expands the group again.
+
 Hidden nodes also hide every incident edge, including edge labels. A collapsed
 branch connection can remain hidden while its shared endpoint stays visible
-through another open parent. A non-empty Canvas group is hidden when all
-non-group nodes geometrically contained by it are hidden. Empty groups remain
-visible.
+through another open parent. An unconnected non-empty Canvas group is hidden
+when all non-group nodes geometrically contained by it are hidden. A group
+connected through directed edges follows its own branch instead: hiding a
+separate branch inside it does not hide the group frame. Empty groups remain
+visible unless the group itself is a directed descendant of a folded parent.
+When a group is hidden as such a descendant, every node geometrically contained
+by it is hidden as well, even without a separate parent edge.
+If this makes every descendant of another visible node unavailable, that
+node's folding control stays in place but is disabled with the explanation
+**Branch hidden by folded group**. Its existing branch state is preserved and
+the control becomes active again when the group branch is expanded.
 
 ## Canvas toolbar
 
