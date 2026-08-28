@@ -54,12 +54,13 @@ import {
   summarizeCanvasVisibility,
 } from "./tree/visibility";
 import {
-  CanvasBranchControlManager,
+  CanvasNodeControlManager,
   type BranchMenuPosition,
 } from "./ui/branch-controls";
 import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import {
   buildBranchControlModels,
+  buildFocusControlModels,
   formatDescendantCount,
   getExternallyCollapsedDescendantCount,
   getRenderedDescendantDepths,
@@ -81,11 +82,12 @@ export default class CanvasFoldingPlugin extends Plugin {
     getFoldState: (canvasPath: string) => this.getApiFoldState(canvasPath),
   });
   settings: CanvasFoldingSettings = { ...DEFAULT_SETTINGS };
-  private readonly branchControls = new CanvasBranchControlManager();
+  private readonly nodeControls = new CanvasNodeControlManager();
   private readonly canvasToolbar = new CanvasToolbarManager();
   private readonly canvasLiveSync = new CanvasLiveSync();
   private activeCanvasPath: string | null = null;
   private branchControlsVisible = DEFAULT_SETTINGS.showBranchControls;
+  private focusControlsVisible = DEFAULT_SETTINGS.showFocusControls;
   private canvasToolbarVisible = DEFAULT_SETTINGS.showCanvasToolbar;
   private readonly collapseStates = new Map<
     object,
@@ -108,6 +110,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     await this.pruneAllSavedCanvasNodeStates();
     await this.writePluginData();
     this.branchControlsVisible = this.settings.showBranchControls;
+    this.focusControlsVisible = this.settings.showFocusControls;
     this.canvasToolbarVisible = this.settings.showCanvasToolbar;
     this.rememberOpenedCanvas(this.app.workspace.getActiveFile());
 
@@ -176,7 +179,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       checkCallback: (checking) =>
         this.runActiveCanvasCommand(checking, (context) => {
           this.branchControlsVisible = true;
-          this.syncBranchControls(context);
+          this.syncNodeControls(context);
           this.notifySuccess("Branch controls are visible.");
         }),
     });
@@ -187,8 +190,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       checkCallback: (checking) =>
         this.runActiveCanvasCommand(checking, (context) => {
           this.branchControlsVisible = false;
-          this.branchControls.removeAll();
-          this.syncToolbar(context);
+          this.syncNodeControls(context);
           this.notifySuccess("Branch controls are hidden.");
         }),
     });
@@ -199,12 +201,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       checkCallback: (checking) =>
         this.runActiveCanvasCommand(checking, (context) => {
           this.branchControlsVisible = !this.branchControlsVisible;
-          if (this.branchControlsVisible) {
-            this.syncBranchControls(context);
-          } else {
-            this.branchControls.removeAll();
-            this.syncToolbar(context);
-          }
+          this.syncNodeControls(context);
           this.notifySuccess(
             `Branch controls are ${this.branchControlsVisible ? "visible" : "hidden"}.`,
           );
@@ -228,6 +225,41 @@ export default class CanvasFoldingPlugin extends Plugin {
         }
         return true;
       },
+    });
+
+    this.addCommand({
+      id: "show-focus-controls",
+      name: "Show focus controls",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.focusControlsVisible = true;
+          this.syncNodeControls(context);
+          this.notifySuccess("Focus controls are visible.");
+        }),
+    });
+
+    this.addCommand({
+      id: "hide-focus-controls",
+      name: "Hide focus controls",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.focusControlsVisible = false;
+          this.syncNodeControls(context);
+          this.notifySuccess("Focus controls are hidden.");
+        }),
+    });
+
+    this.addCommand({
+      id: "toggle-focus-controls",
+      name: "Toggle focus controls",
+      checkCallback: (checking) =>
+        this.runActiveCanvasCommand(checking, (context) => {
+          this.focusControlsVisible = !this.focusControlsVisible;
+          this.syncNodeControls(context);
+          this.notifySuccess(
+            `Focus controls are ${this.focusControlsVisible ? "visible" : "hidden"}.`,
+          );
+        }),
     });
 
     this.registerEvent(
@@ -356,7 +388,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       this.liveCanvasFollowUpTimer = null;
     }
     this.canvasLiveSync.disconnect();
-    this.branchControls.removeAll();
+    this.nodeControls.removeAll();
     this.canvasToolbar.removeAll();
     this.visibility.restoreAll();
     this.collapseStates.clear();
@@ -385,11 +417,12 @@ export default class CanvasFoldingPlugin extends Plugin {
 
     if (typeof update.showBranchControls === "boolean") {
       this.branchControlsVisible = update.showBranchControls;
-      if (this.branchControlsVisible) {
-        this.refreshActiveCanvasState();
-      } else {
-        this.branchControls.removeAll();
-      }
+      this.refreshActiveCanvasState();
+    }
+
+    if (typeof update.showFocusControls === "boolean") {
+      this.focusControlsVisible = update.showFocusControls;
+      this.refreshActiveCanvasState();
     }
 
     if (typeof update.showCanvasToolbar === "boolean") {
@@ -735,7 +768,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     state.collapse(selectedNodeId);
     this.storeCanvasState(context.key, state);
     const result = this.applyCollapsedState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Collapsed branch", { selectedNodeId, ...result });
     this.notifySuccess(`Collapsed branch with ${formatDescendantCount(descendants.length)}.`);
   }
@@ -760,7 +793,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
     this.storeCanvasState(context.key, state);
     const result = this.applyVisibilityState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Expanded branch", { selectedNodeId, ...result });
     this.notifySuccess("Expanded selected branch.");
   }
@@ -773,12 +806,31 @@ export default class CanvasFoldingPlugin extends Plugin {
     state.focusBranch(selectedNodeId);
     this.storeCanvasState(context.key, state);
     const result = this.applyCollapsedState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Focused selected branch", {
       selectedNodeId,
       ...result,
     });
     this.notifySuccess("Focused selected branch.");
+  }
+
+  private toggleFocusFromControl(
+    context: ActiveCanvasContext,
+    nodeId: string,
+  ): void {
+    const graph = buildCanvasGraph(context.data);
+    const state = this.getCollapseState(context, graph);
+    const exiting = state.getFocusedNodeId() === nodeId;
+    if (exiting) state.exitFocus();
+    else state.focusBranch(nodeId);
+    this.storeCanvasState(context.key, state);
+    const result = this.applyVisibilityState(context, graph, state);
+    this.syncNodeControls(context, graph, state);
+    this.debug(exiting ? "Exited branch focus control" : "Focused node control", {
+      nodeId,
+      ...result,
+    });
+    this.notifySuccess(exiting ? "Exited branch focus." : "Focused selected branch.");
   }
 
   private exitBranchFocus(context: ActiveCanvasContext): void {
@@ -790,7 +842,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
     this.storeCanvasState(context.key, state);
     const result = this.applyVisibilityState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Exited branch focus", result);
     this.notifySuccess("Exited branch focus.");
   }
@@ -802,7 +854,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.storeCanvasState(context.key, state);
 
     const result = this.applyVisibilityState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Expanded all branches", result);
     this.notifySuccess("Expanded all branches.");
   }
@@ -818,7 +870,7 @@ export default class CanvasFoldingPlugin extends Plugin {
 
     this.storeCanvasState(context.key, state);
     const result = this.applyCollapsedState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Collapsed all branches", { collapsedRootCount, ...result });
     this.notifySuccess(
       `Collapsed ${collapsedRootCount} root branch${collapsedRootCount === 1 ? "" : "es"}.`,
@@ -852,7 +904,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     state.showAllRootBranchesThroughDepth(graph, depth);
     this.storeCanvasState(context.key, state);
     const result = this.applyCollapsedState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Set global canvas depth", { depth, ...result });
     this.notifySuccess(`Showing canvas through level ${depth}.`);
   }
@@ -922,7 +974,7 @@ export default class CanvasFoldingPlugin extends Plugin {
           ? "current state is stored between sessions"
           : "current state is being saved";
     new Notice(
-      `Canvas Folding: ${visibilitySummary.activeNodeCount} active, ${visibilitySummary.hiddenNodeCount} hidden, ${visibilitySummary.dimmedNodeCount} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · controls ${this.branchControlsVisible ? "on" : "off"} · ${persistenceStatus}.`,
+      `Canvas Folding: ${visibilitySummary.activeNodeCount} active, ${visibilitySummary.hiddenNodeCount} hidden, ${visibilitySummary.dimmedNodeCount} dimmed · ${graph.edges.length} edges, ${graph.rootIds.length} roots · focus ${state.isFocusActive() ? "on" : "off"} · branch controls ${this.branchControlsVisible ? "on" : "off"} · focus controls ${this.focusControlsVisible ? "on" : "off"} · ${persistenceStatus}.`,
     );
   }
 
@@ -930,7 +982,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     const result = this.readActiveCanvasContext();
     if (!result.ok) {
       this.canvasLiveSync.disconnect();
-      this.branchControls.removeDetached();
+      this.nodeControls.removeDetached();
       this.canvasToolbar.removeDetached();
       return;
     }
@@ -944,7 +996,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     // Canvas runtime data can be transiently empty while a view opens. Stale
     // IDs are pruned only against the authoritative Canvas file JSON.
     const visibility = this.applyLiveVisibilityState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Refreshed active canvas state", visibility);
   }
 
@@ -968,28 +1020,39 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
   }
 
-  private syncBranchControls(
+  private syncNodeControls(
     context: ActiveCanvasContext,
     graph = buildCanvasGraph(context.data),
     state = this.getCollapseState(context, graph),
   ): void {
     this.syncToolbar(context, graph, state);
-    if (!this.branchControlsVisible) {
-      this.branchControls.removeAll();
+    if (!this.branchControlsVisible && !this.focusControlsVisible) {
+      this.nodeControls.removeAll();
       return;
     }
 
-    this.branchControls.sync(
+    this.nodeControls.sync(
       context,
-      buildBranchControlModels(graph, state, {
-        externallyCollapsedNodeIds: new Set(
-          context.nodeViews.flatMap(
-            (nodeView) => nodeView.externallyCollapsedNodeIds ?? [],
-          ),
-        ),
-      }),
+      this.branchControlsVisible
+        ? buildBranchControlModels(graph, state, {
+            externallyCollapsedNodeIds: new Set(
+              context.nodeViews.flatMap(
+                (nodeView) => nodeView.externallyCollapsedNodeIds ?? [],
+              ),
+            ),
+          })
+        : [],
+      this.focusControlsVisible
+        ? buildFocusControlModels(graph, state)
+        : [],
       (controlContext, nodeId) => {
         this.toggleBranchFromControl(
+          this.refreshControlContext(controlContext),
+          nodeId,
+        );
+      },
+      (controlContext, nodeId) => {
+        this.toggleFocusFromControl(
           this.refreshControlContext(controlContext),
           nodeId,
         );
@@ -1020,6 +1083,7 @@ export default class CanvasFoldingPlugin extends Plugin {
         state,
         context.selectedNodeIds,
         this.branchControlsVisible,
+        this.focusControlsVisible,
       ),
       (action) => this.runToolbarAction(action),
       {
@@ -1057,8 +1121,11 @@ export default class CanvasFoldingPlugin extends Plugin {
       case "show-level": this.openCanvasDepthModal(context); break;
       case "toggle-controls":
         this.branchControlsVisible = !this.branchControlsVisible;
-        if (!this.branchControlsVisible) this.branchControls.removeAll();
-        this.syncBranchControls(context);
+        this.syncNodeControls(context);
+        break;
+      case "toggle-focus-controls":
+        this.focusControlsVisible = !this.focusControlsVisible;
+        this.syncNodeControls(context);
         break;
       case "inspect-graph": this.logCanvasGraph(context.data); break;
       case "show-status": this.showCurrentStatus(context); break;
@@ -1176,7 +1243,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.storeCanvasState(context.key, state);
 
     const result = this.applyCollapsedState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Set visible branch depth", { nodeId, visibleDepth, ...result });
     this.notifySuccess(
       visibleDepth === 0
@@ -1196,7 +1263,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.storeCanvasState(context.key, state);
 
     const result = this.applyVisibilityState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug("Showed entire branch", { nodeId, ...result });
     this.notifySuccess("Showing entire branch.");
   }
@@ -1208,7 +1275,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     const graph = buildCanvasGraph(context.data);
     const descendants = getDescendantIds(graph, nodeId);
     if (descendants.length === 0) {
-      this.syncBranchControls(context, graph);
+      this.syncNodeControls(context, graph);
       return;
     }
 
@@ -1229,7 +1296,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     const result = expanding
       ? this.applyVisibilityState(context, graph, state)
       : this.applyCollapsedState(context, graph, state);
-    this.syncBranchControls(context, graph, state);
+    this.syncNodeControls(context, graph, state);
     this.debug(expanding ? "Expanded branch control" : "Collapsed branch control", {
       nodeId,
       ...result,

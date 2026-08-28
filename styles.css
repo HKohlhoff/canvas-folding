@@ -70,7 +70,18 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   width: 1px;
 }
 
-.canvas-folding-branch-control {
+.canvas-folding-node-controls {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 30;
+}
+
+.canvas-folding-branch-control,
+.canvas-folding-focus-control {
   align-items: center;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
@@ -84,27 +95,49 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   height: 20px;
   justify-content: center;
   line-height: 1;
+  min-width: 20px;
   padding: 0;
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  width: 20px;
-  z-index: 30;
   touch-action: manipulation;
 }
 
+.canvas-folding-branch-control.has-hidden-count {
+  padding: 0 5px;
+}
+
+.canvas-folding-focus-control {
+  width: 20px;
+}
+
+.canvas-folding-focus-control svg {
+  height: 14px;
+  width: 14px;
+}
+
 .canvas-folding-branch-control:hover,
-.canvas-folding-branch-control:focus-visible {
+.canvas-folding-branch-control:focus-visible,
+.canvas-folding-focus-control:hover,
+.canvas-folding-focus-control:focus-visible,
+.canvas-folding-focus-control.is-active {
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
 @media (pointer: coarse) {
-  .canvas-folding-branch-control {
+  .canvas-folding-branch-control,
+  .canvas-folding-focus-control {
     font-size: 18px;
     height: 32px;
+    min-width: 32px;
+  }
+
+  .canvas-folding-focus-control {
     width: 32px;
+  }
+
+  .canvas-folding-focus-control svg {
+    height: 18px;
+    width: 18px;
   }
 }
 .canvas-folding-persisted-states-modal .setting-item-control {

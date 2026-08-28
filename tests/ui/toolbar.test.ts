@@ -26,6 +26,7 @@ void test("uses an open eye while branch controls are visible", () => {
     new BranchCollapseState(),
     [],
     true,
+    true,
   );
 
   assert.equal(
@@ -44,6 +45,7 @@ void test("uses a closed eye while branch controls are hidden", () => {
     new BranchCollapseState(),
     [],
     false,
+    true,
   );
 
   assert.equal(
@@ -66,6 +68,7 @@ void test("only exposes aria-pressed for actual toggle buttons", () => {
     new BranchCollapseState(),
     [],
     true,
+    true,
   );
 
   assert.equal(
@@ -80,6 +83,27 @@ void test("only exposes aria-pressed for actual toggle buttons", () => {
     ),
     "false",
   );
+});
+
+void test("places the focus-control visibility toggle before branch focus", () => {
+  const controls = buildToolbarButtonModels(
+    graph,
+    new BranchCollapseState(),
+    ["A"],
+    true,
+    false,
+  );
+  const focusControlsIndex = controls.findIndex(
+    (control) => control.action === "toggle-focus-controls",
+  );
+  const focusActionIndex = controls.findIndex(
+    (control) => control.action === "toggle-focus",
+  );
+
+  assert.equal(focusControlsIndex + 1, focusActionIndex);
+  assert.equal(controls[focusControlsIndex]?.separatorBefore, true);
+  assert.equal(controls[focusControlsIndex]?.icon, "eye-closed");
+  assert.equal(controls[focusControlsIndex]?.label, "Show focus controls");
 });
 
 void test("moves and clamps the toolbar with arrow keys", () => {

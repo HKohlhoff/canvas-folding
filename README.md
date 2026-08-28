@@ -19,8 +19,12 @@ by buying me a coffee.
 - Show the complete Canvas through a chosen global level.
 - Show one node, a limited number of levels, or an entire branch from a node
   control.
-- Focus a branch while dimming and protecting the remaining Canvas context.
-- Use `+`/`−` controls directly on parent nodes.
+- Focus any content node or complete branch while dimming and protecting the
+  remaining Canvas context.
+- Use folding controls with hidden-node counts on parent nodes and focus
+  controls on every content node, including leaves.
+- Show or hide folding and focus controls independently without changing the
+  current view state.
 - Use a movable, responsive Canvas Folding toolbar.
 - Keep state separately for each open Canvas tab.
 - Optionally restore states between sessions without modifying Canvas files.
@@ -49,16 +53,18 @@ for the few details worth knowing when both plugins hide content.
 
 ### Collapse and expand branches
 
-The `−` control collapses the complete directed branch. Its `+` replacement
-shows that descendants are hidden and expands them again.
+The `−` control collapses the complete directed branch. Its replacement shows
+the number of hidden content nodes and expands them again. The control grows
+for two- or three-digit counts while the neighboring focus control stays
+readable.
 
 ![An expanded Canvas branch beside the same branch collapsed by Canvas Folding](docs/images/branch-folding.svg)
 
 ### Use the control tooltips
 
-On desktop, pause the pointer over a `+` or `−` control. Its tooltip
-states whether the click will collapse or expand the branch, shows the number
-of descendants, and points to the branch display menu.
+On desktop, pause the pointer over a folding control. Its tooltip states
+whether the click will collapse or expand the branch, shows the relevant node
+count, and points to the branch display menu.
 
 The tooltip is especially useful with Advanced Canvas: if an Advanced Canvas
 group currently hides descendants, it says how many are hidden there and
@@ -80,6 +86,10 @@ specific number of descendant levels, or show the entire branch.
 Focus mode keeps the selected branch fully active while dimming and protecting
 the surrounding Canvas. The wider context remains visible without distracting
 from the branch being worked on.
+
+Use the focus symbol on any content node to enter focus directly. Nodes without
+children receive the same control, so they can be focused individually. Click
+the active focus control again, or use the toolbar focus action, to exit.
 
 ![A focused Canvas branch with unrelated nodes and edges dimmed in the background](docs/images/branch-focus.svg)
 
@@ -107,8 +117,8 @@ reachable through multiple roots or paths, its shortest directed distance from
 any root determines its level. A Canvas without a root has no global level
 view, but its individual branch controls remain available.
 
-Parent nodes receive a `−` control. When descendants are hidden, the control
-changes to `+`:
+Parent nodes receive a `−` folding control. When descendants are hidden, the
+control displays the number of hidden non-group nodes:
 
 - Click or tap the control to collapse or expand the complete branch.
 - On desktop, hover over it to read its action, descendant count, and any
@@ -117,6 +127,11 @@ changes to `+`:
   or show the entire branch.
 - With shared descendants, a visible alternative parent can reveal the shared
   branch without revealing a hidden parent or its incident edge.
+
+Every visible non-group node also receives a focus control. Folding controls
+and focus controls can be hidden independently through the toolbar or command
+palette. Hiding either kind of control changes only the interface: it does not
+expand branches or end an active focus.
 
 Hidden nodes also hide every incident edge, including edge labels. A non-empty
 Canvas group is hidden when all non-group nodes geometrically contained by it
@@ -132,10 +147,11 @@ On narrow views and mobile devices, the toolbar can be scrolled horizontally.
 
 The toolbar includes actions for:
 
-- the selected branch: collapse, expand, and toggle focus;
+- the selected branch: collapse and expand;
 - the whole Canvas: collapse all rooted branches, select a global visible
   level, and expand all branches;
-- showing or hiding node controls;
+- showing or hiding folding controls;
+- showing or hiding focus controls, followed by entering or exiting focus;
 - inspecting the graph;
 - showing the current state;
 - hiding the toolbar itself.
@@ -157,9 +173,12 @@ is valid:
 | `Collapse all branches` | Collapse every rooted branch. |
 | `Show canvas through level…` | Set one visible depth for all rooted branches. |
 | `Expand all branches` | Clear all folding and level restrictions. |
-| `Show branch controls` | Display `+`/`−` controls on parent nodes. |
-| `Hide branch controls` | Remove the `+`/`−` controls from the current session. |
+| `Show branch controls` | Display folding controls on parent nodes. |
+| `Hide branch controls` | Hide folding controls in the current session without changing folded branches. |
 | `Toggle branch controls` | Switch the branch controls between visible and hidden. |
+| `Show focus controls` | Display focus controls on all visible content nodes, including leaves. |
+| `Hide focus controls` | Hide focus controls without ending an active focus. |
+| `Toggle focus controls` | Switch the focus controls between visible and hidden. |
 | `Show canvas toolbar` | Display the Canvas Folding toolbar. |
 | `Hide canvas toolbar` | Hide the Canvas Folding toolbar. |
 | `Toggle canvas toolbar` | Switch the Canvas Folding toolbar between visible and hidden. |
@@ -169,12 +188,14 @@ is valid:
 
 ## Keyboard and touch
 
-Branch controls follow a depth-first Tab order. Upper child branches are
-visited completely before lower sibling branches. If exactly one parent is
-selected, navigation starts at that node's control.
+Node controls follow a depth-first Tab order. On a node, its focus control
+comes before its folding control. Upper child branches are visited completely
+before lower sibling branches. If exactly one node is selected, navigation
+starts at that node's first available control.
 
-- `Enter` or `Space` toggles a branch control or toolbar action.
-- The keyboard context-menu key opens the branch-level menu.
+- `Enter` or `Space` activates a node control or toolbar action.
+- The keyboard context-menu key opens the branch-level menu from a folding
+  control.
 - Arrow keys move the focused toolbar handle.
 - Keyboard focus remains on the invoked control after an action.
 
@@ -240,6 +261,8 @@ Canvas files.
   loads. Commands can change it at any time.
 - **Show branch controls initially** controls node buttons when the plugin
   loads. Commands can change them at any time.
+- **Show focus controls initially** controls the focus symbols on all visible
+  content nodes. Commands can change them at any time.
 - **Background opacity during branch focus** controls how strongly unrelated
   Canvas content is dimmed.
 - **Remember canvas states between sessions** enables persistent state.
@@ -281,7 +304,8 @@ Canvas data.
 
 When both mechanisms are used, check which control owns the hidden content:
 
-- A Canvas Folding `+` means that Folding currently hides descendants.
+- A numbered Canvas Folding control means that Folding currently hides that
+  many content nodes below the branch.
 - A Canvas Folding `−` can remain visible while an Advanced Canvas group hides
   descendants inside it; the control's tooltip explains this case.
 - On touch devices, long-press that control to see an Advanced Canvas notice

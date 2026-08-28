@@ -49,7 +49,17 @@ npm run build:prod
 - Disable and re-enable Canvas Folding and verify that no managed classes, controls or interaction handlers remain stale.
 - Focus a branch and verify that neither dimmed nodes nor dimmed edges can be selected or open Obsidian's item toolbar.
 - Focus a branch whose descendants are inside a Canvas group and verify that the group frame remains active.
-- Reach branch controls in depth-first order, with upper siblings first. Select a parent and verify that the next pass starts at its control. Use Enter/Space to toggle and the context-menu key to open the levels menu. Verify focus remains on the invoked function.
+- Reach node controls in depth-first order, with focus before folding on each
+  node and upper siblings first. Confirm that leaf nodes receive a focus
+  control, a selected node starts the next pass, Enter/Space activates the
+  control, and the context-menu key opens the levels menu only from folding.
+- Hide and show folding and focus controls independently through the toolbar
+  and command palette. Confirm that hidden controls do not change folded state
+  or end active focus, and that the focus visibility action remains directly
+  before the focus action in the toolbar.
+- Check folded branches with one-, two-, and three-digit hidden-node counts;
+  the folding control must grow without covering or shrinking the focus
+  control or node content.
 - Move the toolbar handle with every arrow key and verify that it remains inside a narrow Canvas view.
 - On a touch device, tap Canvas nodes with the plugin toolbar visible, tap a branch control, drag the toolbar handle, horizontally scroll a narrow toolbar and check whether a long press opens the branch-level menu.
 - Discover the plugin by ID `canvas-folding`, verify `api.apiVersion === 1`, and compare `getFoldState()` for an active leaf, a persisted closed Canvas and a path without applicable state.

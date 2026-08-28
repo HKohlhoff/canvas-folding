@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="448" height="77" viewBox="90 40 700 120" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="77" viewBox="90 40 730 120" role="img" aria-labelledby="title desc">
   <title id="title">Canvas Folding toolbar</title>
-  <desc id="desc">The movable Canvas Folding toolbar with branch, focus, whole-canvas, controls, graph, status, and close actions.</desc>
+  <desc id="desc">The movable Canvas Folding toolbar with selected-branch actions, whole-canvas actions, separate folding-control and focus-control visibility actions, focus, graph, status, and close actions.</desc>
   <defs>
     <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
       <circle cx="2" cy="2" r="1.3" fill="#cbd1dc"/>
@@ -16,48 +16,47 @@
   <rect width="960" height="200" rx="18" fill="#f6f7fa"/>
   <rect width="960" height="200" rx="18" fill="url(#grid)"/>
   <g filter="url(#shadow)">
-    <rect x="110" y="58" width="665" height="84" rx="14" fill="#ffffff" stroke="#bcc3cf" stroke-width="2"/>
+    <rect x="110" y="58" width="690" height="84" rx="14" fill="#ffffff" stroke="#bcc3cf" stroke-width="2"/>
   </g>
-
   <g fill="#596170">
     <circle cx="139" cy="88" r="3"/><circle cx="151" cy="88" r="3"/>
     <circle cx="139" cy="100" r="3"/><circle cx="151" cy="100" r="3"/>
     <circle cx="139" cy="112" r="3"/><circle cx="151" cy="112" r="3"/>
   </g>
-  <path class="icon" d="M184 100h22"/>
-  <path class="icon" d="M229 100h22M240 89v22"/>
-  <line class="separator" x1="270" y1="75" x2="270" y2="125"/>
-
+  <path class="icon" d="M174 100h20"/>
+  <path class="icon" d="M214 100h20M224 90v20"/>
+  <line class="separator" x1="253" y1="75" x2="253" y2="125"/>
+  <path class="icon" d="M273 100h20"/>
   <g class="icon">
-    <path d="M294 88v-7h7M326 88v-7h-7M294 112v7h7M326 112v7h-7"/>
-    <circle cx="310" cy="100" r="7"/>
+    <path d="m326 85 18 9-18 9-18-9 18-9Z"/>
+    <path d="m308 102 18 9 18-9M308 110l18 9 18-9"/>
   </g>
-  <line class="separator" x1="346" y1="75" x2="346" y2="125"/>
-
-  <path class="icon" d="M369 100h22"/>
+  <path class="icon" d="M360 100h20M370 90v20"/>
+  <line class="separator" x1="399" y1="75" x2="399" y2="125"/>
   <g class="icon">
-    <path d="m423 85 18 9-18 9-18-9 18-9Z"/>
-    <path d="m405 102 18 9 18-9M405 110l18 9 18-9"/>
+    <path d="M418 100s8-12 18-12 18 12 18 12-8 12-18 12-18-12-18-12Z"/>
+    <circle cx="436" cy="100" r="4"/>
   </g>
-  <path class="icon" d="M461 100h22M472 89v22"/>
-  <line class="separator" x1="502" y1="75" x2="502" y2="125"/>
-
+  <line class="separator" x1="471" y1="75" x2="471" y2="125"/>
   <g class="icon">
-    <path d="M525 100s9-13 20-13 20 13 20 13-9 13-20 13-20-13-20-13Z"/>
-    <circle cx="545" cy="100" r="5"/>
-  </g>
-  <line class="separator" x1="582" y1="75" x2="582" y2="125"/>
-
-  <g class="icon">
-    <rect x="607" y="79" width="10" height="10" rx="1"/>
-    <rect x="592" y="111" width="10" height="10" rx="1"/>
-    <rect x="622" y="111" width="10" height="10" rx="1"/>
-    <path d="M612 89v12M597 101h30M597 101v10M627 101v10"/>
+    <path d="M489 100s8-12 18-12 18 12 18 12-8 12-18 12-18-12-18-12Z"/>
+    <circle cx="507" cy="100" r="4"/>
   </g>
   <g class="icon">
-    <circle cx="665" cy="100" r="17"/>
-    <path d="M665 98v11M665 90h.01"/>
+    <path d="M540 88v-7h7M570 88v-7h-7M540 112v7h7M570 112v7h-7"/>
+    <circle cx="555" cy="100" r="7"/>
   </g>
-  <line class="separator" x1="700" y1="75" x2="700" y2="125"/>
-  <path class="icon" d="m728 89 22 22M750 89l-22 22"/>
+  <line class="separator" x1="588" y1="75" x2="588" y2="125"/>
+  <g class="icon">
+    <rect x="610" y="80" width="9" height="9" rx="1"/>
+    <rect x="596" y="111" width="9" height="9" rx="1"/>
+    <rect x="624" y="111" width="9" height="9" rx="1"/>
+    <path d="M614.5 89v11M600.5 100h28M600.5 100v11M628.5 100v11"/>
+  </g>
+  <g class="icon">
+    <circle cx="669" cy="100" r="16"/>
+    <path d="M669 98v10M669 90h.01"/>
+  </g>
+  <line class="separator" x1="704" y1="75" x2="704" y2="125"/>
+  <path class="icon" d="m730 90 20 20M750 90l-20 20"/>
 </svg>

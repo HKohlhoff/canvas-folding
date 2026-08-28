@@ -6,6 +6,7 @@ import type { CanvasGraphData } from "../../src/tree/graph";
 import { BranchCollapseState } from "../../src/tree/state";
 import {
   buildBranchControlModels,
+  buildFocusControlModels,
   getExternallyCollapsedDescendantCount,
   getRenderedDescendantDepths,
 } from "../../src/ui/control-model";
@@ -27,7 +28,66 @@ void test("reflects collapsed state without changing graph structure", () => {
 
   assert.deepEqual(buildBranchControlModels(graph, state), [
     { nodeId: "A", collapsed: false, descendantCount: 3 },
-    { nodeId: "B", collapsed: true, descendantCount: 1 },
+    {
+      nodeId: "B",
+      collapsed: true,
+      descendantCount: 1,
+      hiddenDescendantCount: 1,
+    },
+  ]);
+});
+
+void test("excludes group descendants from the visible branch count", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "A", type: "text" },
+      { id: "G", type: "group" },
+      { id: "B", type: "text" },
+    ],
+    edges: [
+      { id: "AG", fromNode: "A", toNode: "G" },
+      { id: "GB", fromNode: "G", toNode: "B" },
+    ],
+  });
+  const state = new BranchCollapseState();
+  state.collapse("A");
+
+  assert.equal(
+    buildBranchControlModels(graph, state)[0]?.hiddenDescendantCount,
+    1,
+  );
+});
+
+void test("creates focus controls for visible content nodes including leaves", () => {
+  const graph = buildCanvasGraph(createData());
+  const state = new BranchCollapseState();
+  state.focusBranch("D");
+
+  assert.deepEqual(buildFocusControlModels(graph, state), [
+    { nodeId: "A", active: false, descendantCount: 3 },
+    { nodeId: "B", active: false, descendantCount: 1 },
+    { nodeId: "D", active: true, descendantCount: 0 },
+    { nodeId: "C", active: false, descendantCount: 0 },
+  ]);
+});
+
+void test("omits focus controls for groups and hidden nodes", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group" },
+      { id: "A", type: "text" },
+      { id: "B", type: "text" },
+    ],
+    edges: [
+      { id: "GA", fromNode: "G", toNode: "A" },
+      { id: "AB", fromNode: "A", toNode: "B" },
+    ],
+  });
+  const state = new BranchCollapseState();
+  state.collapse("A");
+
+  assert.deepEqual(buildFocusControlModels(graph, state), [
+    { nodeId: "A", active: false, descendantCount: 1 },
   ]);
 });
 
@@ -89,7 +149,12 @@ void test("omits controls hosted by hidden descendant nodes", () => {
   state.collapse("A");
 
   assert.deepEqual(buildBranchControlModels(graph, state), [
-    { nodeId: "A", collapsed: true, descendantCount: 3 },
+    {
+      nodeId: "A",
+      collapsed: true,
+      descendantCount: 3,
+      hiddenDescendantCount: 3,
+    },
   ]);
 });
 

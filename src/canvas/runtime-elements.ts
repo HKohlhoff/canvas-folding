@@ -17,6 +17,7 @@ export interface CanvasNodeView {
 }
 
 export interface CanvasNodeElementHandle extends CanvasElementHandle {
+  createDiv(): HTMLDivElement;
   createEl<K extends keyof HTMLElementTagNameMap>(
     tag: K,
   ): HTMLElementTagNameMap[K];
@@ -214,6 +215,7 @@ function asCanvasNodeElement(value: unknown): CanvasNodeElementHandle | null {
   if (
     element === null ||
     !isRecord(value) ||
+    typeof value.createDiv !== "function" ||
     typeof value.createEl !== "function"
   ) {
     return null;

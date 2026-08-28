@@ -13,6 +13,7 @@ export type ToolbarAction =
   | "expand-all"
   | "show-level"
   | "toggle-controls"
+  | "toggle-focus-controls"
   | "inspect-graph"
   | "show-status"
   | "hide-toolbar";
@@ -91,6 +92,7 @@ export function buildToolbarButtonModels(
   state: BranchCollapseState,
   selectedNodeIds: readonly string[],
   branchControlsVisible: boolean,
+  focusControlsVisible: boolean,
 ): readonly ToolbarButtonModel[] {
   const selectedNodeId =
     selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
@@ -108,11 +110,12 @@ export function buildToolbarButtonModels(
   return [
     { action: "collapse-selected", disabled: !hasSelectedDescendants || selectedBranchCollapsed, icon: "minus", label: "Collapse selected branch" },
     { action: "expand-selected", disabled: !selectedBranchCollapsed, icon: "plus", label: "Expand selected branch" },
-    { action: "toggle-focus", active: state.isFocusActive(), disabled: !state.isFocusActive() && selectedNodeId === undefined, icon: "focus", label: state.isFocusActive() ? "Exit branch focus" : "Focus selected branch", separatorBefore: true },
     { action: "collapse-all", disabled: !hasRootedBranches, icon: "minus", label: "Collapse all branches", separatorBefore: true },
     { action: "show-level", disabled: !hasRootDepths, icon: "layers", label: "Show canvas through level…" },
     { action: "expand-all", icon: "plus", label: "Expand all branches" },
     { action: "toggle-controls", icon: branchControlsVisible ? "eye" : "eye-closed", label: branchControlsVisible ? "Hide branch controls" : "Show branch controls", separatorBefore: true },
+    { action: "toggle-focus-controls", icon: focusControlsVisible ? "eye" : "eye-closed", label: focusControlsVisible ? "Hide focus controls" : "Show focus controls", separatorBefore: true },
+    { action: "toggle-focus", active: state.isFocusActive(), disabled: !state.isFocusActive() && selectedNodeId === undefined, icon: "focus", label: state.isFocusActive() ? "Exit branch focus" : "Focus selected branch" },
     { action: "inspect-graph", icon: "network", label: "Inspect active canvas graph", separatorBefore: true },
     { action: "show-status", icon: "info", label: "Show current status" },
     { action: "hide-toolbar", icon: "x", label: "Hide canvas toolbar", separatorBefore: true },

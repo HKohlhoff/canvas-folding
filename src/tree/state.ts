@@ -119,6 +119,10 @@ export class BranchCollapseState {
     return this.focusedNodeId !== null;
   }
 
+  getFocusedNodeId(): string | null {
+    return this.focusedNodeId;
+  }
+
   isEmpty(): boolean {
     return (
       this.visibleDepthByNodeId.size === 0 &&

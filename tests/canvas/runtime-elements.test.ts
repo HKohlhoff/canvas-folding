@@ -132,10 +132,12 @@ function createElement(): CanvasElementHandle {
 }
 
 function createNodeElement(): CanvasElementHandle & {
+  createDiv(): HTMLDivElement;
   createEl(): HTMLElement;
 } {
   return {
     ...createElement(),
+    createDiv: () => ({}) as HTMLDivElement,
     createEl: () => ({}) as HTMLElement,
   };
 }

@@ -4,6 +4,7 @@ export interface CanvasFoldingSettings {
   rememberCanvasStates: boolean;
   showBranchControls: boolean;
   showCanvasToolbar: boolean;
+  showFocusControls: boolean;
   showStatusNotices: boolean;
   toolbarPositionXPercent: number;
   toolbarPositionYPixels: number;
@@ -15,6 +16,7 @@ export const DEFAULT_SETTINGS: Readonly<CanvasFoldingSettings> = {
   rememberCanvasStates: false,
   showBranchControls: true,
   showCanvasToolbar: true,
+  showFocusControls: true,
   showStatusNotices: true,
   toolbarPositionXPercent: 50,
   toolbarPositionYPixels: 8,
@@ -48,6 +50,11 @@ export function normalizeSettings(data: unknown): CanvasFoldingSettings {
       data,
       "showCanvasToolbar",
       DEFAULT_SETTINGS.showCanvasToolbar,
+    ),
+    showFocusControls: readBoolean(
+      data,
+      "showFocusControls",
+      DEFAULT_SETTINGS.showFocusControls,
     ),
     showStatusNotices: readBoolean(
       data,

@@ -1,3 +1,5 @@
+import { setIcon } from "obsidian";
+
 import type {
   ActiveCanvasContext,
   CanvasNodeElementHandle,
@@ -5,11 +7,17 @@ import type {
 import {
   formatDescendantCount,
   type BranchControlModel,
+  type FocusControlModel,
 } from "./control-model";
 
+type NodeControlKind = "branch" | "focus";
+
 interface ControlEntry {
-  activate: () => void;
-  button: HTMLButtonElement;
+  activateBranch: () => void;
+  activateFocus: () => void;
+  branchButton: HTMLButtonElement | null;
+  container: HTMLDivElement;
+  focusButton: HTMLButtonElement | null;
   leaf: object;
   nodeId: string;
   openContextMenu: (position: BranchMenuPosition) => void;
@@ -21,47 +29,71 @@ export interface BranchMenuPosition {
   y: number;
 }
 
-export class CanvasBranchControlManager {
+export class CanvasNodeControlManager {
   private readonly entries = new Map<CanvasNodeElementHandle, ControlEntry>();
-  private readonly nodeOrderByLeaf = new Map<object, readonly string[]>();
+  private readonly controlOrderByLeaf = new Map<object, readonly string[]>();
 
   sync(
     context: ActiveCanvasContext,
-    models: readonly BranchControlModel[],
-    onToggle: (context: ActiveCanvasContext, nodeId: string) => void,
+    branchModels: readonly BranchControlModel[],
+    focusModels: readonly FocusControlModel[],
+    onToggleBranch: (context: ActiveCanvasContext, nodeId: string) => void,
+    onToggleFocus: (context: ActiveCanvasContext, nodeId: string) => void,
     onContextMenu: (
       context: ActiveCanvasContext,
       nodeId: string,
       position: BranchMenuPosition,
     ) => void,
   ): void {
-    const nodeOrder = getBranchControlTabOrder(
-      models.map((model) => model.nodeId),
+    const branchModelsByNodeId = new Map(
+      branchModels.map((model) => [model.nodeId, model]),
+    );
+    const focusModelsByNodeId = new Map(
+      focusModels.map((model) => [model.nodeId, model]),
+    );
+    const orderedNodeIds = getNodeControlTabOrder(
+      [
+        ...focusModels.map((model) => model.nodeId),
+        ...branchModels
+          .map((model) => model.nodeId)
+          .filter((nodeId) => !focusModelsByNodeId.has(nodeId)),
+      ],
       context.selectedNodeIds,
     );
-    if (nodeOrder.length === 0) {
-      this.nodeOrderByLeaf.delete(context.leaf);
+    const controlOrder = orderedNodeIds.flatMap((nodeId) => [
+      ...(focusModelsByNodeId.has(nodeId)
+        ? [getControlKey(nodeId, "focus")]
+        : []),
+      ...(branchModelsByNodeId.has(nodeId)
+        ? [getControlKey(nodeId, "branch")]
+        : []),
+    ]);
+    if (controlOrder.length === 0) {
+      this.controlOrderByLeaf.delete(context.leaf);
     } else {
-      this.nodeOrderByLeaf.set(context.leaf, nodeOrder);
+      this.controlOrderByLeaf.set(context.leaf, controlOrder);
     }
-    const modelsByNodeId = new Map(models.map((model) => [model.nodeId, model]));
-    const currentHosts = new Set(context.nodeViews.map((view) => view.element));
 
+    const currentHosts = new Set(context.nodeViews.map((view) => view.element));
     for (const [host, entry] of this.entries) {
       if (
         entry.leaf === context.leaf &&
-        (!currentHosts.has(host) || !hasModelForHost(context, host, modelsByNodeId))
+        (!currentHosts.has(host) || !hasModelForHost(
+          context,
+          host,
+          branchModelsByNodeId,
+          focusModelsByNodeId,
+        ))
       ) {
-        entry.button.remove();
+        entry.container.remove();
         this.entries.delete(host);
       }
     }
 
     for (const nodeView of context.nodeViews) {
-      const model = modelsByNodeId.get(nodeView.id);
-      if (model === undefined) {
-        continue;
-      }
+      const branchModel = branchModelsByNodeId.get(nodeView.id);
+      const focusModel = focusModelsByNodeId.get(nodeView.id);
+      if (branchModel === undefined && focusModel === undefined) continue;
 
       const entry = this.getOrCreateEntry(
         nodeView.element,
@@ -69,36 +101,40 @@ export class CanvasBranchControlManager {
         nodeView.id,
         context.toolbarHost,
       );
-      entry.activate = () => {
-        onToggle(context, nodeView.id);
-      };
+      entry.activateBranch = () => onToggleBranch(context, nodeView.id);
+      entry.activateFocus = () => onToggleFocus(context, nodeView.id);
       entry.openContextMenu = (position) => {
         onContextMenu(context, nodeView.id, position);
       };
-      updateButton(entry.button, model);
+      this.syncFocusButton(entry, focusModel);
+      this.syncBranchButton(entry, branchModel);
     }
 
-    const firstNodeId = nodeOrder[0];
+    const firstControlKey = controlOrder[0];
     for (const entry of this.entries.values()) {
-      if (entry.leaf === context.leaf) {
-        entry.button.tabIndex = entry.nodeId === firstNodeId ? 0 : -1;
+      if (entry.leaf !== context.leaf) continue;
+      if (entry.focusButton !== null) {
+        entry.focusButton.tabIndex =
+          getControlKey(entry.nodeId, "focus") === firstControlKey ? 0 : -1;
+      }
+      if (entry.branchButton !== null) {
+        entry.branchButton.tabIndex =
+          getControlKey(entry.nodeId, "branch") === firstControlKey ? 0 : -1;
       }
     }
   }
 
   removeAll(): void {
-    for (const entry of this.entries.values()) {
-      entry.button.remove();
-    }
+    for (const entry of this.entries.values()) entry.container.remove();
     this.entries.clear();
-    this.nodeOrderByLeaf.clear();
+    this.controlOrderByLeaf.clear();
   }
 
   removeDetached(): void {
     const affectedLeaves = new Set<object>();
     for (const [host, entry] of this.entries) {
-      if (entry.button.isConnected) continue;
-      entry.button.remove();
+      if (entry.container.isConnected) continue;
+      entry.container.remove();
       this.entries.delete(host);
       affectedLeaves.add(entry.leaf);
     }
@@ -106,7 +142,7 @@ export class CanvasBranchControlManager {
       const hasRemainingEntry = [...this.entries.values()].some(
         (entry) => entry.leaf === leaf,
       );
-      if (!hasRemainingEntry) this.nodeOrderByLeaf.delete(leaf);
+      if (!hasRemainingEntry) this.controlOrderByLeaf.delete(leaf);
     }
   }
 
@@ -123,66 +159,118 @@ export class CanvasBranchControlManager {
       return existing;
     }
 
-    const button = host.createEl("button");
-    button.type = "button";
-    button.className = "canvas-folding-branch-control";
-
+    const container = host.createDiv();
+    container.className = "canvas-folding-node-controls";
     const entry: ControlEntry = {
-      activate: () => undefined,
-      button,
+      activateBranch: () => undefined,
+      activateFocus: () => undefined,
+      branchButton: null,
+      container,
+      focusButton: null,
       leaf,
       nodeId,
       openContextMenu: () => undefined,
       toolbarHost,
     };
-    button.addEventListener("pointerdown", blockCanvasInteraction);
-    button.addEventListener("click", (event) => {
-      blockCanvasInteraction(event);
-      entry.activate();
-      if (event.detail === 0) this.restoreControlFocus(entry);
-    });
-    button.addEventListener("contextmenu", (event) => {
-      blockCanvasInteraction(event);
-      openContextMenuAfterPointerRelease(event, entry.openContextMenu);
-    });
-    button.addEventListener("keydown", (event) => {
-      if (isBranchMenuKeyboardEvent(event)) {
-        blockCanvasInteraction(event);
-        const bounds = button.getBoundingClientRect();
-        entry.openContextMenu({ x: bounds.right, y: bounds.bottom });
-        return;
-      }
-      if (event.key === " ") {
-        blockCanvasInteraction(event);
-        if (!event.repeat) entry.activate();
-        this.restoreControlFocus(entry);
-        return;
-      }
-      if (event.key === "Tab") {
-        this.moveControlFocus(entry, event);
-      }
-    });
-
     this.entries.set(host, entry);
     return entry;
   }
 
-  private moveControlFocus(entry: ControlEntry, event: KeyboardEvent): void {
-    const order = this.nodeOrderByLeaf.get(entry.leaf) ?? [];
-    const nextNodeId = getAdjacentBranchControlId(
+  private syncFocusButton(
+    entry: ControlEntry,
+    model: FocusControlModel | undefined,
+  ): void {
+    if (model === undefined) {
+      entry.focusButton?.remove();
+      entry.focusButton = null;
+      return;
+    }
+    if (entry.focusButton === null) {
+      const button = entry.container.createEl("button");
+      button.type = "button";
+      button.className = "canvas-folding-focus-control";
+      setIcon(button, "focus");
+      this.installSharedButtonEvents(button, entry, "focus");
+      if (entry.branchButton !== null) {
+        entry.container.insertBefore(button, entry.branchButton);
+      }
+      entry.focusButton = button;
+    }
+    updateFocusButton(entry.focusButton, model);
+  }
+
+  private syncBranchButton(
+    entry: ControlEntry,
+    model: BranchControlModel | undefined,
+  ): void {
+    if (model === undefined) {
+      entry.branchButton?.remove();
+      entry.branchButton = null;
+      return;
+    }
+    if (entry.branchButton === null) {
+      const button = entry.container.createEl("button");
+      button.type = "button";
+      button.className = "canvas-folding-branch-control";
+      this.installSharedButtonEvents(button, entry, "branch");
+      button.addEventListener("contextmenu", (event) => {
+        blockCanvasInteraction(event);
+        openContextMenuAfterPointerRelease(event, entry.openContextMenu);
+      });
+      button.addEventListener("keydown", (event) => {
+        if (!isBranchMenuKeyboardEvent(event)) return;
+        blockCanvasInteraction(event);
+        const bounds = button.getBoundingClientRect();
+        entry.openContextMenu({ x: bounds.right, y: bounds.bottom });
+      });
+      entry.branchButton = button;
+    }
+    updateBranchButton(entry.branchButton, model);
+  }
+
+  private installSharedButtonEvents(
+    button: HTMLButtonElement,
+    entry: ControlEntry,
+    kind: NodeControlKind,
+  ): void {
+    button.addEventListener("pointerdown", blockCanvasInteraction);
+    button.addEventListener("click", (event) => {
+      blockCanvasInteraction(event);
+      if (kind === "focus") entry.activateFocus();
+      else entry.activateBranch();
+      if (event.detail === 0) this.restoreControlFocus(entry, kind);
+    });
+    button.addEventListener("keydown", (event) => {
+      if (event.key === " ") {
+        blockCanvasInteraction(event);
+        if (!event.repeat) {
+          if (kind === "focus") entry.activateFocus();
+          else entry.activateBranch();
+        }
+        this.restoreControlFocus(entry, kind);
+        return;
+      }
+      if (event.key === "Tab") this.moveControlFocus(entry, kind, event);
+    });
+  }
+
+  private moveControlFocus(
+    entry: ControlEntry,
+    kind: NodeControlKind,
+    event: KeyboardEvent,
+  ): void {
+    const order = this.controlOrderByLeaf.get(entry.leaf) ?? [];
+    const nextControlKey = getAdjacentNodeControlKey(
       order,
-      entry.nodeId,
+      getControlKey(entry.nodeId, kind),
       event.shiftKey,
     );
-    const nextEntry = nextNodeId === null
-      ? undefined
-      : [...this.entries.values()].find(
-        (candidate) =>
-          candidate.leaf === entry.leaf && candidate.nodeId === nextNodeId,
-      );
-    if (nextEntry !== undefined) {
+    const nextButton = nextControlKey === null
+      ? null
+      : this.getButtonByControlKey(entry.leaf, nextControlKey);
+    if (nextButton !== null) {
       blockCanvasInteraction(event);
-      nextEntry.button.focus({ preventScroll: true });
+      nextButton.focus({ preventScroll: true });
       return;
     }
     if (event.shiftKey) return;
@@ -195,32 +283,78 @@ export class CanvasBranchControlManager {
     }
   }
 
-  private restoreControlFocus(entry: ControlEntry): void {
+  private getButtonByControlKey(
+    leaf: object,
+    controlKey: string,
+  ): HTMLButtonElement | null {
+    for (const entry of this.entries.values()) {
+      if (entry.leaf !== leaf) continue;
+      if (getControlKey(entry.nodeId, "focus") === controlKey) {
+        return entry.focusButton;
+      }
+      if (getControlKey(entry.nodeId, "branch") === controlKey) {
+        return entry.branchButton;
+      }
+    }
+    return null;
+  }
+
+  private restoreControlFocus(
+    entry: ControlEntry,
+    kind: NodeControlKind,
+  ): void {
     const current = [...this.entries.values()].find(
       (candidate) =>
         candidate.leaf === entry.leaf && candidate.nodeId === entry.nodeId,
     );
-    current?.button.focus({ preventScroll: true });
+    const button = kind === "focus"
+      ? current?.focusButton
+      : current?.branchButton;
+    button?.focus({ preventScroll: true });
   }
 }
 
-function updateButton(
+function updateBranchButton(
   button: HTMLButtonElement,
   model: BranchControlModel,
 ): void {
   const action = model.collapsed ? "Expand" : "Collapse";
-  const label = `${action} branch with ${formatDescendantCount(model.descendantCount)}`;
+  const hiddenNodeLabel = model.hiddenDescendantCount === undefined
+    ? null
+    : `${model.hiddenDescendantCount} hidden node${model.hiddenDescendantCount === 1 ? "" : "s"}`;
+  const label = `${action} branch with ${hiddenNodeLabel ?? formatDescendantCount(model.descendantCount)}`;
   const externalGroupHint = model.externallyCollapsedDescendantCount !== undefined
     ? ` Advanced Canvas currently hides ${formatDescendantCount(model.externallyCollapsedDescendantCount)} inside collapsed groups. Canvas Folding preserves those group states when this branch is collapsed or expanded.`
     : "";
   const tooltip = `${label}.${externalGroupHint} Open the context menu for branch display options.`;
 
-  button.textContent = model.collapsed ? "+" : "−";
+  button.textContent = model.hiddenDescendantCount === undefined
+    ? model.collapsed ? "+" : "−"
+    : String(model.hiddenDescendantCount);
+  button.classList.toggle(
+    "has-hidden-count",
+    model.hiddenDescendantCount !== undefined,
+  );
   button.removeAttribute("title");
   button.setAttribute("aria-haspopup", "menu");
   button.setAttribute("aria-keyshortcuts", "ContextMenu");
   button.setAttribute("aria-label", tooltip);
   button.removeAttribute("aria-description");
+}
+
+function updateFocusButton(
+  button: HTMLButtonElement,
+  model: FocusControlModel,
+): void {
+  const label = model.active
+    ? "Exit branch focus"
+    : model.descendantCount === 0
+      ? "Focus node"
+      : `Focus branch with ${formatDescendantCount(model.descendantCount)}`;
+  button.classList.toggle("is-active", model.active);
+  button.setAttribute("aria-label", label);
+  button.setAttribute("aria-pressed", String(model.active));
+  button.setAttribute("title", label);
 }
 
 export function isBranchMenuKeyboardEvent(
@@ -229,7 +363,7 @@ export function isBranchMenuKeyboardEvent(
   return event.key === "ContextMenu";
 }
 
-export function getBranchControlTabOrder(
+export function getNodeControlTabOrder(
   orderedNodeIds: readonly string[],
   selectedNodeIds: readonly string[],
 ): readonly string[] {
@@ -242,14 +376,28 @@ export function getBranchControlTabOrder(
   ];
 }
 
+export const getBranchControlTabOrder = getNodeControlTabOrder;
+
+export function getAdjacentNodeControlKey(
+  orderedControlKeys: readonly string[],
+  currentControlKey: string,
+  reverse: boolean,
+): string | null {
+  const currentIndex = orderedControlKeys.indexOf(currentControlKey);
+  if (currentIndex < 0) return null;
+  return orderedControlKeys[currentIndex + (reverse ? -1 : 1)] ?? null;
+}
+
 export function getAdjacentBranchControlId(
   orderedNodeIds: readonly string[],
   currentNodeId: string,
   reverse: boolean,
 ): string | null {
-  const currentIndex = orderedNodeIds.indexOf(currentNodeId);
-  if (currentIndex < 0) return null;
-  return orderedNodeIds[currentIndex + (reverse ? -1 : 1)] ?? null;
+  return getAdjacentNodeControlKey(orderedNodeIds, currentNodeId, reverse);
+}
+
+function getControlKey(nodeId: string, kind: NodeControlKind): string {
+  return `${nodeId}:${kind}`;
 }
 
 function blockCanvasInteraction(event: Event): void {
@@ -280,9 +428,7 @@ function openContextMenuAfterPointerRelease(
     if (ownerWindow === null) {
       openContextMenu(position);
     } else {
-      ownerWindow.setTimeout(() => {
-        openContextMenu(position);
-      }, 0);
+      ownerWindow.setTimeout(() => openContextMenu(position), 0);
     }
   };
 
@@ -297,8 +443,11 @@ function openContextMenuAfterPointerRelease(
 function hasModelForHost(
   context: ActiveCanvasContext,
   host: CanvasNodeElementHandle,
-  modelsByNodeId: ReadonlyMap<string, BranchControlModel>,
+  branchModelsByNodeId: ReadonlyMap<string, BranchControlModel>,
+  focusModelsByNodeId: ReadonlyMap<string, FocusControlModel>,
 ): boolean {
   const nodeView = context.nodeViews.find((view) => view.element === host);
-  return nodeView !== undefined && modelsByNodeId.has(nodeView.id);
+  return nodeView !== undefined && (
+    branchModelsByNodeId.has(nodeView.id) || focusModelsByNodeId.has(nodeView.id)
+  );
 }

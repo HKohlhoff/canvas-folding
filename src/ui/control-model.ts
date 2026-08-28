@@ -9,6 +9,13 @@ export interface BranchControlModel {
   collapsed: boolean;
   descendantCount: number;
   externallyCollapsedDescendantCount?: number;
+  hiddenDescendantCount?: number;
+  nodeId: string;
+}
+
+export interface FocusControlModel {
+  active: boolean;
+  descendantCount: number;
   nodeId: string;
 }
 
@@ -36,6 +43,9 @@ export function buildBranchControlModels(
   runtime?: BranchControlRuntimeState,
 ): readonly BranchControlModel[] {
   const hiddenNodeIds = state.getHiddenNodeIds(graph);
+  const contentNodeIds = new Set(
+    graph.nodes.filter((node) => node.type !== "group").map((node) => node.id),
+  );
 
   return getNodesInDepthFirstOrder(graph).flatMap((node) => {
     if (hiddenNodeIds.has(node.id)) {
@@ -49,6 +59,10 @@ export function buildBranchControlModels(
     const collapsed = (graph.childrenByNode.get(node.id) ?? []).some(
       (childId) => hiddenNodeIds.has(childId),
     );
+    const hiddenDescendantCount = descendantIds.filter(
+      (descendantId) =>
+        hiddenNodeIds.has(descendantId) && contentNodeIds.has(descendantId),
+    ).length;
     const externallyCollapsedDescendantCount = runtime === undefined
       ? 0
       : getExternallyCollapsedDescendantCount(
@@ -63,9 +77,33 @@ export function buildBranchControlModels(
       ...(externallyCollapsedDescendantCount > 0
         ? { externallyCollapsedDescendantCount }
         : {}),
+      ...(collapsed && hiddenDescendantCount > 0
+        ? { hiddenDescendantCount }
+        : {}),
       descendantCount: descendantIds.length,
     }];
   });
+}
+
+export function buildFocusControlModels(
+  graph: CanvasGraph,
+  state: Pick<
+    BranchCollapseState,
+    "getFocusedNodeId" | "getHiddenNodeIds"
+  >,
+): readonly FocusControlModel[] {
+  const hiddenNodeIds = state.getHiddenNodeIds(graph);
+  const focusedNodeId = state.getFocusedNodeId();
+
+  return getNodesInDepthFirstOrder(graph).flatMap((node) =>
+    node.type === "group" || hiddenNodeIds.has(node.id)
+      ? []
+      : [{
+          active: node.id === focusedNodeId,
+          descendantCount: getDescendantIds(graph, node.id).length,
+          nodeId: node.id,
+        }],
+  );
 }
 
 export function getRenderedDescendantDepths(

@@ -30,11 +30,20 @@ export function getCanvasFoldingSettingDefinitions(
         },
         {
           name: "Show branch controls initially",
-          desc: "Set the initial visibility of +/− controls when Canvas Folding loads. Use the command palette at any time to show, hide, or toggle them.",
+          desc: "Set the initial visibility of folding controls when Canvas Folding loads. Collapsed branches show their hidden-node count. Use the command palette or Canvas toolbar to change them at any time.",
           control: {
             type: "toggle",
             key: "showBranchControls",
             defaultValue: DEFAULT_SETTINGS.showBranchControls,
+          },
+        },
+        {
+          name: "Show focus controls initially",
+          desc: "Show a focus control on every non-group node, including nodes without children. Use the command palette or Canvas toolbar to change them at any time.",
+          control: {
+            type: "toggle",
+            key: "showFocusControls",
+            defaultValue: DEFAULT_SETTINGS.showFocusControls,
           },
         },
         {

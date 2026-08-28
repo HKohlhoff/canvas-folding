@@ -438,6 +438,9 @@ function createNodeElement(classList: FakeClassList): CanvasNodeElementHandle {
   return {
     classList,
     style: createStyle(),
+    createDiv: (): HTMLDivElement => {
+      throw new Error("Node creation is not used by this visibility test.");
+    },
     createEl: <K extends keyof HTMLElementTagNameMap>(
       _tag: K,
     ): HTMLElementTagNameMap[K] => {

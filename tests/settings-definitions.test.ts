@@ -26,6 +26,7 @@ void test("orders behavior settings by the user workflow", () => {
     [
       "Show canvas toolbar initially",
       "Show branch controls initially",
+      "Show focus controls initially",
       "Background opacity during branch focus",
       "Remember canvas states between sessions",
       "Show status notices",

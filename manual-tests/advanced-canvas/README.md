@@ -248,6 +248,27 @@ Run these on disposable copies because they intentionally modify Canvas data.
   toolbar tapping/scrolling/dragging, group controls, and focus on both devices.
   Short tap and stylus selection remain native.
 
+## H – Node-control compatibility update
+
+These cases apply to the post-1.0 shared focus/folding control row and require a
+fresh confirmation before its release:
+
+- [ ] **AC-H01 · Shared control row:** With Advanced Canvas node shapes,
+  auto-resize, aspect-ratio controls, and nested groups enabled, verify that
+  focus remains left of folding and neither control overlaps Advanced Canvas
+  controls or node content.
+- [ ] **AC-H02 · Independent visibility:** Hide and show folding and focus
+  controls independently through the Folding toolbar. Advanced controls remain
+  unchanged, folded state is retained, and hiding focus controls does not end
+  active Folding or Advanced focus.
+- [ ] **AC-H03 · Numbered folds:** Check one-, two-, and three-digit Folding
+  counts with Advanced styles and resized nodes. The count grows leftward and
+  remains readable; Advanced collapsed-group information remains available in
+  the tooltip or touch menu.
+- [ ] **AC-H04 · Focus leaves:** Focus and unfocus a leaf node through its node
+  control with Advanced focus disabled, then repeat with Advanced focus active.
+  Each plugin cleans up only its own focus state.
+
 ## Settings coverage strategy
 
 Do not test every possible Cartesian combination. Use these controlled passes:

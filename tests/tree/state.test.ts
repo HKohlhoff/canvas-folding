@@ -132,6 +132,7 @@ void test("dims nodes outside a selected node and its descendants", () => {
 
   state.focusBranch("B");
 
+  assert.equal(state.getFocusedNodeId(), "B");
   assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
   assert.deepEqual([...state.getDimmedNodeIds(graph)], ["A", "C"]);
 });
@@ -145,6 +146,7 @@ void test("keeps focused descendants active while dimming all context", () => {
   assert.deepEqual([...state.getDimmedNodeIds(graph)], ["R", "A1", "A2", "B"]);
   assert.equal(state.exitFocus(), true);
   assert.equal(state.isFocusActive(), false);
+  assert.equal(state.getFocusedNodeId(), null);
 });
 
 void test("round-trips and prunes a focused branch", () => {

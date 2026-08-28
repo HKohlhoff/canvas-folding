@@ -4,6 +4,24 @@ All notable changes to this plugin should be documented in this file.
 
 The format follows the spirit of Keep a Changelog, with the newest release first.
 
+## [Unreleased]
+
+### Added
+
+- Add a focus control to every visible non-group node, including leaf nodes,
+  and allow it to toggle focus directly.
+- Add independent settings, commands, and Canvas-toolbar actions for showing
+  or hiding folding and focus controls without changing the current view state.
+
+### Changed
+
+- Replace the plus sign on a folded branch with its number of hidden content
+  nodes and let the control grow for multi-digit counts.
+- Keep focus and folding controls in one shared per-node control row with a
+  consistent visual and keyboard order.
+- Group the focus-control visibility action directly before the focus action
+  in the Canvas toolbar.
+
 ## [1.0.1]
 
 ### Changed
