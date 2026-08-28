@@ -14,6 +14,43 @@ void test("derives hidden descendants from collapsed parents", () => {
   assert.deepEqual([...state.getHiddenNodeIds(graph)], ["D", "E"]);
 });
 
+void test("treats connected groups as regular folding descendants", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "GROUP_ROOT", type: "group" },
+      { id: "CARD", type: "text" },
+      { id: "GROUP_CHILD", type: "group" },
+      { id: "GROUP_GRANDCHILD", type: "group" },
+    ],
+    edges: [
+      { id: "ROOT_CARD", fromNode: "GROUP_ROOT", toNode: "CARD" },
+      { id: "ROOT_CHILD", fromNode: "GROUP_ROOT", toNode: "GROUP_CHILD" },
+      {
+        id: "CHILD_GRANDCHILD",
+        fromNode: "GROUP_CHILD",
+        toNode: "GROUP_GRANDCHILD",
+      },
+    ],
+  });
+  const state = new BranchCollapseState();
+
+  state.collapse("GROUP_ROOT");
+
+  assert.deepEqual(
+    [...state.getHiddenNodeIds(graph)],
+    ["CARD", "GROUP_CHILD", "GROUP_GRANDCHILD"],
+  );
+  assert.deepEqual(
+    [...state.getRestrictedEdgeIds(graph)],
+    ["ROOT_CARD", "ROOT_CHILD"],
+  );
+
+  state.expand("GROUP_ROOT");
+
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
+  assert.deepEqual([...state.getRestrictedEdgeIds(graph)], []);
+});
+
 void test("preserves a nested collapse when its ancestor expands", () => {
   const graph = buildCanvasGraph(createTreeData());
   const state = new BranchCollapseState();

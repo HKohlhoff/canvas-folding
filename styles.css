@@ -1,6 +1,6 @@
 .workspace-leaf-content[data-type="canvas"]
   .canvas-folding-hidden.canvas-folding-hidden {
-  display: none;
+  display: none !important;
 }
 
 .workspace-leaf-content[data-type="canvas"]
@@ -74,6 +74,7 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   align-items: center;
   display: flex;
   gap: 4px;
+  pointer-events: auto;
   position: absolute;
   right: 8px;
   top: 8px;

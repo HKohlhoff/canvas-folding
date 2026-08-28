@@ -8,7 +8,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ### Added
 
-- Add a focus control to every visible non-group node, including leaf nodes,
+- Add a focus control to every visible node and group, including leaf items,
   and allow it to toggle focus directly.
 - Add independent settings, commands, and Canvas-toolbar actions for showing
   or hiding folding and focus controls without changing the current view state.
@@ -26,6 +26,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Keep shared descendants visible while another open parent branch still
   reaches them, hiding only exclusive descendants and the collapsed branch
   connections.
+- Treat groups connected by directed edges like regular folding nodes,
+  including clickable folding controls and recursive group branches.
 
 ## [1.0.1]
 

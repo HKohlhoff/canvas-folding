@@ -40,7 +40,7 @@ export function getCanvasFoldingSettingDefinitions(
         },
         {
           name: "Show focus controls initially",
-          desc: "Show a focus control on every non-group node, including nodes without children. Use the command palette or Canvas toolbar to change them at any time.",
+          desc: "Show a focus control on every node and group, including items without children. Use the command palette or Canvas toolbar to change them at any time.",
           control: {
             type: "toggle",
             key: "showFocusControls",

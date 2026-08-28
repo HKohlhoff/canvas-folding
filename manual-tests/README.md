@@ -99,6 +99,9 @@ File: `05-groups-and-node-types.canvas`
 - Focus `Root`: all contained nodes and the group frame remain active.
 - Focus `Text`: its descendants and the group frame remain active; unrelated
   content is dimmed and cannot be selected.
+- Connect groups through directed edges. Verify that their folding controls are
+  clickable, collapsing a parent hides the complete connected group branch,
+  and every visible group has a working focus control.
 - Add an empty group: it remains visible when nearby branches are collapsed.
 
 ## Cross-file and lifecycle matrix

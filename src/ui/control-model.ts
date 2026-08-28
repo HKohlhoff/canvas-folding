@@ -113,7 +113,7 @@ export function buildFocusControlModels(
   const focusedNodeId = state.getFocusedNodeId();
 
   return getNodesInDepthFirstOrder(graph).flatMap((node) =>
-    node.type === "group" || hiddenNodeIds.has(node.id)
+    hiddenNodeIds.has(node.id)
       ? []
       : [{
           active: node.id === focusedNodeId,

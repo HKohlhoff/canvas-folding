@@ -58,7 +58,7 @@ void test("excludes group descendants from the visible branch count", () => {
   );
 });
 
-void test("creates focus controls for visible content nodes including leaves", () => {
+void test("creates focus controls for visible nodes including leaves", () => {
   const graph = buildCanvasGraph(createData());
   const state = new BranchCollapseState();
   state.focusBranch("D");
@@ -71,7 +71,7 @@ void test("creates focus controls for visible content nodes including leaves", (
   ]);
 });
 
-void test("omits focus controls for groups and hidden nodes", () => {
+void test("creates focus controls for groups and omits hidden nodes", () => {
   const graph = buildCanvasGraph({
     nodes: [
       { id: "G", type: "group" },
@@ -87,6 +87,7 @@ void test("omits focus controls for groups and hidden nodes", () => {
   state.collapse("A");
 
   assert.deepEqual(buildFocusControlModels(graph, state), [
+    { nodeId: "G", active: false, descendantCount: 2 },
     { nodeId: "A", active: false, descendantCount: 1 },
   ]);
 });

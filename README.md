@@ -19,10 +19,10 @@ by buying me a coffee.
 - Show the complete Canvas through a chosen global level.
 - Show one node, a limited number of levels, or an entire branch from a node
   control.
-- Focus any content node or complete branch while dimming and protecting the
+- Focus any node, group, or complete branch while dimming and protecting the
   remaining Canvas context.
 - Use folding controls with hidden-node counts on parent nodes and focus
-  controls on every content node, including leaves.
+  controls on every visible node and group, including leaves.
 - Show or hide folding and focus controls independently without changing the
   current view state.
 - Use a movable, responsive Canvas Folding toolbar.
@@ -87,7 +87,7 @@ Focus mode keeps the selected branch fully active while dimming and protecting
 the surrounding Canvas. The wider context remains visible without distracting
 from the branch being worked on.
 
-Use the focus symbol on any content node to enter focus directly. Nodes without
+Use the focus symbol on any node or group to enter focus directly. Items without
 children receive the same control, so they can be focused individually. Click
 the active focus control again, or use the toolbar focus action, to exit.
 
@@ -129,7 +129,7 @@ control displays the number of hidden non-group nodes:
   branch still reaches them. Folding hides only exclusive descendants and the
   connections belonging to the collapsed branch.
 
-Every visible non-group node also receives a focus control. Folding controls
+Every visible node and group also receives a focus control. Folding controls
 and focus controls can be hidden independently through the toolbar or command
 palette. Hiding either kind of control changes only the interface: it does not
 expand branches or end an active focus.
@@ -179,7 +179,7 @@ is valid:
 | `Show branch controls` | Display folding controls on parent nodes. |
 | `Hide branch controls` | Hide folding controls in the current session without changing folded branches. |
 | `Toggle branch controls` | Switch the branch controls between visible and hidden. |
-| `Show focus controls` | Display focus controls on all visible content nodes, including leaves. |
+| `Show focus controls` | Display focus controls on all visible nodes and groups, including leaves. |
 | `Hide focus controls` | Hide focus controls without ending an active focus. |
 | `Toggle focus controls` | Switch the focus controls between visible and hidden. |
 | `Show canvas toolbar` | Display the Canvas Folding toolbar. |
@@ -265,7 +265,7 @@ Canvas files.
 - **Show branch controls initially** controls node buttons when the plugin
   loads. Commands can change them at any time.
 - **Show focus controls initially** controls the focus symbols on all visible
-  content nodes. Commands can change them at any time.
+  nodes and groups. Commands can change them at any time.
 - **Background opacity during branch focus** controls how strongly unrelated
   Canvas content is dimmed.
 - **Remember canvas states between sessions** enables persistent state.
