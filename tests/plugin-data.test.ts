@@ -15,7 +15,23 @@ void test("migrates legacy top-level settings into versioned plugin data", () =>
     dataVersion: PLUGIN_DATA_VERSION,
     settings: { ...DEFAULT_SETTINGS, debugLogging: true },
     canvasStates: {},
+    ui: { lastShownReleaseNotesId: "" },
   });
+});
+
+void test("normalizes the transient release-note marker", () => {
+  assert.equal(
+    normalizePluginData({
+      settings: {},
+      ui: { lastShownReleaseNotesId: " release-1.1.0 " },
+    }).ui.lastShownReleaseNotesId,
+    "release-1.1.0",
+  );
+  assert.equal(
+    normalizePluginData({ ui: { lastShownReleaseNotesId: 4 } })
+      .ui.lastShownReleaseNotesId,
+    "",
+  );
 });
 
 void test("normalizes saved canvas states defensively", () => {

@@ -272,6 +272,17 @@ Canvas files.
   when the manager opens; currently open tabs keep their session state.
 - **Debug logging** writes diagnostic details to the developer console.
 
+## Update Description
+
+After an update with new user-facing features, Canvas Folding opens a
+Markdown-rendered `What's new` view once. Closing it removes the view
+completely; no release-note file is created in the Vault and it does not reopen
+on every Obsidian start.
+
+Use **Show last update** at the bottom of the plugin settings to open the
+description again at any time. The repository keeps the same text in
+[`Last Update.md`](Last%20Update.md).
+
 ## Privacy and data handling
 
 Canvas Folding works entirely locally and sends no Canvas or vault data to

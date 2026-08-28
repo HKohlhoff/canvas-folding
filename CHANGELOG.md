@@ -12,6 +12,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
   and allow it to toggle focus directly.
 - Add independent settings, commands, and Canvas-toolbar actions for showing
   or hiding folding and focus controls without changing the current view state.
+- Add a transient one-time update description, a reusable **Show last update**
+  settings action, and the matching repository document `Last Update.md`.
 
 ### Changed
 

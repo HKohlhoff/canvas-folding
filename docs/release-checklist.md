@@ -5,6 +5,8 @@ Use this checklist before publishing an Obsidian plugin release.
 ## Metadata
 
 - `manifest.json` version is correct.
+- The embedded update-note ID matches the plugin version so this release opens
+  its note once, and `Last Update.md` contains the identical Markdown.
 - `versions.json` contains the same version and the correct minimum Obsidian version.
 - `package.json` version, description, repository, license and author data are correct.
 - `LICENSE` contains GPL v3 and `package.json` declares `GPL-3.0-or-later`.
@@ -31,6 +33,11 @@ npm run build:prod
 - Enable and disable the plugin.
 - Run all commands from the command palette.
 - Check the settings tab and notices. Canvas Folding intentionally registers no ribbon icon.
+- Upgrade once from the previous plugin data and confirm that the Markdown-
+  rendered update description opens once, settings and persisted Canvas states
+  survive, closing it creates no Vault file, and restart does not reopen it.
+- Use **Show last update** at the bottom of settings and confirm that the same
+  description can be reopened at any time.
 - Verify desktop-only behavior if `isDesktopOnly` is `true`.
 
 ### Canvas Folding matrix
@@ -91,6 +98,7 @@ Complete this gate before claiming unrestricted Advanced Canvas compatibility:
 - No local vault trash, generated analysis folders or temporary exports.
 - `CHANGELOG.md` updated.
 - README matches the current user-facing behavior.
+- `Last Update.md` matches the transient in-plugin update description.
 - README covers usage, limitations, privacy, support and license.
 
 ## Release Assets

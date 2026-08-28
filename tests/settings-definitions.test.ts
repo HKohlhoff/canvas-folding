@@ -65,6 +65,35 @@ void test("exposes one persisted-state manager action", () => {
   assert.equal(openCount, 1);
 });
 
+void test("places a reusable last-update action at the bottom", () => {
+  let showCount = 0;
+  const definitions = getCanvasFoldingSettingDefinitions(
+    () => undefined,
+    () => {
+      showCount += 1;
+    },
+  );
+  const about = definitions[definitions.length - 1];
+  assert.ok(about !== undefined && "type" in about);
+  assert.equal(about.type, "group");
+  assert.equal(about.heading, "About");
+  assert.deepEqual(about.items?.map((item) => item.name), ["Last update"]);
+
+  const item = about.items?.[0];
+  assert.ok(item !== undefined && "render" in item);
+  const button = new FakeButton();
+  const setting = {
+    addButton: (configure: (component: ButtonComponent) => unknown) => {
+      configure(button as unknown as ButtonComponent);
+      return setting;
+    },
+  } as unknown as Setting;
+  item.render?.(setting, {} as SettingGroup);
+  assert.equal(button.text, "Show last update");
+  button.click?.();
+  assert.equal(showCount, 1);
+});
+
 class FakeButton {
   click: (() => void) | null = null;
   disabled = false;

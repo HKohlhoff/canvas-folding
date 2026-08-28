@@ -13,6 +13,16 @@ Before a clean pass:
    case requires a fresh state.
 4. Record platform, Obsidian version and result next to each test case.
 
+## Update note and plugin data
+
+- Upgrade once from Canvas Folding 1.0.1 data. Confirm that settings and any
+  persisted Canvas states remain intact and the Markdown-rendered update note
+  opens once.
+- Close the note, verify that no release-note file is created in the Vault,
+  then reload or restart Obsidian and confirm that it does not reopen.
+- At the bottom of settings, choose **Show last update** and confirm that the
+  same note opens again whenever requested.
+
 For the separate release gate with Advanced Canvas enabled, use the focused
 fixture, captured settings profile, and full matrix under
 [`advanced-canvas/`](advanced-canvas/README.md). The baseline cases below still

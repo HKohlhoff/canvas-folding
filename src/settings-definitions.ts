@@ -8,6 +8,7 @@ type CanvasFoldingSettingKey = keyof CanvasFoldingSettings;
 
 export function getCanvasFoldingSettingDefinitions(
   openPersistedCanvasStates: () => void = () => {},
+  showLastUpdate: () => void = () => {},
 ): SettingDefinitionItem<CanvasFoldingSettingKey>[] {
   return [
     {
@@ -107,6 +108,23 @@ export function getCanvasFoldingSettingDefinitions(
             type: "toggle",
             key: "debugLogging",
             defaultValue: DEFAULT_SETTINGS.debugLogging,
+          },
+        },
+      ],
+    },
+    {
+      type: "group",
+      heading: "About",
+      items: [
+        {
+          name: "Last update",
+          desc: "Review the features and usage notes for version 1.1.0.",
+          render: (setting) => {
+            setting.addButton((button) => {
+              button
+                .setButtonText("Show last update")
+                .onClick(showLastUpdate);
+            });
           },
         },
       ],

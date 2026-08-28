@@ -8,12 +8,15 @@ import {
   type BranchCollapseStateData,
 } from "./tree/state";
 
-export const PLUGIN_DATA_VERSION = 1;
+export const PLUGIN_DATA_VERSION = 2;
 
 export interface CanvasFoldingPluginData {
   canvasStates: Readonly<Record<string, BranchCollapseStateData>>;
   dataVersion: typeof PLUGIN_DATA_VERSION;
   settings: CanvasFoldingSettings;
+  ui: {
+    lastShownReleaseNotesId: string;
+  };
 }
 
 export function normalizePluginData(data: unknown): CanvasFoldingPluginData {
@@ -44,6 +47,12 @@ export function normalizePluginData(data: unknown): CanvasFoldingPluginData {
     canvasStates,
     dataVersion: PLUGIN_DATA_VERSION,
     settings: { ...DEFAULT_SETTINGS, ...settings },
+    ui: {
+      lastShownReleaseNotesId: isRecord(root.ui) &&
+        typeof root.ui.lastShownReleaseNotesId === "string"
+        ? root.ui.lastShownReleaseNotesId.trim()
+        : "",
+    },
   };
 }
 

@@ -165,3 +165,21 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 .canvas-folding-persisted-states-remove-all .setting-item-name {
   font-weight: var(--font-semibold);
 }
+
+.canvas-folding-release-notes-modal {
+  width: min(760px, calc(100vw - 32px));
+}
+
+.canvas-folding-release-notes-modal .modal-content {
+  max-height: min(72vh, 760px);
+  overflow-y: auto;
+}
+
+.canvas-folding-release-notes-actions {
+  background: var(--background-primary);
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0 4px;
+  position: sticky;
+}

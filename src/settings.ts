@@ -19,6 +19,7 @@ interface CanvasFoldingSettingsHost extends Plugin {
   clearSavedCanvasStates(): Promise<void>;
   getSavedCanvasStatePaths(): readonly string[];
   removeSavedCanvasState(canvasPath: string): Promise<void>;
+  showLastUpdate(): void;
   updateSettings(update: Partial<CanvasFoldingSettings>): Promise<void>;
 }
 
@@ -28,14 +29,17 @@ export class CanvasFoldingSettingTab extends PluginSettingTab {
   }
 
   getSettingDefinitions() {
-    return getCanvasFoldingSettingDefinitions(() => {
-      new PersistedCanvasStatesModal(this.app, {
-        cleanup: () => this.plugin.cleanupSavedCanvasStates(),
-        clearAll: () => this.plugin.clearSavedCanvasStates(),
-        getPaths: () => this.plugin.getSavedCanvasStatePaths(),
-        remove: (canvasPath) => this.plugin.removeSavedCanvasState(canvasPath),
-      }).open();
-    });
+    return getCanvasFoldingSettingDefinitions(
+      () => {
+        new PersistedCanvasStatesModal(this.app, {
+          cleanup: () => this.plugin.cleanupSavedCanvasStates(),
+          clearAll: () => this.plugin.clearSavedCanvasStates(),
+          getPaths: () => this.plugin.getSavedCanvasStatePaths(),
+          remove: (canvasPath) => this.plugin.removeSavedCanvasState(canvasPath),
+        }).open();
+      },
+      () => this.plugin.showLastUpdate(),
+    );
   }
 
   getControlValue(key: string): unknown {
@@ -64,6 +68,7 @@ function isSettingKey(key: string): key is CanvasFoldingSettingKey {
     key === "rememberCanvasStates" ||
     key === "showBranchControls" ||
     key === "showCanvasToolbar" ||
+    key === "showFocusControls" ||
     key === "showStatusNotices"
   );
 }

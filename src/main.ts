@@ -32,6 +32,7 @@ import {
   renamePathEntries,
   type CanvasFoldingPluginData,
 } from "./plugin-data";
+import { CURRENT_RELEASE_NOTES_ID } from "./release-notes-content";
 import {
   CanvasFoldingSettingTab,
   DEFAULT_SETTINGS,
@@ -58,6 +59,7 @@ import {
   type BranchMenuPosition,
 } from "./ui/branch-controls";
 import { CanvasDepthModal } from "./ui/canvas-depth-modal";
+import { openCurrentReleaseNotes } from "./ui/release-notes";
 import {
   buildBranchControlModels,
   buildFocusControlModels,
@@ -97,6 +99,7 @@ export default class CanvasFoldingPlugin extends Plugin {
   private dataSaveTimer: number | null = null;
   private liveCanvasFollowUpTimer: number | null = null;
   private liveCanvasRefreshTimer: number | null = null;
+  private lastShownReleaseNotesId = "";
   private readonly nodePruneTimers = new Map<string, number>();
   private readonly savedCanvasStates = new Map<
     string,
@@ -301,6 +304,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     );
     this.app.workspace.onLayoutReady(() => {
       this.refreshActiveCanvasState();
+      void this.showCurrentReleaseNotesOnce();
     });
 
     this.addCommand({
@@ -439,6 +443,10 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
   }
 
+  showLastUpdate(): void {
+    void this.openLastUpdate();
+  }
+
   getSavedCanvasStatePaths(): readonly string[] {
     return getSortedCanvasStatePaths(this.savedCanvasStates);
   }
@@ -466,6 +474,7 @@ export default class CanvasFoldingPlugin extends Plugin {
   private async loadPluginData(): Promise<void> {
     const data = normalizePluginData(await this.loadData());
     this.settings = data.settings;
+    this.lastShownReleaseNotesId = data.ui.lastShownReleaseNotesId;
     this.savedCanvasStates.clear();
     for (const [canvasPath, state] of Object.entries(data.canvasStates)) {
       this.savedCanvasStates.set(canvasPath, state);
@@ -625,6 +634,9 @@ export default class CanvasFoldingPlugin extends Plugin {
       canvasStates: Object.fromEntries(this.savedCanvasStates),
       dataVersion: PLUGIN_DATA_VERSION,
       settings: this.settings,
+      ui: {
+        lastShownReleaseNotesId: this.lastShownReleaseNotesId,
+      },
     };
     const write = this.dataSaveChain.then(async () => {
       await this.saveData(data);
@@ -633,6 +645,30 @@ export default class CanvasFoldingPlugin extends Plugin {
       console.error("[Canvas Folding] Failed to save plugin data", error);
     });
     return write;
+  }
+
+  private async showCurrentReleaseNotesOnce(): Promise<void> {
+    if (this.lastShownReleaseNotesId === CURRENT_RELEASE_NOTES_ID) return;
+    if (!(await this.openLastUpdate())) return;
+
+    this.lastShownReleaseNotesId = CURRENT_RELEASE_NOTES_ID;
+    try {
+      await this.writePluginData();
+    } catch (error: unknown) {
+      console.error("[Canvas Folding] Could not save release-note state", error);
+      new Notice("The feature update description may appear again after restart.", 5000);
+    }
+  }
+
+  private async openLastUpdate(): Promise<boolean> {
+    try {
+      await openCurrentReleaseNotes(this.app);
+      return true;
+    } catch (error: unknown) {
+      console.error("[Canvas Folding] Could not open release notes", error);
+      new Notice("Canvas folding could not open its feature update description.", 5000);
+      return false;
+    }
   }
 
   private debug(message: string, details?: unknown): void {
