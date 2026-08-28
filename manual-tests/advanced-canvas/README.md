@@ -18,6 +18,7 @@ Record one row for every complete run:
 | 2026-08-25 | macOS 26.6.2 | 1.13.7 | 1.0.0 | 6.5.4 | reference | PASS | Complete compatibility gate |
 | 2026-08-26 | iPadOS 26.6.1 | 1.13.7 | 1.0.0 | 6.5.4 | reference | PASS | Mobile compatibility subset AC-G06 |
 | 2026-08-26 | iOS 26.6 | 1.13.7 | 1.0.0 | 6.5.4 | reference | PASS | Mobile compatibility subset AC-G06 |
+| 2026-08-28 | macOS 26.6.2 | 1.13.7 | 1.1.0 | 7.0.0 | current Vault | PASS | Compact release regression including controls, groups, focus, shared parents, editing and lifecycle |
 
 Use `PASS`, `FAIL`, or `N/A` for each case. A failure must include the fixture,
 the exact settings delta, the action, and the observed result.

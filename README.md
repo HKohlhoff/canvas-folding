@@ -49,6 +49,10 @@ state, and using one plugin does not silently change the state owned by the
 other. See [Using Canvas Folding with Advanced Canvas](#using-canvas-folding-with-advanced-canvas)
 for the few details worth knowing when both plugins hide content.
 
+Before the 1.1.0 release, the changed controls, connected groups, branch focus,
+shared-parent behavior, editing, undo/redo, and plugin lifecycle also passed a
+focused regression test with Advanced Canvas 7.0.0 on macOS.
+
 ## Visual guide
 
 ### Collapse and expand branches
