@@ -1,6 +1,8 @@
-# Canvas Folding 1.1.0: clearer node controls
+# Canvas Folding 1.1.1: clearer node controls
 
 This update makes folding and focus controls more informative, flexible, and consistent with Canvas HTML pages created by the Canvas HTML Exporter plugin.
+
+Version 1.1.1 also removes a Community Directory CSS warning without changing the plugin's appearance or behavior.
 
 ## Highlights
 

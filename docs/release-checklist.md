@@ -16,7 +16,8 @@ Use this checklist before publishing an Obsidian plugin release.
 - `LICENSE` contains GPL v3 and `package.json` declares `GPL-3.0-or-later`.
 - `build.mjs` uses the correct plugin ID.
 - `npm run test:metadata` confirms plugin ID, versions, descriptions, minimum
-  Obsidian version, desktop declaration, funding URL and GPL metadata.
+  Obsidian version, desktop declaration, funding URL, GPL metadata and that
+  `styles.css` contains no Community Directory `!important` warning.
 
 ## Quality
 

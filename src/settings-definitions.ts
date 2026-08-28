@@ -118,7 +118,7 @@ export function getCanvasFoldingSettingDefinitions(
       items: [
         {
           name: "Last update",
-          desc: "Review the features and usage notes for version 1.1.0.",
+          desc: "Review the features and usage notes for version 1.1.1.",
           render: (setting) => {
             setting.addButton((button) => {
               button

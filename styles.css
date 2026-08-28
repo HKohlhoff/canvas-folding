@@ -1,6 +1,6 @@
 .workspace-leaf-content[data-type="canvas"]
   .canvas-folding-hidden.canvas-folding-hidden {
-  display: none !important;
+  display: none;
 }
 
 .workspace-leaf-content[data-type="canvas"]

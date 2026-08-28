@@ -4,6 +4,13 @@ All notable changes to this plugin should be documented in this file.
 
 The format follows the spirit of Keep a Changelog, with the newest release first.
 
+## [1.1.1] – 2026-08-28
+
+### Fixed
+
+- Remove the remaining CSS `!important` declaration without changing Canvas
+  visibility behavior, and reject future occurrences during metadata tests.
+
 ## [1.1.0] – 2026-08-28
 
 ### Added

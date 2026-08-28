@@ -5,6 +5,7 @@ const manifest = readJson("manifest.json");
 const packageData = readJson("package.json");
 const packageLock = readJson("package-lock.json");
 const versions = readJson("versions.json");
+const styles = readFileSync("styles.css", "utf8");
 
 assert.equal(manifest.id, "canvas-folding");
 assert.equal(packageData.name, manifest.id);
@@ -23,6 +24,11 @@ assert.ok(manifest.description.length <= 250);
 assert.match(
   readFileSync("LICENSE", "utf8"),
   /GNU GENERAL PUBLIC LICENSE\s+Version 3/,
+);
+assert.doesNotMatch(
+  styles,
+  /!important\b/,
+  "styles.css must not use !important; use Canvas-scoped selector specificity instead",
 );
 
 console.log(
