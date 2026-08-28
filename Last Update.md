@@ -2,8 +2,6 @@
 
 This update makes folding and focus controls more informative, flexible, and consistent with Canvas HTML pages created by the Canvas HTML Exporter plugin.
 
-Version 1.1.1 also removes a Community Directory CSS warning without changing the plugin's appearance or behavior.
-
 ## Highlights
 
 - **Focus every node and group:** every visible Canvas item now has a focus control, including groups and items without children. Focusing a group keeps all items geometrically contained by it active as part of the focus area.
