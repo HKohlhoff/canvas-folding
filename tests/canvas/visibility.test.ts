@@ -28,6 +28,31 @@ void test("hides descendant nodes and every incident edge", () => {
   assert.equal(elements.edgeBC.has("canvas-folding-hidden"), true);
 });
 
+void test("hides a collapsed branch connection while its shared endpoint stays visible", () => {
+  const elements = createContext();
+  const manager = new CanvasVisibilityManager();
+
+  const result = manager.apply(
+    elements.context,
+    new Set(),
+    new Set(),
+    20,
+    new Set(["AB"]),
+  );
+
+  assert.deepEqual(result, {
+    dimmedEdgeCount: 0,
+    dimmedNodeCount: 0,
+    hiddenEdgeCount: 1,
+    hiddenNodeCount: 0,
+  });
+  assert.equal(elements.nodeA.has("canvas-folding-hidden"), false);
+  assert.equal(elements.nodeB.has("canvas-folding-hidden"), false);
+  assert.equal(elements.edgeAB.has("canvas-folding-hidden"), true);
+  assert.equal(elements.edgeABLabel.has("canvas-folding-hidden"), true);
+  assert.equal(elements.edgeBC.has("canvas-folding-hidden"), false);
+});
+
 void test("restores only the class managed by Canvas Folding", () => {
   const elements = createContext();
   const manager = new CanvasVisibilityManager();

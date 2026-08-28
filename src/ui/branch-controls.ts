@@ -322,7 +322,10 @@ function updateBranchButton(
   const hiddenNodeLabel = model.hiddenDescendantCount === undefined
     ? null
     : `${model.hiddenDescendantCount} hidden node${model.hiddenDescendantCount === 1 ? "" : "s"}`;
-  const label = `${action} branch with ${hiddenNodeLabel ?? formatDescendantCount(model.descendantCount)}`;
+  const hiddenConnectionLabel = model.hiddenConnectionCount === undefined
+    ? null
+    : `${model.hiddenConnectionCount} hidden connection${model.hiddenConnectionCount === 1 ? "" : "s"}`;
+  const label = `${action} branch with ${hiddenNodeLabel ?? hiddenConnectionLabel ?? formatDescendantCount(model.descendantCount)}`;
   const externalGroupHint = model.externallyCollapsedDescendantCount !== undefined
     ? ` Advanced Canvas currently hides ${formatDescendantCount(model.externallyCollapsedDescendantCount)} inside collapsed groups. Canvas Folding preserves those group states when this branch is collapsed or expanded.`
     : "";

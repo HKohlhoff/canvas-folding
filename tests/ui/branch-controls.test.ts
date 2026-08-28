@@ -155,6 +155,25 @@ void test("shows a readable hidden-node count on collapsed branches", () => {
   assert.match(button.attributes.get("aria-label") ?? "", /123 hidden nodes/);
 });
 
+void test("shows a plus sign and connection count when shared nodes remain visible", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+
+  sync(manager, entry.context, {
+    ...BRANCH_MODEL,
+    collapsed: true,
+    hiddenConnectionCount: 1,
+  });
+
+  const button = requireChild(
+    requireContainer(entry.host),
+    "canvas-folding-branch-control",
+  );
+  assert.equal(button.textContent, "+");
+  assert.equal(button.classes.has("has-hidden-count"), false);
+  assert.match(button.attributes.get("aria-label") ?? "", /1 hidden connection/);
+});
+
 void test("renders a focus control for a leaf without a branch control", () => {
   const manager = new CanvasNodeControlManager();
   const entry = createContext("test.canvas", {});

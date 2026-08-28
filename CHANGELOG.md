@@ -23,6 +23,9 @@ The format follows the spirit of Keep a Changelog, with the newest release first
   consistent visual and keyboard order.
 - Group the focus-control visibility action directly before the focus action
   in the Canvas toolbar.
+- Keep shared descendants visible while another open parent branch still
+  reaches them, hiding only exclusive descendants and the collapsed branch
+  connections.
 
 ## [1.0.1]
 

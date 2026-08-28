@@ -38,8 +38,9 @@ invalid, or a required persisted Canvas file is missing, unreadable or invalid.
 
 The ID arrays are effective visibility results, not references to internal
 state objects. They already apply Canvas Folding's cycle-safe graph traversal,
-shared-descendant rules, group geometry and incident-edge rules. Consumers
-should treat their order as insignificant.
+path-aware shared-descendant rules, group geometry, incident-edge rules and
+collapsed branch connections whose endpoints remain visible through another
+parent. Consumers should treat their order as insignificant.
 
 Branch focus is intentionally excluded. Focus is a temporary UI spotlight;
 the API reports only elements hidden by folding and level restrictions.

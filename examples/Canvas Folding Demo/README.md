@@ -19,8 +19,9 @@ Suggested tour:
 
 1. Use the `−` and `+` node controls on the basic tree.
 2. Open a control's context menu and choose a visible level.
-3. Collapse one parent of the shared descendant, then reveal the shared branch
-   through the other parent.
+3. Collapse one parent of the shared descendant. Confirm that the shared branch
+   stays visible through the other open parent while only the collapsed
+   connection disappears.
 4. Collapse and expand individual nodes in the cycle; traversal stays finite.
 5. Collapse **Mixed root** and verify that the group frame disappears with all
    contained nodes.

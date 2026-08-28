@@ -1355,6 +1355,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       graph,
       hiddenNodeIds,
       dimmedNodeIds,
+      state.getRestrictedEdgeIds(graph),
     );
     const hiddenItemIds = new Set([
       ...visibility.hiddenNodeIds,
@@ -1370,6 +1371,7 @@ export default class CanvasFoldingPlugin extends Plugin {
         hiddenNodeIds,
         dimmedNodeIds,
         this.settings.focusBackgroundOpacity,
+        state.getRestrictedEdgeIds(graph),
       ),
       deselectedItemCount,
     };
@@ -1385,6 +1387,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       state.getHiddenNodeIds(graph),
       state.getDimmedNodeIds(graph),
       this.settings.focusBackgroundOpacity,
+      state.getRestrictedEdgeIds(graph),
     );
   }
 
@@ -1401,6 +1404,7 @@ export default class CanvasFoldingPlugin extends Plugin {
       ),
       state.getDimmedNodeIds(graph),
       this.settings.focusBackgroundOpacity,
+      state.getRestrictedEdgeIds(graph),
     );
   }
 }

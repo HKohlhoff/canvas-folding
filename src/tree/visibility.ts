@@ -17,6 +17,7 @@ export function deriveCanvasVisibility(
   graph: Pick<CanvasGraph, "edges" | "nodes">,
   hiddenNodeIds: ReadonlySet<string>,
   dimmedNodeIds: ReadonlySet<string> = new Set(),
+  restrictedEdgeIds: ReadonlySet<string> = new Set(),
 ): CanvasVisibility {
   const normalizedHiddenNodeIds = new Set(hiddenNodeIds);
   addGroupsWithOnlyHiddenContents(graph.nodes, normalizedHiddenNodeIds);
@@ -28,7 +29,11 @@ export function deriveCanvasVisibility(
     normalizedHiddenNodeIds,
     normalizedDimmedNodeIds,
   );
-  const hiddenEdgeIds = getIncidentEdgeIds(graph, normalizedHiddenNodeIds);
+  const knownEdgeIds = new Set(graph.edges.map((edge) => edge.id));
+  const hiddenEdgeIds = new Set([
+    ...getIncidentEdgeIds(graph, normalizedHiddenNodeIds),
+    ...[...restrictedEdgeIds].filter((edgeId) => knownEdgeIds.has(edgeId)),
+  ]);
   const dimmedEdgeIds = new Set(
     graph.edges
       .filter(

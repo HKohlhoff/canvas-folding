@@ -65,18 +65,17 @@ File: `02-multiple-roots-and-isolated.canvas`
 
 File: `03-shared-descendant.canvas`
 
-- Collapse `Parent A`: `Shared` and `Shared child` disappear. Both `Parent A`
-  and the visible alternative parent `Parent B` show the applicable hidden-node
-  count.
-- Expand `Parent B`: `Shared` and `Shared child` return through `Parent B`,
-  and both direct incoming edges return because all their endpoint nodes are
-  visible. Both parent controls show `−` again.
-- Contrast this with the existing `TestCanvas` case that has an additional
-  hidden node on one parent path: that node and its incident edge remain
-  hidden when the shared branch is revealed through the alternative parent.
-- Collapse `Shared`, then repeat the collapse-and-alternative-reveal sequence.
-  `Shared` returns through the alternative parent, but its nested collapse
-  keeps `Shared child` hidden.
+- Collapse `Parent A`: `Shared` and `Shared child` stay visible through
+  `Parent B`; only `Parent A → Shared` disappears. `Parent A` shows `+` and
+  reports one hidden connection, while `Parent B` remains expanded.
+- Expand `Parent A`: its direct connection to `Shared` returns without changing
+  any node visibility.
+- In `TestCanvas`, collapse `A1`: `A2` and the two `A1`/`A2` connections to
+  `B2` disappear, while the complete `B1 → B2` branch remains visible. Expand
+  `A1`, then collapse `B1`: only `B1 → B2` disappears.
+- Collapse `Shared`, then collapse and expand `Parent A`. The connection at
+  `Parent A` toggles independently while the nested collapse at `Shared` keeps
+  `Shared child` hidden.
 
 ## 04 – Rootless cycle
 

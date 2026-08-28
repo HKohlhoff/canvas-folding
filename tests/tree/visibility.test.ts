@@ -40,6 +40,18 @@ void test("leaves unrelated edges visible", () => {
   assert.deepEqual([...visibility.dimmedEdgeIds], ["AB"]);
 });
 
+void test("hides a restricted branch edge while both endpoints stay visible", () => {
+  const visibility = deriveCanvasVisibility(
+    graph,
+    new Set(),
+    new Set(),
+    new Set(["BC"]),
+  );
+
+  assert.deepEqual([...visibility.hiddenNodeIds], []);
+  assert.deepEqual([...visibility.hiddenEdgeIds], ["BC"]);
+});
+
 void test("hides a non-empty group when all contained nodes are hidden", () => {
   const groupGraph = buildCanvasGraph({
     nodes: [

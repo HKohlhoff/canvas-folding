@@ -232,9 +232,8 @@ export class BranchCollapseState {
 
   isBranchCollapsed(graph: CanvasGraph, nodeId: string): boolean {
     const hiddenNodeIds = this.getHiddenNodeIds(graph);
-    return (graph.childrenByNode.get(nodeId) ?? []).some((childId) =>
-      hiddenNodeIds.has(childId),
-    );
+    return this.isCollapsed(nodeId) || (graph.childrenByNode.get(nodeId) ?? [])
+      .some((childId) => hiddenNodeIds.has(childId));
   }
 
   revealBranch(graph: CanvasGraph, nodeId: string): boolean {
@@ -310,7 +309,8 @@ export class BranchCollapseState {
   }
 
   getHiddenNodeIds(graph: CanvasGraph): ReadonlySet<string> {
-    const hiddenNodeIds = this.getGloballyHiddenNodeIds(graph);
+    const globallyHiddenNodeIds = this.getGloballyHiddenNodeIds(graph);
+    const hiddenNodeIds = new Set(globallyHiddenNodeIds);
     for (const restrictedNodeId of this.visibleDepthByNodeId.keys()) {
       for (const descendantId of this.getHiddenNodeIdsForRestriction(
         graph,
@@ -319,7 +319,64 @@ export class BranchCollapseState {
         hiddenNodeIds.add(descendantId);
       }
     }
+
+    const restrictedEdgeIds = this.getRestrictedEdgeIds(graph);
+    const knownNodeIds = new Set(graph.nodes.map((node) => node.id));
+    const openChildrenByNode = new Map<string, string[]>();
+    for (const nodeId of knownNodeIds) openChildrenByNode.set(nodeId, []);
+    for (const edge of graph.edges) {
+      if (
+        restrictedEdgeIds.has(edge.id) ||
+        !knownNodeIds.has(edge.fromNode) ||
+        !knownNodeIds.has(edge.toNode)
+      ) {
+        continue;
+      }
+      openChildrenByNode.get(edge.fromNode)?.push(edge.toNode);
+    }
+
+    const reachableNodeIds = new Set(
+      [...knownNodeIds].filter((nodeId) => !hiddenNodeIds.has(nodeId)),
+    );
+    const queue = [...reachableNodeIds];
+    for (let index = 0; index < queue.length; index += 1) {
+      const nodeId = queue[index];
+      if (nodeId === undefined) continue;
+      for (const childId of openChildrenByNode.get(nodeId) ?? []) {
+        if (
+          reachableNodeIds.has(childId) ||
+          globallyHiddenNodeIds.has(childId)
+        ) {
+          continue;
+        }
+        reachableNodeIds.add(childId);
+        hiddenNodeIds.delete(childId);
+        queue.push(childId);
+      }
+    }
     return hiddenNodeIds;
+  }
+
+  getRestrictedEdgeIds(graph: CanvasGraph): ReadonlySet<string> {
+    const restrictedEdgeIds = new Set<string>();
+    for (const [restrictedNodeId, visibleDepth] of this.visibleDepthByNodeId) {
+      const descendantDepths = getDescendantDepths(graph, restrictedNodeId);
+      for (const edge of graph.edges) {
+        const fromDepth = edge.fromNode === restrictedNodeId
+          ? 0
+          : descendantDepths.get(edge.fromNode);
+        const toDepth = descendantDepths.get(edge.toNode);
+        if (
+          fromDepth !== undefined &&
+          fromDepth <= visibleDepth &&
+          toDepth !== undefined &&
+          toDepth > visibleDepth
+        ) {
+          restrictedEdgeIds.add(edge.id);
+        }
+      }
+    }
+    return restrictedEdgeIds;
   }
 
   getDimmedNodeIds(graph: CanvasGraph): ReadonlySet<string> {

@@ -9,7 +9,7 @@
 		{"id":"d000000000000006","type":"text","text":"Lower child","x":150,"y":-210,"width":220,"height":80,"color":"4"},
 		{"id":"d000000000000007","type":"text","text":"Isolated","x":550,"y":-160,"width":220,"height":80,"color":"6"},
 		{"id":"d000000000000018","type":"text","text":"## 4 · Groups and node types\n\nCollapse **Mixed root**: text, note, link, image, edges, and the surrounding group disappear. Focus it instead: the complete group remains active.","x":-800,"y":1320,"width":420,"height":260,"color":"4"},
-		{"id":"d000000000000008","type":"text","text":"## 2 · Shared descendant\n\nCollapse **Parent A**. The shared branch disappears and both parents show +. Expand through **Parent B** without revealing hidden parent nodes.","x":-810,"y":185,"width":430,"height":250,"color":"3"},
+		{"id":"d000000000000008","type":"text","text":"## 2 · Shared descendant\n\nCollapse **Parent A**. The shared branch stays visible through **Parent B** while only Parent A's connection disappears. Expand **Parent A** to restore that connection.","x":-810,"y":185,"width":430,"height":250,"color":"3"},
 		{"id":"d000000000000014","type":"text","text":"## 3 · Directed cycle\n\nThis graph has no root. Collapse all does not affect it, but each node control can fold and expand a finite branch without looping.","x":-810,"y":720,"width":430,"height":220,"color":"2"},
 		{"id":"d000000000000015","type":"text","text":"Cycle A","x":-260,"y":800,"width":220,"height":80,"color":"2"},
 		{"id":"d000000000000016","type":"text","text":"Cycle B","x":130,"y":680,"width":220,"height":80,"color":"4"},

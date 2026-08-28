@@ -103,3 +103,60 @@ void test("returns effective hidden nodes and edges without focus dimming", () =
   assert.equal(Object.isFrozen(snapshot.hiddenNodeIds), true);
   assert.equal(Object.isFrozen(snapshot.hiddenEdgeIds), true);
 });
+
+void test("returns only the collapsed connection when a shared branch remains reachable", () => {
+  const graph = buildCanvasGraph({
+    nodes: ["A", "B", "D", "E"].map((id) => ({ id, type: "text" })),
+    edges: [
+      { id: "AD", fromNode: "A", toNode: "D" },
+      { id: "BD", fromNode: "B", toNode: "D" },
+      { id: "DE", fromNode: "D", toNode: "E" },
+    ],
+  });
+
+  assert.deepEqual(
+    createCanvasFoldStateSnapshot(
+      "Folder/Shared.canvas",
+      "active-leaf",
+      { revealedBranches: {}, visibleDepths: { B: 0 } },
+      graph,
+    ),
+    {
+      canvasPath: "Folder/Shared.canvas",
+      hiddenEdgeIds: ["BD"],
+      hiddenNodeIds: [],
+      source: "active-leaf",
+    },
+  );
+});
+
+void test("keeps the complete B1 branch when the asymmetric A1 branch collapses", () => {
+  const graph = buildCanvasGraph({
+    nodes: ["A1", "A2", "B1", "B2", "LEAF"].map((id) => ({
+      id,
+      type: "text",
+    })),
+    edges: [
+      { id: "A1A2", fromNode: "A1", toNode: "A2" },
+      { id: "A1B2", fromNode: "A1", toNode: "B2" },
+      { id: "A2B2", fromNode: "A2", toNode: "B2" },
+      { id: "B1B2", fromNode: "B1", toNode: "B2" },
+      { id: "B2LEAF", fromNode: "B2", toNode: "LEAF" },
+    ],
+  });
+
+  assert.deepEqual(
+    createCanvasFoldStateSnapshot(
+      "Folder/TestCanvas.canvas",
+      "active-leaf",
+      { revealedBranches: {}, visibleDepths: { A1: 0 } },
+      graph,
+    ),
+    {
+      canvasPath: "Folder/TestCanvas.canvas",
+      hiddenEdgeIds: ["A1A2", "A1B2", "A2B2"],
+      hiddenNodeIds: ["A2"],
+      source: "active-leaf",
+    },
+  );
+});

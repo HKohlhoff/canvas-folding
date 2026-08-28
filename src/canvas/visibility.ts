@@ -33,6 +33,7 @@ export class CanvasVisibilityManager {
     hiddenNodeIds: ReadonlySet<string>,
     dimmedNodeIds: ReadonlySet<string> = new Set(),
     focusOpacity = 20,
+    restrictedEdgeIds: ReadonlySet<string> = new Set(),
   ): VisibilityResult {
     const currentElements = new Set([
       ...context.nodeViews.map((nodeView) => nodeView.element),
@@ -50,6 +51,7 @@ export class CanvasVisibilityManager {
       context.data,
       hiddenNodeIds,
       dimmedNodeIds,
+      restrictedEdgeIds,
     );
     const storedNodeIds = new Set(context.data.nodes.map((node) => node.id));
     const storedEdgeIds = new Set(context.data.edges.map((edge) => edge.id));

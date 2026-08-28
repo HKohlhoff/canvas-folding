@@ -49,7 +49,11 @@ npm run build:prod
 - Copy `manual-tests/` into the documented vault location and complete its V1 test matrix.
 - Copy `examples/Canvas Folding Demo/` to the vault root, open the demo Canvas and follow every explanatory card once.
 - Fold and expand branches containing text, file, image, link and group nodes.
-- Check a simple tree, multiple roots, an isolated node, a shared descendant with multiple parents and a directed cycle.
+- Check a simple tree, multiple roots, an isolated node, a shared descendant
+  with multiple parents and a directed cycle. In `TestCanvas`, collapsing `A1`
+  must hide `A2` and the two `A1`/`A2` connections to `B2` while keeping the
+  complete `B1` branch visible; collapsing `B1` must hide only `B1 → B2` while
+  `B2` and its descendants remain visible through `A1`.
 - Add and delete nodes and edges; repeat both operations with undo and redo.
 - Add a child to a collapsed branch: it remains visible while selected and folds after deselection.
 - Open the same Canvas in two leaves and verify that controls, focus and visibility remain leaf-specific.

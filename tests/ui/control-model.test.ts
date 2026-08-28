@@ -158,14 +158,31 @@ void test("omits controls hosted by hidden descendant nodes", () => {
   ]);
 });
 
-void test("shows an expand control for a visible parent of a hidden shared branch", () => {
+void test("keeps the alternative parent expanded for an automatically visible shared branch", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();
   state.collapse("A1");
 
   const models = buildBranchControlModels(graph, state);
 
-  assert.equal(models.find((model) => model.nodeId === "B")?.collapsed, true);
+  assert.equal(models.find((model) => model.nodeId === "A1")?.collapsed, true);
+  assert.equal(models.find((model) => model.nodeId === "B")?.collapsed, false);
+});
+
+void test("shows a connection-only collapse on a shared branch", () => {
+  const graph = buildCanvasGraph(createSharedBranchData());
+  const state = new BranchCollapseState();
+  state.collapse("B");
+
+  assert.deepEqual(
+    buildBranchControlModels(graph, state).find((model) => model.nodeId === "B"),
+    {
+      nodeId: "B",
+      collapsed: true,
+      descendantCount: 1,
+      hiddenConnectionCount: 1,
+    },
+  );
 });
 
 void test("shows expand controls at the boundary of a visible depth", () => {

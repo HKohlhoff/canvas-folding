@@ -56,6 +56,8 @@ export function createCanvasFoldStateSnapshot(
   const visibility = deriveCanvasVisibility(
     graph,
     state.getHiddenNodeIds(graph),
+    new Set(),
+    state.getRestrictedEdgeIds(graph),
   );
   return Object.freeze({
     canvasPath,

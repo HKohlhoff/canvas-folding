@@ -125,17 +125,20 @@ control displays the number of hidden non-group nodes:
   additional Advanced Canvas collapsed-group information.
 - Open its context menu to show only the node, show through a selected level,
   or show the entire branch.
-- With shared descendants, a visible alternative parent can reveal the shared
-  branch without revealing a hidden parent or its incident edge.
+- Shared descendants stay visible automatically while another open parent
+  branch still reaches them. Folding hides only exclusive descendants and the
+  connections belonging to the collapsed branch.
 
 Every visible non-group node also receives a focus control. Folding controls
 and focus controls can be hidden independently through the toolbar or command
 palette. Hiding either kind of control changes only the interface: it does not
 expand branches or end an active focus.
 
-Hidden nodes also hide every incident edge, including edge labels. A non-empty
-Canvas group is hidden when all non-group nodes geometrically contained by it
-are hidden. Empty groups remain visible.
+Hidden nodes also hide every incident edge, including edge labels. A collapsed
+branch connection can remain hidden while its shared endpoint stays visible
+through another open parent. A non-empty Canvas group is hidden when all
+non-group nodes geometrically contained by it are hidden. Empty groups remain
+visible.
 
 ## Canvas toolbar
 
@@ -206,10 +209,10 @@ whether the installed Obsidian/WebView version emits a context-menu event.
 
 ## State and persistence
 
-By default, fold state, level restrictions, temporary shared-branch reveals,
-and branch focus are remembered only in the open Canvas tab. Navigating to
-another file and back in that tab restores its state; closing the tab discards
-it.
+By default, fold state, level restrictions, temporary branch-display
+exceptions, and branch focus are remembered only in the open Canvas tab.
+Navigating to another file and back in that tab restores its state; closing
+the tab discards it.
 
 Enable **Remember canvas states between sessions** to also restore state in new
 tabs and after restarting Obsidian or the plugin. The data is stored in Canvas

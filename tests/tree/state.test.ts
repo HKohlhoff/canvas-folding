@@ -166,21 +166,19 @@ void test("round-trips and prunes a focused branch", () => {
   assert.equal(restored.isFocusActive(), false);
 });
 
-void test("reveals a shared branch without restoring its hidden parent", () => {
+void test("keeps a shared branch visible through an open alternative parent", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();
 
   state.collapse("A1");
 
-  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["A2", "D", "E"]);
-  assert.equal(state.isBranchCollapsed(graph, "B"), true);
-
-  assert.equal(state.revealBranch(graph, "B"), true);
   assert.deepEqual([...state.getHiddenNodeIds(graph)], ["A2"]);
+  assert.deepEqual([...state.getRestrictedEdgeIds(graph)], ["A1A2"]);
+  assert.equal(state.isBranchCollapsed(graph, "A1"), true);
   assert.equal(state.isBranchCollapsed(graph, "B"), false);
 });
 
-void test("reveals a direct shared child through its alternative visible parent", () => {
+void test("hides only the collapsed connection to a directly shared child", () => {
   const graph = buildCanvasGraph({
     nodes: ["R", "A", "B", "D", "E"].map((id) => ({
       id,
@@ -198,35 +196,30 @@ void test("reveals a direct shared child through its alternative visible parent"
 
   state.collapse("A");
 
-  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["D", "E"]);
-  assert.equal(state.isBranchCollapsed(graph, "A"), true);
-  assert.equal(state.isBranchCollapsed(graph, "B"), true);
-
-  assert.equal(state.revealBranch(graph, "B"), true);
   assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
-  assert.equal(state.isBranchCollapsed(graph, "A"), false);
+  assert.deepEqual([...state.getRestrictedEdgeIds(graph)], ["AD"]);
+  assert.equal(state.isBranchCollapsed(graph, "A"), true);
   assert.equal(state.isBranchCollapsed(graph, "B"), false);
 });
 
-void test("resets a shared-branch reveal with its causing collapse", () => {
+void test("recomputes automatic shared-branch visibility after expanding and collapsing", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();
 
   state.collapse("A1");
-  state.revealBranch(graph, "B");
   state.expand("A1");
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
   state.collapse("A1");
 
-  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["A2", "D", "E"]);
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["A2"]);
 });
 
-void test("preserves a nested collapse inside a revealed shared branch", () => {
+void test("preserves a nested collapse inside an automatically visible shared branch", () => {
   const graph = buildCanvasGraph(createSharedBranchData());
   const state = new BranchCollapseState();
 
   state.collapse("D");
   state.collapse("A1");
-  state.revealBranch(graph, "B");
 
   assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E", "A2"]);
 });
@@ -236,7 +229,7 @@ void test("limits a branch to an absolute visible depth", () => {
   const state = new BranchCollapseState();
 
   state.setVisibleDepth("A1", 1);
-  assert.deepEqual([...state.getHiddenNodeIds(graph)], ["D", "E"]);
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
 
   state.setVisibleDepth("A1", 2);
   assert.deepEqual([...state.getHiddenNodeIds(graph)], ["E"]);

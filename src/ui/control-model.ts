@@ -9,6 +9,7 @@ export interface BranchControlModel {
   collapsed: boolean;
   descendantCount: number;
   externallyCollapsedDescendantCount?: number;
+  hiddenConnectionCount?: number;
   hiddenDescendantCount?: number;
   nodeId: string;
 }
@@ -39,10 +40,14 @@ export function getExternallyCollapsedDescendantCount(
 
 export function buildBranchControlModels(
   graph: CanvasGraph,
-  state: Pick<BranchCollapseState, "getHiddenNodeIds">,
+  state: Pick<
+    BranchCollapseState,
+    "getHiddenNodeIds" | "getRestrictedEdgeIds" | "isCollapsed"
+  >,
   runtime?: BranchControlRuntimeState,
 ): readonly BranchControlModel[] {
   const hiddenNodeIds = state.getHiddenNodeIds(graph);
+  const restrictedEdgeIds = state.getRestrictedEdgeIds(graph);
   const contentNodeIds = new Set(
     graph.nodes.filter((node) => node.type !== "group").map((node) => node.id),
   );
@@ -56,9 +61,10 @@ export function buildBranchControlModels(
       return [];
     }
 
-    const collapsed = (graph.childrenByNode.get(node.id) ?? []).some(
-      (childId) => hiddenNodeIds.has(childId),
-    );
+    const collapsed = state.isCollapsed(node.id) ||
+      (graph.childrenByNode.get(node.id) ?? []).some((childId) =>
+        hiddenNodeIds.has(childId),
+      );
     const hiddenDescendantCount = descendantIds.filter(
       (descendantId) =>
         hiddenNodeIds.has(descendantId) && contentNodeIds.has(descendantId),
@@ -70,6 +76,14 @@ export function buildBranchControlModels(
           node.id,
           runtime.externallyCollapsedNodeIds,
         );
+    const branchSourceIds = new Set([node.id, ...descendantIds]);
+    const branchTargetIds = new Set(descendantIds);
+    const hiddenConnectionCount = graph.edges.filter(
+      (edge) =>
+        restrictedEdgeIds.has(edge.id) &&
+        branchSourceIds.has(edge.fromNode) &&
+        branchTargetIds.has(edge.toNode),
+    ).length;
 
     return [{
       nodeId: node.id,
@@ -79,6 +93,9 @@ export function buildBranchControlModels(
         : {}),
       ...(collapsed && hiddenDescendantCount > 0
         ? { hiddenDescendantCount }
+        : {}),
+      ...(collapsed && hiddenDescendantCount === 0 && hiddenConnectionCount > 0
+        ? { hiddenConnectionCount }
         : {}),
       descendantCount: descendantIds.length,
     }];
