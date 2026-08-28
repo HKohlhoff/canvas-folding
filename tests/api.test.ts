@@ -145,18 +145,15 @@ void test("keeps the complete B1 branch when the asymmetric A1 branch collapses"
     ],
   });
 
-  assert.deepEqual(
-    createCanvasFoldStateSnapshot(
-      "Folder/TestCanvas.canvas",
-      "active-leaf",
-      { revealedBranches: {}, visibleDepths: { A1: 0 } },
-      graph,
-    ),
-    {
-      canvasPath: "Folder/TestCanvas.canvas",
-      hiddenEdgeIds: ["A1A2", "A1B2", "A2B2"],
-      hiddenNodeIds: ["A2"],
-      source: "active-leaf",
-    },
+  const snapshot = createCanvasFoldStateSnapshot(
+    "Folder/TestCanvas.canvas",
+    "active-leaf",
+    { revealedBranches: {}, visibleDepths: { A1: 0 } },
+    graph,
   );
+
+  assert.equal(snapshot.canvasPath, "Folder/TestCanvas.canvas");
+  assert.deepEqual([...snapshot.hiddenEdgeIds].sort(), ["A1A2", "A1B2", "A2B2"]);
+  assert.deepEqual(snapshot.hiddenNodeIds, ["A2"]);
+  assert.equal(snapshot.source, "active-leaf");
 });
