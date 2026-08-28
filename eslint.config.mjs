@@ -1,4 +1,3 @@
-import eslint from "@eslint/js";
 import { defineConfig, globalIgnores } from "eslint/config";
 import obsidianmd from "eslint-plugin-obsidianmd";
 import globals from "globals";
@@ -16,7 +15,6 @@ export default defineConfig(
   ]),
   {
     files: ["**/*.{js,mjs}"],
-    ...eslint.configs.recommended,
     languageOptions: {
       globals: globals.node,
     },

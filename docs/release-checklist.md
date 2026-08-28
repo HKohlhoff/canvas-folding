@@ -15,7 +15,8 @@ Use this checklist before publishing an Obsidian plugin release.
 - `package.json` version, description, repository, license and author data are correct.
 - `LICENSE` contains GPL v3 and `package.json` declares `GPL-3.0-or-later`.
 - `build.mjs` uses the correct plugin ID.
-- `npm run test:metadata` confirms plugin ID, versions, minimum Obsidian version and GPL metadata.
+- `npm run test:metadata` confirms plugin ID, versions, descriptions, minimum
+  Obsidian version, desktop declaration, funding URL and GPL metadata.
 
 ## Quality
 
@@ -30,6 +31,8 @@ npm run build:prod
 - Build creates `release/main.js`.
 - `release/manifest.json` matches `manifest.json`.
 - `release/styles.css` exists only if the plugin needs styles.
+- CI and release workflows use reviewed current major versions of their
+  official GitHub Actions and grant only the permissions they require.
 
 ## Manual Obsidian Test
 

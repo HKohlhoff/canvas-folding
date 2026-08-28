@@ -12,7 +12,14 @@ assert.equal(packageData.version, manifest.version);
 assert.equal(packageLock.version, manifest.version);
 assert.equal(packageLock.packages?.[""]?.version, manifest.version);
 assert.equal(versions[manifest.version], manifest.minAppVersion);
+assert.equal(packageData.description, manifest.description);
 assert.equal(packageData.license, "GPL-3.0-or-later");
+assert.equal(manifest.isDesktopOnly, false);
+assert.equal(manifest.fundingUrl, "https://ko-fi.com/R5R2151DS7");
+assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
+assert.match(manifest.id, /^[a-z][a-z-]*$/);
+assert.match(manifest.description, /[.?!)]$/);
+assert.ok(manifest.description.length <= 250);
 assert.match(
   readFileSync("LICENSE", "utf8"),
   /GNU GENERAL PUBLIC LICENSE\s+Version 3/,
