@@ -72,6 +72,7 @@ npm run build:prod
 - Disable and re-enable Canvas Folding and verify that no managed classes, controls or interaction handlers remain stale.
 - Focus a branch and verify that neither dimmed nodes nor dimmed edges can be selected or open Obsidian's item toolbar.
 - Focus a branch whose descendants are inside a Canvas group and verify that the group frame remains active.
+- Focus a Canvas group and verify that every geometrically contained item stays active while unrelated content is dimmed.
 - Reach node controls in depth-first order, with focus before folding on each
   node and upper siblings first. Confirm that leaf nodes receive a focus
   control, a selected node starts the next pass, Enter/Space activates the

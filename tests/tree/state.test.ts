@@ -186,6 +186,23 @@ void test("keeps focused descendants active while dimming all context", () => {
   assert.equal(state.getFocusedNodeId(), null);
 });
 
+void test("keeps geometrically contained nodes active when focusing a group", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "B", type: "text", x: 150, y: 80, width: 100, height: 80 },
+      { id: "O", type: "text", x: 400, y: 20, width: 80, height: 50 },
+    ],
+    edges: [],
+  });
+  const state = new BranchCollapseState();
+
+  state.focusBranch("G");
+
+  assert.deepEqual([...state.getDimmedNodeIds(graph)], ["O"]);
+});
+
 void test("round-trips and prunes a focused branch", () => {
   const graph = buildCanvasGraph(createTreeData());
   const restored = BranchCollapseState.fromData({

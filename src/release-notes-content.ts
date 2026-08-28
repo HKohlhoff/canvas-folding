@@ -6,7 +6,7 @@ This update makes folding and focus controls more informative, flexible, and con
 
 ## Highlights
 
-- **Focus every node and group:** every visible Canvas item now has a focus control, including groups and items without children.
+- **Focus every node and group:** every visible Canvas item now has a focus control, including groups and items without children. Focusing a group keeps all items geometrically contained by it active as part of the focus area.
 - **Direct focus toggle:** click the focus symbol to focus that node or branch, then click the active symbol again to exit.
 - **Independent controls:** folding controls and focus controls can be shown or hidden separately through settings, commands, and the Canvas toolbar.
 - **State stays intact:** hiding controls does not expand folded branches or end an active focus.

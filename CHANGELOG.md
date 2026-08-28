@@ -21,6 +21,7 @@ The format follows the spirit of Keep a Changelog, with the newest release first
   nodes and let the control grow for multi-digit counts.
 - Keep focus and folding controls in one shared per-node control row with a
   consistent visual and keyboard order.
+- Keep every geometrically contained item active when focusing a Canvas group.
 - Group the focus-control visibility action directly before the focus action
   in the Canvas toolbar.
 - Keep shared descendants visible while another open parent branch still

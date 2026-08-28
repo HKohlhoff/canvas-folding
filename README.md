@@ -90,6 +90,8 @@ from the branch being worked on.
 Use the focus symbol on any node or group to enter focus directly. Items without
 children receive the same control, so they can be focused individually. Click
 the active focus control again, or use the toolbar focus action, to exit.
+Focusing a group keeps the group and every item geometrically contained by it
+fully active while unrelated Canvas content is dimmed.
 
 ![A focused Canvas branch with unrelated nodes and edges dimmed in the background](docs/images/branch-focus.svg)
 
@@ -133,6 +135,8 @@ Every visible node and group also receives a focus control. Folding controls
 and focus controls can be hidden independently through the toolbar or command
 palette. Hiding either kind of control changes only the interface: it does not
 expand branches or end an active focus.
+When a group is focused, its geometrically contained items belong to the focus
+area even when they have no directed edge from that group.
 
 When Advanced Canvas collapses one of its groups, Canvas Folding removes both
 of its controls from that compact group representation. The controls return

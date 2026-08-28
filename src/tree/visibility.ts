@@ -71,6 +71,13 @@ export function getNodeIdsHiddenByGroups(
   nodes: readonly CanvasGraphNodeData[],
   hiddenNodeIds: ReadonlySet<string>,
 ): ReadonlySet<string> {
+  return getNodeIdsContainedByGroups(nodes, hiddenNodeIds);
+}
+
+export function getNodeIdsContainedByGroups(
+  nodes: readonly CanvasGraphNodeData[],
+  groupIds: ReadonlySet<string>,
+): ReadonlySet<string> {
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
   const containedNodeIdsByGroup = new Map<string, readonly string[]>();
   for (const group of nodes) {
@@ -88,7 +95,7 @@ export function getNodeIdsHiddenByGroups(
     );
   }
 
-  const pendingGroupIds = [...hiddenNodeIds].filter(
+  const pendingGroupIds = [...groupIds].filter(
     (nodeId) => nodesById.get(nodeId)?.type === "group",
   );
   const processedGroupIds = new Set<string>();

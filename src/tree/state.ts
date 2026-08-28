@@ -4,6 +4,7 @@ import {
   getRootDepths,
   type CanvasGraph,
 } from "./graph";
+import { getNodeIdsContainedByGroups } from "./visibility";
 
 export interface BranchCollapseStateData {
   focusedNodeId?: string;
@@ -385,6 +386,19 @@ export class BranchCollapseState {
       this.focusedNodeId,
       ...getDescendantIds(graph, this.focusedNodeId),
     ]);
+    const focusedGroupIds = new Set(
+      graph.nodes
+        .filter(
+          (node) => node.type === "group" && focusedNodeIds.has(node.id),
+        )
+        .map((node) => node.id),
+    );
+    for (const nodeId of getNodeIdsContainedByGroups(
+      graph.nodes,
+      focusedGroupIds,
+    )) {
+      focusedNodeIds.add(nodeId);
+    }
     return new Set(
       graph.nodes
         .filter((node) => !focusedNodeIds.has(node.id))
