@@ -7,6 +7,10 @@ Use this checklist before publishing an Obsidian plugin release.
 - `manifest.json` version is correct.
 - The embedded update-note ID matches the plugin version so this release opens
   its note once, and `Last Update.md` contains the identical Markdown.
+- Every user-facing feature release follows the shared update-note standard:
+  open a transient Markdown view once after update, mark it as read only after
+  it closes, create no Vault file, and keep **Show last update** at the bottom
+  of settings. Apply the same standard when starting a new plugin.
 - `versions.json` contains the same version and the correct minimum Obsidian version.
 - `package.json` version, description, repository, license and author data are correct.
 - `LICENSE` contains GPL v3 and `package.json` declares `GPL-3.0-or-later`.
