@@ -4,7 +4,9 @@ import test from "node:test";
 import type { App } from "obsidian";
 
 import {
+  getPersistedCanvasName,
   PersistedCanvasStatesModal,
+  sortPersistedCanvasStatePaths,
   type PersistedCanvasStatesModalHost,
 } from "../../src/ui/persisted-canvas-states-modal";
 
@@ -16,15 +18,23 @@ interface RenderedButton {
 
 interface RenderedSetting {
   buttons: RenderedButton[];
+  desc: string;
   name: string;
 }
 
 interface RenderedModal {
   contentEl: {
-    children: Array<{ textContent: string }>;
+    children: RenderedElement[];
     settings: RenderedSetting[];
   };
   title: string;
+}
+
+interface RenderedElement {
+  children: RenderedElement[];
+  classes: Set<string>;
+  click(): void;
+  textContent: string;
 }
 
 void test("cleans stale states before rendering the empty state", async () => {
@@ -54,6 +64,57 @@ void test("cleans stale states before rendering the empty state", async () => {
   assert.equal(rendered.contentEl.settings.length, 0);
 });
 
+void test("derives Canvas names and sorts by Canvas or path", () => {
+  const paths = [
+    "Zeta/Canvas 10.canvas",
+    "Alpha/Canvas 2.canvas",
+    "Folder/Other.canvas",
+  ];
+
+  assert.equal(getPersistedCanvasName("Folder/Project.canvas"), "Project");
+  assert.deepEqual(
+    sortPersistedCanvasStatePaths(paths, "canvas", "asc"),
+    ["Alpha/Canvas 2.canvas", "Zeta/Canvas 10.canvas", "Folder/Other.canvas"],
+  );
+  assert.deepEqual(
+    sortPersistedCanvasStatePaths(paths, "path", "desc"),
+    ["Zeta/Canvas 10.canvas", "Folder/Other.canvas", "Alpha/Canvas 2.canvas"],
+  );
+});
+
+void test("reverses Canvas sorting when its header is clicked", async () => {
+  const modal = createModal({
+    getPaths: () => ["Folder/B.canvas", "Folder/A.canvas"],
+  });
+
+  modal.onOpen();
+  await settleAsyncRender();
+  let rendered = getRenderedModal(modal);
+  assert.deepEqual(
+    rendered.contentEl.settings.slice(0, 2).map((setting) => setting.name),
+    ["A", "B"],
+  );
+  const header = rendered.contentEl.children.find((child) =>
+    child.classes.has("canvas-folding-persisted-states-header")
+  );
+  assert.ok(header !== undefined);
+  assert.equal(header.children[0]?.children[0]?.textContent, "Canvas ↑");
+
+  header.children[0]?.children[0]?.click();
+  rendered = getRenderedModal(modal);
+  assert.deepEqual(
+    rendered.contentEl.settings.slice(0, 2).map((setting) => setting.name),
+    ["B", "A"],
+  );
+  const rerenderedHeader = rendered.contentEl.children.find((child) =>
+    child.classes.has("canvas-folding-persisted-states-header")
+  );
+  assert.equal(
+    rerenderedHeader?.children[0]?.children[0]?.textContent,
+    "Canvas ↓",
+  );
+});
+
 void test("removes one persisted state and then clears all remaining states", async () => {
   let paths = ["Folder/A.canvas", "Folder/B.canvas"];
   const removed: string[] = [];
@@ -75,7 +136,15 @@ void test("removes one persisted state and then clears all remaining states", as
   let settings = getRenderedModal(modal).contentEl.settings;
   assert.deepEqual(
     settings.map((setting) => setting.name),
-    ["Folder/A.canvas", "Folder/B.canvas", "Remove all persisted canvas states."],
+    ["A", "B", "Remove all persisted canvas states."],
+  );
+  assert.deepEqual(
+    settings.map((setting) => setting.desc),
+    [
+      "Folder/A.canvas",
+      "Folder/B.canvas",
+      "Remove every stored state used for restoration between sessions.",
+    ],
   );
   assert.deepEqual(
     settings.map((setting) => setting.buttons[0]?.text),
@@ -88,7 +157,7 @@ void test("removes one persisted state and then clears all remaining states", as
   settings = getRenderedModal(modal).contentEl.settings;
   assert.deepEqual(
     settings.map((setting) => setting.name),
-    ["Folder/B.canvas", "Remove all persisted canvas states."],
+    ["B", "Remove all persisted canvas states."],
   );
 
   await settings[1]?.buttons[0]?.onClickCallback?.();

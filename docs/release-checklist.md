@@ -51,6 +51,12 @@ npm run build:prod
   automatic image request. Confirm that no image-placeholder notice remains and
   that the Ko-fi text link is visible and opens only after a click.
 - Confirm that removed display-only content leaves no repeated blank lines.
+- Open the persisted-state manager and verify its Canvas/Path/Action columns,
+  default Canvas-name order, both sort directions and removal after sorting.
+- Complete the node-control theme matrix with Obsidian's default theme, Minimal
+  and the maintained AnuPpuccin profile on macOS, iPhone and iPad. Record the
+  exact theme versions and results before updating the README compatibility
+  statement.
 - Verify desktop-only behavior if `isDesktopOnly` is `true`.
 
 ### Canvas Folding matrix

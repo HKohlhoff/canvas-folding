@@ -28,12 +28,32 @@ Before a clean pass:
   support link remains visible and opens only after an explicit click; relative
   documentation links likewise open the repository only after a click.
 - Confirm that removed display-only content leaves no repeated blank lines.
+- Open **Manage persisted canvas states** with multiple same-named and numbered
+  Canvases in different folders. Confirm the **Canvas**, **Path** and **Action**
+  columns, default Canvas-name order, ascending/descending header clicks and
+  correct per-row removal.
 
 For the separate release gate with Advanced Canvas enabled, use the focused
 fixture, captured settings profile, and full matrix under
 [`advanced-canvas/`](advanced-canvas/README.md). The baseline cases below still
 start with Advanced Canvas disabled so regressions in standard Canvas remain
 independently visible.
+
+## Node-control theme test record
+
+The current compact controls and their neutral highlight states passed the
+maintained theme profile on all three Apple platforms:
+
+| Date | Platform | Obsidian | Canvas Folding | Themes | Result |
+| --- | --- | --- | --- | --- | --- |
+| 2026-08-29 | macOS 26.6.2 | 1.13.7 | 1.1.1 | Default; Minimal 9.0.2; AnuPpuccin 1.5.0 | PASS |
+| 2026-08-29 | iPadOS 26.6.1 | 1.13.7 | 1.1.1 | Default; Minimal 9.0.2; AnuPpuccin 1.5.0 | PASS |
+| 2026-08-29 | iOS 26.6 | 1.13.7 | 1.1.1 | Default; Minimal 9.0.2; AnuPpuccin 1.5.0 | PASS |
+
+The AnuPpuccin checks used Style Settings 1.0.9 and the maintained 114-setting
+profile with its two associated snippets. Each pass covered circular and pill
+geometry, compact dimensions, direct visibility, readable folded counts, and
+neutral pointer or touch highlight states.
 
 ## 01 – Basic tree
 
@@ -137,13 +157,35 @@ Use `01-basic-tree.canvas` unless stated otherwise.
   no controls, classes or interaction handlers remain stale.
 - Hide and show folding controls and focus controls independently from both the
   toolbar and command palette. Fold state and active focus must remain intact.
-- Verify a one-, two-, and three-digit hidden-node count. The folding control
-  grows leftward without covering or shrinking the focus control or node text.
+- Verify one-, two-, and three-digit hidden-item totals. Include a connected
+  group with geometrically contained nodes: the folding control counts all
+  hidden nodes and groups, while its tooltip reports both categories
+  separately. The control grows leftward without covering or shrinking the
+  focus control or node text.
+- Collapse a parent and verify that only its folding count/`+` remains. Expand
+  it and verify that its focus control returns. Repeat with the focus-control
+  toolbar eye disabled; expanding must then leave the focus control hidden.
 - Test Tab, Shift+Tab, Enter, Space, the context-menu key and all arrow
   keys on node controls and the toolbar handle.
 - In a narrow split view, move and horizontally scroll the toolbar.
-- On iPhone and iPad, select nodes by short tap/stylus with the toolbar visible,
-  use toolbar buttons, scroll it horizontally and operate branch controls.
+- On macOS, iPhone and iPad, open the same Canvas with Obsidian's default theme,
+  Minimal and AnuPpuccin using the maintained test profile. Confirm that all
+  enabled controls remain directly visible inside the upper-right corner before
+  and after selection. Controls stay circular or pill-shaped as appropriate,
+  compact and neutrally colored after clicking or tapping, and folded counts
+  remain canvas-wide readable.
+- With a selected node on iPhone and iPad, use both node controls and the
+  corresponding selected-branch toolbar actions. Scroll the toolbar
+  horizontally and move it by its drag handle.
+- Toggle each toolbar eye twice and verify immediately that the corresponding
+  branch or focus controls disappear, reappear and that the eye icon changes.
+- Resize selected nodes from every border section. Verify that the inset
+  Folding controls remain reachable, while clicking a control never starts a
+  resize or move operation.
+- With a node selected, open the complete native Canvas popup including all
+  Advanced Canvas additions. The inset upper-right Folding controls must neither
+  visually overlap nor intercept any popup action; repeat on a narrow node and
+  near the top and bottom viewport boundaries.
 
 ## Command-palette audit
 

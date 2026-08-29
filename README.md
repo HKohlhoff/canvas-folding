@@ -16,6 +16,11 @@ The current plugin has been manually tested on:
 - iPadOS;
 - iOS.
 
+The compact node-control geometry and its neutral highlight states were also
+verified with Obsidian's default theme, Minimal 9.0.2, and AnuPpuccin 1.5.0 on
+macOS, iPadOS, and iOS. The AnuPpuccin pass used Style Settings 1.0.9 with the
+maintained test profile.
+
 If Canvas Folding is useful to you, you can support its continued development
 by buying me a coffee.
 
@@ -30,8 +35,8 @@ by buying me a coffee.
   control.
 - Focus any node, group, or complete branch while dimming and protecting the
   remaining Canvas context.
-- Use folding controls with hidden-node counts on parent nodes and focus
-  controls on every visible node and group, including leaves.
+- Use folding controls with hidden-item counts on parent nodes and focus
+  controls on visible, expanded nodes and groups, including leaves.
 - Show or hide folding and focus controls independently without changing the
   current view state.
 - Use a movable, responsive Canvas Folding toolbar.
@@ -66,18 +71,19 @@ focused regression test with Advanced Canvas 7.0.0 on macOS.
 
 ### Collapse and expand branches
 
-The `−` control collapses the complete directed branch. Its replacement shows
-the number of hidden content nodes and expands them again. The control grows
-for two- or three-digit counts while the neighboring focus control stays
-readable.
+Each eligible node shows its compact controls inside the upper-right corner,
+beyond the native resize border. The `−` control collapses the complete directed
+branch. Its replacement shows the total number of hidden nodes and groups, so
+folded state stays readable across the Canvas. The control grows leftward for
+two- or three-digit counts.
 
 ![An expanded Canvas branch beside the same branch collapsed by Canvas Folding](docs/images/branch-folding.svg)
 
 ### Use the control tooltips
 
-On desktop, pause the pointer over a folding control. Its tooltip states
-whether the click will collapse or expand the branch, shows the relevant node
-count, and points to the branch display menu.
+On desktop, pause the pointer over a folding control. Its tooltip states whether
+the click will collapse or expand the branch, breaks the hidden total down into
+nodes and groups, and points to the branch display menu.
 
 The tooltip is especially useful with Advanced Canvas: if an Advanced Canvas
 group currently hides descendants, it says how many are hidden there and
@@ -112,9 +118,9 @@ fully active while unrelated Canvas content is dimmed.
 
 1. [Install Canvas Folding](#installation), enable it, and open a Canvas.
 2. Use directed edges from parent to child to define the hierarchy.
-3. Click or tap a parent's `−` control to collapse its branch, or select the
-   parent and use the Canvas Folding toolbar. Right-click or long-press the
-   control to choose a visible branch level.
+3. Click or tap a parent's `−` control, or select the parent and use the Canvas
+   Folding toolbar. Right-click or long-press the control to choose a visible
+   branch level.
 4. Optionally enable **Remember canvas states between sessions** to restore
    folding states after closing a tab or restarting Obsidian.
 
@@ -132,8 +138,9 @@ reachable through multiple roots or paths, its shortest directed distance from
 any root determines its level. A Canvas without a root has no global level
 view, but its individual branch controls remain available.
 
-Parent nodes receive a `−` folding control. When descendants are hidden, the
-control displays the number of hidden non-group nodes:
+Parent nodes receive a directly visible folding control inside their
+upper-right corner. When descendants are hidden, it displays the total number
+of hidden nodes and groups. The tooltip reports both categories separately:
 
 - Click or tap the control to collapse or expand the complete branch.
 - On desktop, hover over it to read its action, descendant count, and any
@@ -144,10 +151,17 @@ control displays the number of hidden non-group nodes:
   branch still reaches them. Folding hides only exclusive descendants and the
   connections belonging to the collapsed branch.
 
-Every visible node and group also receives a focus control. Folding controls
+Every visible, expanded node and group also receives a focus control. A
+collapsed parent shows only its folding control; its focus control returns when
+the branch is expanded, provided focus controls are enabled. Folding controls
 and focus controls can be hidden independently through the toolbar or command
 palette. Hiding either kind of control changes only the interface: it does not
 expand branches or end an active focus.
+On touch devices, the same compact controls remain directly available without
+selection; the Canvas toolbar provides an additional route for selected-branch
+actions. Controls occupy only the upper-right interior, leaving the complete
+node border available for native resizing. Folded branches keep their count or
+`+` indicator visible across the Canvas.
 When a group is focused, its geometrically contained items belong to the focus
 area even when they have no directed edge from that group.
 
@@ -208,7 +222,7 @@ is valid:
 | `Show branch controls` | Display folding controls on parent nodes. |
 | `Hide branch controls` | Hide folding controls in the current session without changing folded branches. |
 | `Toggle branch controls` | Switch the branch controls between visible and hidden. |
-| `Show focus controls` | Display focus controls on all visible nodes and groups, including leaves. |
+| `Show focus controls` | Display focus controls on visible, expanded nodes and groups, including leaves. |
 | `Hide focus controls` | Hide focus controls without ending an active focus. |
 | `Toggle focus controls` | Switch the focus controls between visible and hidden. |
 | `Show canvas toolbar` | Display the Canvas Folding toolbar. |
@@ -231,9 +245,11 @@ starts at that node's first available control.
 - Arrow keys move the focused toolbar handle.
 - Keyboard focus remains on the invoked control after an action.
 
-Touch targets are enlarged on coarse-pointer devices. The toolbar supports
-horizontal touch scrolling and dragging. Canvas node selection remains native
-on iPhone and iPad. Long-press access to the branch-level menu depends on
+Node controls keep their compact desktop size on coarse-pointer devices so
+they cover less card content; Canvas zoom remains available for closer touch
+interaction. The toolbar supports horizontal touch scrolling and dragging.
+Canvas node selection remains native on iPhone and iPad. Long-press access to
+the branch-level menu depends on
 whether the installed Obsidian/WebView version emits a context-menu event.
 
 ## State and persistence
@@ -299,9 +315,10 @@ Canvas files.
   Canvas content is dimmed.
 - **Remember canvas states between sessions** enables persistent state.
 - **Show status notices** enables action confirmations.
-- **Manage persisted canvas states** lists saved Canvas paths and removes one or
-  all cross-session states. Missing files and stale node references are cleaned
-  when the manager opens; currently open tabs keep their session state.
+- **Manage persisted canvas states** lists the Canvas name, full path and remove
+  action for every cross-session state. Click **Canvas** or **Path** to sort in
+  either direction. Missing files and stale node references are cleaned when
+  the manager opens; currently open tabs keep their session state.
 - **Debug logging** writes diagnostic details to the developer console.
 
 ## Update Description
@@ -349,7 +366,7 @@ Canvas data.
 When both mechanisms are used, check which control owns the hidden content:
 
 - A numbered Canvas Folding control means that Folding currently hides that
-  many content nodes below the branch.
+  many nodes and groups below the branch. Its tooltip separates both counts.
 - A Canvas Folding `−` can remain visible while an Advanced Canvas group hides
   descendants inside it; the control's tooltip explains this case.
 - On touch devices, long-press that control to see an Advanced Canvas notice
