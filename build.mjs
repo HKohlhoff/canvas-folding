@@ -204,6 +204,7 @@ const common = {
   format: "cjs",
   platform: "node",
   target: "es2021",
+  loader: { ".md": "text" },
   sourcemap: isProd ? false : "inline",
   minify: isProd,
   external,

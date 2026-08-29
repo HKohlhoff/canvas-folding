@@ -4,6 +4,36 @@ All notable changes to this plugin should be documented in this file.
 
 The format follows the spirit of Keep a Changelog, with the newest release first.
 
+## [Unreleased]
+
+### Added
+
+- Add a local, Markdown-rendered **Show readme** action to the About settings
+  without creating a Vault file or loading README images from the network;
+  retain the Ko-fi destination as a text link and omit other images without
+  placeholder notices.
+- Keep the embedded README compact by collapsing repeated blank lines after
+  display-only content removal.
+- Document the manually tested Windows 11, macOS, iPadOS and iOS platforms.
+- Show persisted states in sortable **Canvas**, **Path** and **Action** columns,
+  defaulting to Canvas-name order.
+
+### Fixed
+
+- Keep node-control geometry stable across Obsidian themes and prevent touch
+  hover or focus states from filling controls with the configured accent color;
+  verified with the default theme, Minimal 9.0.2 and AnuPpuccin 1.5.0 on
+  macOS, iPadOS and iOS.
+- Keep compact controls directly visible inside the upper-right node corner on
+  desktop and touch devices. This avoids unreliable hover hotspots and the
+  native resize layer while retaining canvas-wide folded counts.
+- Keep both toolbar eye actions immediately observable by showing or hiding
+  their corresponding directly visible node controls.
+- Hide the redundant focus control on a collapsed parent and restore it when
+  the branch is expanded, unless focus controls are disabled globally.
+- Count every node and group hidden by a folded branch, including nodes hidden
+  through contained groups, and separate node and group counts in the tooltip.
+
 ## [1.1.1] – 2026-08-28
 
 ### Fixed

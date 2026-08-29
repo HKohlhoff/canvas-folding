@@ -61,6 +61,7 @@ import {
 } from "./ui/branch-controls";
 import { CanvasDepthModal } from "./ui/canvas-depth-modal";
 import { openCurrentReleaseNotes } from "./ui/release-notes";
+import { openPluginReadme } from "./ui/readme";
 import {
   buildBranchControlModels,
   buildFocusControlModels,
@@ -446,6 +447,10 @@ export default class CanvasFoldingPlugin extends Plugin {
 
   showLastUpdate(): void {
     void this.openLastUpdate();
+  }
+
+  showReadme(): void {
+    openPluginReadme(this.app);
   }
 
   getSavedCanvasStatePaths(): readonly string[] {

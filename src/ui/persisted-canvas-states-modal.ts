@@ -7,8 +7,47 @@ export interface PersistedCanvasStatesModalHost {
   remove(canvasPath: string): Promise<void>;
 }
 
+export type PersistedCanvasStateSortDirection = "asc" | "desc";
+export type PersistedCanvasStateSortKey = "canvas" | "path";
+
+interface PersistedCanvasStateRow {
+  canvas: string;
+  path: string;
+}
+
+const PATH_COLLATOR = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: "base",
+});
+
+export function getPersistedCanvasName(canvasPath: string): string {
+  const filename = canvasPath.split("/").pop() ?? canvasPath;
+  return filename.replace(/\.canvas$/iu, "");
+}
+
+export function sortPersistedCanvasStatePaths(
+  paths: readonly string[],
+  key: PersistedCanvasStateSortKey,
+  direction: PersistedCanvasStateSortDirection,
+): readonly string[] {
+  const multiplier = direction === "asc" ? 1 : -1;
+  return paths
+    .map((path): PersistedCanvasStateRow => ({
+      canvas: getPersistedCanvasName(path),
+      path,
+    }))
+    .sort((left, right) => {
+      const primary = PATH_COLLATOR.compare(left[key], right[key]);
+      const secondary = PATH_COLLATOR.compare(left.path, right.path);
+      return (primary || secondary) * multiplier;
+    })
+    .map((row) => row.path);
+}
+
 export class PersistedCanvasStatesModal extends Modal {
   private renderSequence = 0;
+  private sortDirection: PersistedCanvasStateSortDirection = "asc";
+  private sortKey: PersistedCanvasStateSortKey = "canvas";
 
   constructor(app: App, private readonly host: PersistedCanvasStatesModalHost) {
     super(app);
@@ -38,7 +77,11 @@ export class PersistedCanvasStatesModal extends Modal {
       text: "Removing persisted states only disables their restoration between sessions. Folding state and visibility in currently open tabs remain unchanged.",
     });
 
-    const paths = this.host.getPaths();
+    const paths = sortPersistedCanvasStatePaths(
+      this.host.getPaths(),
+      this.sortKey,
+      this.sortDirection,
+    );
     if (paths.length === 0) {
       this.contentEl.createEl("p", {
         text: "No persisted canvas states are stored.",
@@ -46,9 +89,12 @@ export class PersistedCanvasStatesModal extends Modal {
       return;
     }
 
+    this.renderColumnHeaders();
+
     for (const canvasPath of paths) {
-      new Setting(this.contentEl)
-        .setName(canvasPath)
+      const row = new Setting(this.contentEl)
+        .setName(getPersistedCanvasName(canvasPath))
+        .setDesc(canvasPath)
         .addButton((button) => {
           button
             .setButtonText("Remove")
@@ -57,6 +103,7 @@ export class PersistedCanvasStatesModal extends Modal {
               await this.runAndRender(() => this.host.remove(canvasPath));
             });
         });
+      row.settingEl.addClass("canvas-folding-persisted-states-row");
     }
 
     this.contentEl.createEl("hr", {
@@ -74,6 +121,51 @@ export class PersistedCanvasStatesModal extends Modal {
           });
       });
     removeAllSetting.settingEl.addClass("canvas-folding-persisted-states-remove-all");
+  }
+
+  private renderColumnHeaders(): void {
+    const header = this.contentEl.createDiv({
+      cls: "canvas-folding-persisted-states-header",
+    });
+    header.setAttribute("role", "row");
+    this.renderSortHeader(header, "Canvas", "canvas");
+    this.renderSortHeader(header, "Path", "path");
+    const actionHeader = header.createDiv({
+      cls: "canvas-folding-persisted-states-action-header",
+      text: "Action",
+    });
+    actionHeader.setAttribute("role", "columnheader");
+  }
+
+  private renderSortHeader(
+    header: HTMLElement,
+    label: string,
+    key: PersistedCanvasStateSortKey,
+  ): void {
+    const active = this.sortKey === key;
+    const column = header.createDiv();
+    column.setAttribute("role", "columnheader");
+    column.setAttribute(
+      "aria-sort",
+      active
+        ? this.sortDirection === "asc" ? "ascending" : "descending"
+        : "none",
+    );
+    const button = column.createEl("button", {
+      cls: "canvas-folding-persisted-states-sort",
+      text: `${label}${active ? this.sortDirection === "asc" ? " ↑" : " ↓" : ""}`,
+    });
+    button.type = "button";
+    button.setAttribute("aria-label", `Sort by ${label.toLowerCase()}`);
+    button.addEventListener("click", () => {
+      if (this.sortKey === key) {
+        this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+      } else {
+        this.sortKey = key;
+        this.sortDirection = "asc";
+      }
+      this.renderStates();
+    });
   }
 
   private async runAndRender(operation: () => Promise<void>): Promise<void> {

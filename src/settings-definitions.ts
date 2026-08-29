@@ -9,6 +9,7 @@ type CanvasFoldingSettingKey = keyof CanvasFoldingSettings;
 export function getCanvasFoldingSettingDefinitions(
   openPersistedCanvasStates: () => void = () => {},
   showLastUpdate: () => void = () => {},
+  showReadme: () => void = () => {},
 ): SettingDefinitionItem<CanvasFoldingSettingKey>[] {
   return [
     {
@@ -31,7 +32,7 @@ export function getCanvasFoldingSettingDefinitions(
         },
         {
           name: "Show branch controls initially",
-          desc: "Set the initial visibility of folding controls when Canvas Folding loads. Collapsed branches show their hidden-node count. Use the command palette or Canvas toolbar to change them at any time.",
+          desc: "Set the initial visibility of folding controls when Canvas Folding loads. Collapsed branches show the total number of hidden nodes and groups; their tooltip separates both counts. Use the command palette or Canvas toolbar to change them at any time.",
           control: {
             type: "toggle",
             key: "showBranchControls",
@@ -40,7 +41,7 @@ export function getCanvasFoldingSettingDefinitions(
         },
         {
           name: "Show focus controls initially",
-          desc: "Show a focus control on every node and group, including items without children. Use the command palette or Canvas toolbar to change them at any time.",
+          desc: "Show a focus control on every visible, expanded node and group, including items without children. Use the command palette or Canvas toolbar to change them at any time.",
           control: {
             type: "toggle",
             key: "showFocusControls",
@@ -124,6 +125,17 @@ export function getCanvasFoldingSettingDefinitions(
               button
                 .setButtonText("Show last update")
                 .onClick(showLastUpdate);
+            });
+          },
+        },
+        {
+          name: "README",
+          desc: "Open the complete plugin documentation without leaving Obsidian.",
+          render: (setting) => {
+            setting.addButton((button) => {
+              button
+                .setButtonText("Show readme")
+                .onClick(showReadme);
             });
           },
         },

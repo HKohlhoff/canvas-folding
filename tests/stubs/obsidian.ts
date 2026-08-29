@@ -77,10 +77,13 @@ class StubButton {
 }
 
 class StubElement {
+  readonly attributes = new Map<string, string>();
   readonly children: StubElement[] = [];
   readonly classes = new Set<string>();
+  readonly eventListeners = new Map<string, Array<() => void>>();
   readonly settings: Setting[] = [];
   textContent = "";
+  type = "";
 
   addClass(className: string): void {
     this.classes.add(className);
@@ -97,5 +100,27 @@ class StubElement {
     child.textContent = options?.text ?? "";
     this.children.push(child);
     return child;
+  }
+
+  createDiv(options?: { cls?: string; text?: string }): StubElement {
+    const child = new StubElement();
+    if (options?.cls) child.addClass(options.cls);
+    child.textContent = options?.text ?? "";
+    this.children.push(child);
+    return child;
+  }
+
+  addEventListener(type: string, callback: () => void): void {
+    const callbacks = this.eventListeners.get(type) ?? [];
+    callbacks.push(callback);
+    this.eventListeners.set(type, callbacks);
+  }
+
+  click(): void {
+    for (const callback of this.eventListeners.get("click") ?? []) callback();
+  }
+
+  setAttribute(name: string, value: string): void {
+    this.attributes.set(name, value);
   }
 }

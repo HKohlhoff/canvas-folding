@@ -4,6 +4,10 @@ import {
   type CanvasGraph,
 } from "../tree/graph";
 import type { BranchCollapseState } from "../tree/state";
+import {
+  buildGroupContainmentIndex,
+  getNodeIdsContainedByGroupIndex,
+} from "../tree/visibility";
 
 export interface BranchControlModel {
   collapsed: boolean;
@@ -11,7 +15,9 @@ export interface BranchControlModel {
   disabledByHiddenGroup?: boolean;
   externallyCollapsedDescendantCount?: number;
   hiddenConnectionCount?: number;
-  hiddenDescendantCount?: number;
+  hiddenGroupCount?: number;
+  hiddenItemCount?: number;
+  hiddenNodeCount?: number;
   nodeId: string;
 }
 
@@ -50,9 +56,10 @@ export function buildBranchControlModels(
 ): readonly BranchControlModel[] {
   const hiddenNodeIds = state.getHiddenNodeIds(graph);
   const restrictedEdgeIds = state.getRestrictedEdgeIds(graph);
-  const contentNodeIds = new Set(
-    graph.nodes.filter((node) => node.type !== "group").map((node) => node.id),
+  const groupNodeIds = new Set(
+    graph.nodes.filter((node) => node.type === "group").map((node) => node.id),
   );
+  const groupContainmentIndex = buildGroupContainmentIndex(graph.nodes);
 
   return getNodesInDepthFirstOrder(graph).flatMap((node) => {
     if (hiddenNodeIds.has(node.id)) {
@@ -67,10 +74,26 @@ export function buildBranchControlModels(
       (graph.childrenByNode.get(node.id) ?? []).some((childId) =>
         hiddenNodeIds.has(childId),
       );
-    const hiddenDescendantCount = descendantIds.filter(
-      (descendantId) =>
-        hiddenNodeIds.has(descendantId) && contentNodeIds.has(descendantId),
+    const hiddenDescendantIds = descendantIds.filter((descendantId) =>
+      hiddenNodeIds.has(descendantId)
+    );
+    const hiddenContainedNodeIds = getNodeIdsContainedByGroupIndex(
+      groupContainmentIndex,
+      new Set(
+        hiddenDescendantIds.filter((descendantId) =>
+          groupNodeIds.has(descendantId)
+        ),
+      ),
+    );
+    const hiddenItemIds = new Set([
+      ...hiddenDescendantIds,
+      ...hiddenContainedNodeIds,
+    ]);
+    const hiddenGroupCount = [...hiddenItemIds].filter((nodeId) =>
+      groupNodeIds.has(nodeId)
     ).length;
+    const hiddenItemCount = hiddenItemIds.size;
+    const hiddenNodeCount = hiddenItemCount - hiddenGroupCount;
     const externallyCollapsedDescendantCount = runtime === undefined
       ? 0
       : getExternallyCollapsedDescendantCount(
@@ -98,10 +121,15 @@ export function buildBranchControlModels(
       ...(externallyCollapsedDescendantCount > 0
         ? { externallyCollapsedDescendantCount }
         : {}),
-      ...(collapsed && hiddenDescendantCount > 0
-        ? { hiddenDescendantCount }
+      ...(collapsed && hiddenItemCount > 0
+        ? {
+            hiddenItemCount,
+            ...(hiddenGroupCount > 0
+              ? { hiddenGroupCount, hiddenNodeCount }
+              : {}),
+          }
         : {}),
-      ...(collapsed && hiddenDescendantCount === 0 && hiddenConnectionCount > 0
+      ...(collapsed && hiddenItemCount === 0 && hiddenConnectionCount > 0
         ? { hiddenConnectionCount }
         : {}),
       descendantCount: descendantIds.length,
@@ -113,14 +141,14 @@ export function buildFocusControlModels(
   graph: CanvasGraph,
   state: Pick<
     BranchCollapseState,
-    "getFocusedNodeId" | "getHiddenNodeIds"
+    "getFocusedNodeId" | "getHiddenNodeIds" | "isBranchCollapsed"
   >,
 ): readonly FocusControlModel[] {
   const hiddenNodeIds = state.getHiddenNodeIds(graph);
   const focusedNodeId = state.getFocusedNodeId();
 
   return getNodesInDepthFirstOrder(graph).flatMap((node) =>
-    hiddenNodeIds.has(node.id)
+    hiddenNodeIds.has(node.id) || state.isBranchCollapsed(graph, node.id)
       ? []
       : [{
           active: node.id === focusedNodeId,

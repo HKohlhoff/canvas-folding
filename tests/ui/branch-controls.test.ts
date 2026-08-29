@@ -158,7 +158,7 @@ void test("shows a readable hidden-node count on collapsed branches", () => {
     ...BRANCH_MODEL,
     collapsed: true,
     descendantCount: 123,
-    hiddenDescendantCount: 123,
+    hiddenItemCount: 123,
   });
 
   const button = requireChild(
@@ -168,6 +168,30 @@ void test("shows a readable hidden-node count on collapsed branches", () => {
   assert.equal(button.textContent, "123");
   assert.equal(button.classes.has("has-hidden-count"), true);
   assert.match(button.attributes.get("aria-label") ?? "", /123 hidden nodes/);
+});
+
+void test("shows the total hidden items and separates nodes from groups", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+
+  sync(manager, entry.context, {
+    ...BRANCH_MODEL,
+    collapsed: true,
+    hiddenGroupCount: 2,
+    hiddenItemCount: 6,
+    hiddenNodeCount: 4,
+  });
+
+  const button = requireChild(
+    requireContainer(entry.host),
+    "canvas-folding-branch-control",
+  );
+  assert.equal(button.textContent, "6");
+  assert.equal(button.classes.has("has-hidden-count"), true);
+  assert.match(
+    button.attributes.get("aria-label") ?? "",
+    /4 hidden nodes and 2 hidden groups/,
+  );
 });
 
 void test("shows a plus sign and connection count when shared nodes remain visible", () => {
@@ -314,6 +338,22 @@ void test("starts the node-control order at the selected node", () => {
   );
   assert.equal(getNodeControlTabOrder(order, ["LEAF"]), order);
   assert.equal(getNodeControlTabOrder(order, ["UPPER", "LOWER"]), order);
+});
+
+void test("keeps control placement independent of node selection", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+  const selectedContext: ActiveCanvasContext = {
+    ...entry.context,
+    selectedNodeIds: ["A"],
+  };
+
+  sync(manager, selectedContext);
+  const container = requireContainer(entry.host);
+  assert.equal(container.classes.has("is-node-selected"), false);
+
+  sync(manager, entry.context);
+  assert.equal(container.classes.has("is-node-selected"), false);
 });
 
 function sync(
