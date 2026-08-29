@@ -22,6 +22,12 @@ Before a clean pass:
   then reload or restart Obsidian and confirm that it does not reopen.
 - At the bottom of settings, choose **Show last update** and confirm that the
   same note opens again whenever requested.
+- Choose **Show readme** beside it and confirm that the complete documentation
+  opens as rendered Markdown, closes cleanly, creates no Vault file and does not
+  load embedded README images or show image-placeholder notices. The Ko-fi
+  support link remains visible and opens only after an explicit click; relative
+  documentation links likewise open the repository only after a click.
+- Confirm that removed display-only content leaves no repeated blank lines.
 
 For the separate release gate with Advanced Canvas enabled, use the focused
 fixture, captured settings profile, and full matrix under

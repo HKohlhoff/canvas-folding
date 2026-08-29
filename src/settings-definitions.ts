@@ -9,6 +9,7 @@ type CanvasFoldingSettingKey = keyof CanvasFoldingSettings;
 export function getCanvasFoldingSettingDefinitions(
   openPersistedCanvasStates: () => void = () => {},
   showLastUpdate: () => void = () => {},
+  showReadme: () => void = () => {},
 ): SettingDefinitionItem<CanvasFoldingSettingKey>[] {
   return [
     {
@@ -124,6 +125,17 @@ export function getCanvasFoldingSettingDefinitions(
               button
                 .setButtonText("Show last update")
                 .onClick(showLastUpdate);
+            });
+          },
+        },
+        {
+          name: "README",
+          desc: "Open the complete plugin documentation without leaving Obsidian.",
+          render: (setting) => {
+            setting.addButton((button) => {
+              button
+                .setButtonText("Show readme")
+                .onClick(showReadme);
             });
           },
         },

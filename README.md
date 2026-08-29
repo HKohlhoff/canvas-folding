@@ -7,6 +7,15 @@ content, positions, and the `.canvas` file itself remain untouched.
 Requires Obsidian 1.13.0 or later. Canvas Folding works on desktop and mobile
 and has no dependency on Advanced Canvas.
 
+## Tested platforms
+
+The current plugin has been manually tested on:
+
+- Windows 11;
+- macOS;
+- iPadOS;
+- iOS.
+
 If Canvas Folding is useful to you, you can support its continued development
 by buying me a coffee.
 
@@ -303,8 +312,9 @@ completely; no release-note file is created in the Vault and it does not reopen
 on every Obsidian start.
 
 Use **Show last update** at the bottom of the plugin settings to open the
-description again at any time. The repository keeps the same text in
-[`Last Update.md`](Last%20Update.md).
+description again at any time. Use **Show readme** beside it to open this
+complete documentation locally inside Obsidian. The repository keeps the same
+text in [`Last Update.md`](Last%20Update.md).
 
 ## Privacy and data handling
 

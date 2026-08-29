@@ -4,6 +4,18 @@ All notable changes to this plugin should be documented in this file.
 
 The format follows the spirit of Keep a Changelog, with the newest release first.
 
+## [Unreleased]
+
+### Added
+
+- Add a local, Markdown-rendered **Show readme** action to the About settings
+  without creating a Vault file or loading README images from the network;
+  retain the Ko-fi destination as a text link and omit other images without
+  placeholder notices.
+- Keep the embedded README compact by collapsing repeated blank lines after
+  display-only content removal.
+- Document the manually tested Windows 11, macOS, iPadOS and iOS platforms.
+
 ## [1.1.1] – 2026-08-28
 
 ### Fixed
