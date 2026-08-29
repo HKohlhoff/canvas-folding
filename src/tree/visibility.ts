@@ -78,7 +78,15 @@ export function getNodeIdsContainedByGroups(
   nodes: readonly CanvasGraphNodeData[],
   groupIds: ReadonlySet<string>,
 ): ReadonlySet<string> {
-  const nodesById = new Map(nodes.map((node) => [node.id, node]));
+  return getNodeIdsContainedByGroupIndex(
+    buildGroupContainmentIndex(nodes),
+    groupIds,
+  );
+}
+
+export function buildGroupContainmentIndex(
+  nodes: readonly CanvasGraphNodeData[],
+): ReadonlyMap<string, readonly string[]> {
   const containedNodeIdsByGroup = new Map<string, readonly string[]>();
   for (const group of nodes) {
     if (group.type !== "group" || !hasCompleteBounds(group)) continue;
@@ -94,9 +102,15 @@ export function getNodeIdsContainedByGroups(
         .map((node) => node.id),
     );
   }
+  return containedNodeIdsByGroup;
+}
 
+export function getNodeIdsContainedByGroupIndex(
+  containedNodeIdsByGroup: ReadonlyMap<string, readonly string[]>,
+  groupIds: ReadonlySet<string>,
+): ReadonlySet<string> {
   const pendingGroupIds = [...groupIds].filter(
-    (nodeId) => nodesById.get(nodeId)?.type === "group",
+    (nodeId) => containedNodeIdsByGroup.has(nodeId),
   );
   const processedGroupIds = new Set<string>();
   const groupHiddenNodeIds = new Set<string>();
@@ -107,7 +121,7 @@ export function getNodeIdsContainedByGroups(
     for (const nodeId of containedNodeIdsByGroup.get(groupId) ?? []) {
       groupHiddenNodeIds.add(nodeId);
       if (
-        nodesById.get(nodeId)?.type === "group" &&
+        containedNodeIdsByGroup.has(nodeId) &&
         !processedGroupIds.has(nodeId)
       ) {
         pendingGroupIds.push(nodeId);

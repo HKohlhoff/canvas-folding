@@ -67,17 +67,24 @@ void test("exposes one persisted-state manager action", () => {
 
 void test("places a reusable last-update action at the bottom", () => {
   let showCount = 0;
+  let readmeCount = 0;
   const definitions = getCanvasFoldingSettingDefinitions(
     () => undefined,
     () => {
       showCount += 1;
+    },
+    () => {
+      readmeCount += 1;
     },
   );
   const about = definitions[definitions.length - 1];
   assert.ok(about !== undefined && "type" in about);
   assert.equal(about.type, "group");
   assert.equal(about.heading, "About");
-  assert.deepEqual(about.items?.map((item) => item.name), ["Last update"]);
+  assert.deepEqual(
+    about.items?.map((item) => item.name),
+    ["Last update", "README"],
+  );
 
   const item = about.items?.[0];
   assert.ok(item !== undefined && "render" in item);
@@ -92,6 +99,20 @@ void test("places a reusable last-update action at the bottom", () => {
   assert.equal(button.text, "Show last update");
   button.click?.();
   assert.equal(showCount, 1);
+
+  const readmeItem = about.items?.[1];
+  assert.ok(readmeItem !== undefined && "render" in readmeItem);
+  const readmeButton = new FakeButton();
+  const readmeSetting = {
+    addButton: (configure: (component: ButtonComponent) => unknown) => {
+      configure(readmeButton as unknown as ButtonComponent);
+      return readmeSetting;
+    },
+  } as unknown as Setting;
+  readmeItem.render?.(readmeSetting, {} as SettingGroup);
+  assert.equal(readmeButton.text, "Show readme");
+  readmeButton.click?.();
+  assert.equal(readmeCount, 1);
 });
 
 class FakeButton {

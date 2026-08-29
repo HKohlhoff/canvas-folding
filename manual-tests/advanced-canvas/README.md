@@ -257,18 +257,33 @@ fresh confirmation before its release:
 - [ ] **AC-H01 · Shared control row:** With Advanced Canvas node shapes,
   auto-resize, aspect-ratio controls, and nested groups enabled, verify that
   focus remains left of folding and neither control overlaps Advanced Canvas
-  controls or node content.
+  controls or node content. Verify resizing through every corner and border
+  section. On iPhone and iPad, enabled Folding controls remain directly visible
+  inside the upper-right corner before and after selection. Folding controls
+  do not overlap the native popup or any Advanced Canvas popup additions;
+  repeat with a narrow node and near both vertical viewport boundaries.
 - [ ] **AC-H02 · Independent visibility:** Hide and show folding and focus
   controls independently through the Folding toolbar. Advanced controls remain
   unchanged, folded state is retained, and hiding focus controls does not end
   active Folding or Advanced focus.
 - [ ] **AC-H03 · Numbered folds:** Check one-, two-, and three-digit Folding
   counts with Advanced styles and resized nodes. The count grows leftward and
-  remains readable; Advanced collapsed-group information remains available in
-  the tooltip or touch menu.
+  remains readable while that parent's focus control is absent. Expand the
+  branch and confirm that the focus control returns unless disabled through
+  the toolbar. Advanced collapsed-group information remains available in the
+  tooltip or touch menu.
 - [ ] **AC-H04 · Focus leaves:** Focus and unfocus a leaf node through its node
   control with Advanced focus disabled, then repeat with Advanced focus active.
   Each plugin cleans up only its own focus state.
+- [ ] **AC-H05 · Theme and touch geometry:** Repeat AC-H01 with Obsidian's
+  default theme, Minimal and AnuPpuccin using the maintained test profile on
+  macOS, iPhone and iPad. Folding and focus controls remain circular, keep the
+  documented compact dimensions, use a neutral pressed/focused background and
+  remain usable inside the upper-right corner. Folded counts stay visible
+  without selection. Both toolbar eye buttons hide and restore their respective
+  controls immediately. The theme-rendering subset passed on all three
+  platforms on 2026-08-29; the remaining AC-H01 interaction coverage still
+  determines this checkbox.
 
 ## Settings coverage strategy
 

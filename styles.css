@@ -70,77 +70,215 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   width: 1px;
 }
 
-.canvas-folding-node-controls {
+.workspace-leaf-content[data-type="canvas"] .canvas-folding-node-controls {
   align-items: center;
   display: flex;
   gap: 4px;
+  height: 20px;
+  overflow: visible;
   pointer-events: auto;
   position: absolute;
-  right: 8px;
-  top: 8px;
+  right: 4px;
+  top: 4px;
+  width: max-content;
   z-index: 30;
 }
 
-.canvas-folding-branch-control,
-.canvas-folding-focus-control {
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-branch-control,
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-focus-control {
+  -webkit-appearance: none;
   align-items: center;
+  appearance: none;
   background: var(--background-primary);
+  background-image: none;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 50%;
+  border-radius: 999px;
   box-shadow: var(--shadow-s);
+  box-sizing: border-box;
   color: var(--text-muted);
   cursor: pointer;
   display: flex;
+  flex: 0 0 20px;
+  font-family: var(--font-interface);
   font-size: 14px;
   font-weight: 600;
   height: 20px;
   justify-content: center;
   line-height: 1;
+  margin: 0;
+  max-height: 20px;
+  max-width: 20px;
+  min-height: 20px;
   min-width: 20px;
   padding: 0;
+  pointer-events: auto;
+  text-align: center;
   touch-action: manipulation;
-}
-
-.canvas-folding-branch-control.has-hidden-count {
-  padding: 0 5px;
-}
-
-.canvas-folding-focus-control {
+  user-select: none;
   width: 20px;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.canvas-folding-focus-control svg {
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-branch-control.has-hidden-count {
+  flex-basis: auto;
+  max-width: none;
+  padding: 0 5px;
+  width: auto;
+}
+
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-focus-control svg {
   height: 14px;
+  pointer-events: none;
   width: 14px;
 }
 
-.canvas-folding-branch-control:hover,
-.canvas-folding-branch-control:focus-visible,
-.canvas-folding-focus-control:hover,
-.canvas-folding-focus-control:focus-visible,
-.canvas-folding-focus-control.is-active {
-  background: var(--interactive-accent);
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-branch-control:focus-visible,
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-focus-control:focus-visible {
+  background: var(--background-modifier-hover);
   border-color: var(--interactive-accent);
-  color: var(--text-on-accent);
+  color: var(--text-normal);
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-focus-control.is-active {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+}
+
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-branch-control:active,
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-focus-control:active {
+  background: var(
+    --background-modifier-active-hover,
+    var(--background-modifier-hover)
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-branch-control:hover,
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-focus-control:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+    color: var(--text-normal);
+  }
 }
 
 @media (pointer: coarse) {
-  .canvas-folding-branch-control,
-  .canvas-folding-focus-control {
-    font-size: 18px;
-    height: 32px;
-    min-width: 32px;
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-node-controls {
+    height: 20px;
+    right: 4px;
+    top: 4px;
+    width: max-content;
   }
 
-  .canvas-folding-focus-control {
-    width: 32px;
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-branch-control,
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-focus-control {
+    flex-basis: 20px;
+    font-size: 14px;
+    height: 20px;
+    max-height: 20px;
+    max-width: 20px;
+    min-height: 20px;
+    min-width: 20px;
+    width: 20px;
   }
 
-  .canvas-folding-focus-control svg {
-    height: 18px;
-    width: 18px;
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-branch-control.has-hidden-count {
+    flex-basis: auto;
+    max-width: none;
+    width: auto;
+  }
+
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-focus-control svg {
+    height: 14px;
+    width: 14px;
   }
 }
+.canvas-folding-persisted-states-header,
+.canvas-folding-persisted-states-modal
+  .setting-item.canvas-folding-persisted-states-row {
+  align-items: center;
+  display: grid;
+  gap: var(--size-4-3);
+  grid-template-columns: minmax(8rem, 0.8fr) minmax(12rem, 1.6fr) 7rem;
+}
+
+.canvas-folding-persisted-states-modal {
+  overflow-x: auto;
+}
+
+.canvas-folding-persisted-states-header {
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  padding: var(--size-4-2) 0;
+}
+
+.canvas-folding-persisted-states-sort {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-s);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  justify-content: flex-start;
+  padding: var(--size-2-1) var(--size-2-2);
+}
+
+.canvas-folding-persisted-states-sort:hover,
+.canvas-folding-persisted-states-sort:focus-visible {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.canvas-folding-persisted-states-action-header {
+  text-align: center;
+}
+
+.canvas-folding-persisted-states-modal
+  .setting-item.canvas-folding-persisted-states-row
+  .setting-item-info {
+  display: contents;
+}
+
+.canvas-folding-persisted-states-modal
+  .setting-item.canvas-folding-persisted-states-row
+  .setting-item-name,
+.canvas-folding-persisted-states-modal
+  .setting-item.canvas-folding-persisted-states-row
+  .setting-item-description {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.canvas-folding-persisted-states-modal
+  .setting-item.canvas-folding-persisted-states-row
+  .setting-item-description {
+  color: var(--text-muted);
+  padding-top: 0;
+}
+
 .canvas-folding-persisted-states-modal .setting-item-control {
   flex: 0 0 7rem;
   justify-content: flex-end;
@@ -165,6 +303,15 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 
 .canvas-folding-persisted-states-remove-all .setting-item-name {
   font-weight: var(--font-semibold);
+}
+
+@media (max-width: 640px) {
+  .canvas-folding-persisted-states-header,
+  .canvas-folding-persisted-states-modal
+    .setting-item.canvas-folding-persisted-states-row {
+    gap: var(--size-4-2);
+    grid-template-columns: minmax(6rem, 0.8fr) minmax(8rem, 1.2fr) 7rem;
+  }
 }
 
 .canvas-folding-release-notes-modal {

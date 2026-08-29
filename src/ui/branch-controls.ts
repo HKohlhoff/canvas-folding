@@ -334,13 +334,13 @@ function updateBranchButton(
   const disabledByHiddenGroup = model.disabledByHiddenGroup === true;
   const disabledLabel = "Branch hidden by folded group";
   const action = model.collapsed ? "Expand" : "Collapse";
-  const hiddenNodeLabel = model.hiddenDescendantCount === undefined
+  const hiddenItemLabel = model.hiddenItemCount === undefined
     ? null
-    : `${model.hiddenDescendantCount} hidden node${model.hiddenDescendantCount === 1 ? "" : "s"}`;
+    : formatHiddenItemCount(model);
   const hiddenConnectionLabel = model.hiddenConnectionCount === undefined
     ? null
     : `${model.hiddenConnectionCount} hidden connection${model.hiddenConnectionCount === 1 ? "" : "s"}`;
-  const label = `${action} branch with ${hiddenNodeLabel ?? hiddenConnectionLabel ?? formatDescendantCount(model.descendantCount)}`;
+  const label = `${action} branch with ${hiddenItemLabel ?? hiddenConnectionLabel ?? formatDescendantCount(model.descendantCount)}`;
   const externalGroupHint = model.externallyCollapsedDescendantCount !== undefined
     ? ` Advanced Canvas currently hides ${formatDescendantCount(model.externallyCollapsedDescendantCount)} inside collapsed groups. Canvas Folding preserves those group states when this branch is collapsed or expanded.`
     : "";
@@ -348,12 +348,12 @@ function updateBranchButton(
     ? `${disabledLabel}.`
     : `${label}.${externalGroupHint} Open the context menu for branch display options.`;
 
-  button.textContent = model.hiddenDescendantCount === undefined
+  button.textContent = model.hiddenItemCount === undefined
     ? model.collapsed ? "+" : "−"
-    : String(model.hiddenDescendantCount);
+    : String(model.hiddenItemCount);
   button.classList.toggle(
     "has-hidden-count",
-    model.hiddenDescendantCount !== undefined,
+    model.hiddenItemCount !== undefined,
   );
   button.disabled = disabledByHiddenGroup;
   if (disabledByHiddenGroup) {
@@ -367,6 +367,24 @@ function updateBranchButton(
   }
   button.setAttribute("aria-label", tooltip);
   button.removeAttribute("aria-description");
+}
+
+function formatHiddenItemCount(model: BranchControlModel): string {
+  const hiddenItemCount = model.hiddenItemCount ?? 0;
+  if (model.hiddenGroupCount === undefined) {
+    return `${hiddenItemCount} hidden node${hiddenItemCount === 1 ? "" : "s"}`;
+  }
+  const hiddenNodeCount = model.hiddenNodeCount ??
+    hiddenItemCount - model.hiddenGroupCount;
+  const parts = [
+    ...(hiddenNodeCount > 0
+      ? [`${hiddenNodeCount} hidden node${hiddenNodeCount === 1 ? "" : "s"}`]
+      : []),
+    ...(model.hiddenGroupCount > 0
+      ? [`${model.hiddenGroupCount} hidden group${model.hiddenGroupCount === 1 ? "" : "s"}`]
+      : []),
+  ];
+  return parts.join(" and ");
 }
 
 function updateFocusButton(

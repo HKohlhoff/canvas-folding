@@ -20,6 +20,7 @@ interface CanvasFoldingSettingsHost extends Plugin {
   getSavedCanvasStatePaths(): readonly string[];
   removeSavedCanvasState(canvasPath: string): Promise<void>;
   showLastUpdate(): void;
+  showReadme(): void;
   updateSettings(update: Partial<CanvasFoldingSettings>): Promise<void>;
 }
 
@@ -39,6 +40,7 @@ export class CanvasFoldingSettingTab extends PluginSettingTab {
         }).open();
       },
       () => this.plugin.showLastUpdate(),
+      () => this.plugin.showReadme(),
     );
   }
 

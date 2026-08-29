@@ -32,29 +32,41 @@ void test("reflects collapsed state without changing graph structure", () => {
       nodeId: "B",
       collapsed: true,
       descendantCount: 1,
-      hiddenDescendantCount: 1,
+      hiddenItemCount: 1,
     },
   ]);
 });
 
-void test("excludes group descendants from the visible branch count", () => {
+void test("counts hidden groups and their geometrically contained nodes", () => {
   const graph = buildCanvasGraph({
     nodes: [
-      { id: "A", type: "text" },
-      { id: "G", type: "group" },
-      { id: "B", type: "text" },
+      { id: "R", type: "group", x: 0, y: 0, width: 100, height: 100 },
+      { id: "C", type: "text", x: 200, y: 0, width: 50, height: 50 },
+      { id: "G1", type: "group", x: 300, y: 0, width: 200, height: 200 },
+      { id: "G2", type: "group", x: 550, y: 0, width: 200, height: 200 },
+      { id: "N1", type: "text", x: 310, y: 10, width: 50, height: 50 },
+      { id: "N2", type: "text", x: 400, y: 10, width: 50, height: 50 },
+      { id: "N3", type: "text", x: 560, y: 10, width: 50, height: 50 },
     ],
     edges: [
-      { id: "AG", fromNode: "A", toNode: "G" },
-      { id: "GB", fromNode: "G", toNode: "B" },
+      { id: "RC", fromNode: "R", toNode: "C" },
+      { id: "RG1", fromNode: "R", toNode: "G1" },
+      { id: "G1G2", fromNode: "G1", toNode: "G2" },
     ],
   });
   const state = new BranchCollapseState();
-  state.collapse("A");
+  state.collapse("R");
 
-  assert.equal(
-    buildBranchControlModels(graph, state)[0]?.hiddenDescendantCount,
-    1,
+  assert.deepEqual(
+    buildBranchControlModels(graph, state).find((model) => model.nodeId === "R"),
+    {
+      nodeId: "R",
+      collapsed: true,
+      descendantCount: 3,
+      hiddenGroupCount: 2,
+      hiddenItemCount: 6,
+      hiddenNodeCount: 4,
+    },
   );
 });
 
@@ -88,8 +100,25 @@ void test("creates focus controls for groups and omits hidden nodes", () => {
 
   assert.deepEqual(buildFocusControlModels(graph, state), [
     { nodeId: "G", active: false, descendantCount: 2 },
-    { nodeId: "A", active: false, descendantCount: 1 },
   ]);
+});
+
+void test("restores a focus control after its branch is expanded", () => {
+  const graph = buildCanvasGraph(createData());
+  const state = new BranchCollapseState();
+  state.collapse("B");
+
+  assert.equal(
+    buildFocusControlModels(graph, state).some((model) => model.nodeId === "B"),
+    false,
+  );
+
+  state.expand("B");
+
+  assert.equal(
+    buildFocusControlModels(graph, state).some((model) => model.nodeId === "B"),
+    true,
+  );
 });
 
 void test("marks a branch with any descendants hidden by an external collapsed group", () => {
@@ -179,7 +208,7 @@ void test("omits controls hosted by hidden descendant nodes", () => {
       nodeId: "A",
       collapsed: true,
       descendantCount: 3,
-      hiddenDescendantCount: 3,
+      hiddenItemCount: 3,
     },
   ]);
 });
