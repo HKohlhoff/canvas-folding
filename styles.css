@@ -211,13 +211,19 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
     width: 14px;
   }
 }
-.canvas-folding-persisted-states-header,
+.canvas-folding-persisted-states-header {
+  align-items: center;
+  display: grid;
+  gap: var(--size-4-3);
+  grid-template-columns: minmax(8rem, 0.8fr) minmax(12rem, 1.6fr) 7rem;
+}
+
 .canvas-folding-persisted-states-modal
   .setting-item.canvas-folding-persisted-states-row {
   align-items: center;
   display: grid;
   gap: var(--size-4-3);
-  grid-template-columns: minmax(8rem, 0.8fr) minmax(12rem, 1.6fr) 7rem;
+  grid-template-columns: minmax(20rem, 2.4fr) 7rem;
 }
 
 .canvas-folding-persisted-states-modal {
@@ -258,7 +264,10 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 .canvas-folding-persisted-states-modal
   .setting-item.canvas-folding-persisted-states-row
   .setting-item-info {
-  display: contents;
+  display: grid;
+  gap: var(--size-4-3);
+  grid-template-columns: minmax(8rem, 0.8fr) minmax(12rem, 1.6fr);
+  min-width: 0;
 }
 
 .canvas-folding-persisted-states-modal
@@ -306,11 +315,22 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 }
 
 @media (max-width: 640px) {
-  .canvas-folding-persisted-states-header,
+  .canvas-folding-persisted-states-header {
+    gap: var(--size-4-2);
+    grid-template-columns: minmax(6rem, 0.8fr) minmax(8rem, 1.2fr) 7rem;
+  }
+
   .canvas-folding-persisted-states-modal
     .setting-item.canvas-folding-persisted-states-row {
     gap: var(--size-4-2);
-    grid-template-columns: minmax(6rem, 0.8fr) minmax(8rem, 1.2fr) 7rem;
+    grid-template-columns: minmax(14rem, 2fr) 7rem;
+  }
+
+  .canvas-folding-persisted-states-modal
+    .setting-item.canvas-folding-persisted-states-row
+    .setting-item-info {
+    gap: var(--size-4-2);
+    grid-template-columns: minmax(6rem, 0.8fr) minmax(8rem, 1.2fr);
   }
 }
 

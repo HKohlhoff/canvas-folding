@@ -6,6 +6,14 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.1] – 2026-08-29
+
+### Fixed
+
+- Replace `display: contents` in the persisted-state table with a nested CSS
+  grid so the Community Plugin CSS review completes without compatibility
+  warnings while preserving the Canvas, Path and Action column layout.
+
 ## [1.2.0] – 2026-08-29
 
 ### Added
