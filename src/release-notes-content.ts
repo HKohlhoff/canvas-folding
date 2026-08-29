@@ -1,6 +1,6 @@
-export const CURRENT_RELEASE_NOTES_ID = "release-1.2.0";
+export const CURRENT_RELEASE_NOTES_ID = "release-1.2.1";
 
-export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding 1.2.0: compact controls and clearer counts
+export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding 1.2.1: compact controls and clearer counts
 
 This update makes Canvas Folding controls more reliable across themes and touch devices, gives card content more room, and makes saved states and documentation easier to access.
 
@@ -12,6 +12,7 @@ This update makes Canvas Folding controls more reliable across themes and touch 
 - **Cleaner collapsed parents:** a collapsed parent shows only its folding control. Its focus control returns after expanding unless focus controls are hidden globally.
 - **Reliable visibility actions:** the two toolbar eye actions immediately hide or restore their corresponding folding and focus controls without changing fold or focus state.
 - **Sortable saved states:** **Manage persisted canvas states** now shows **Canvas**, **Path**, and **Action** columns. Click **Canvas** or **Path** to sort in either direction.
+- **Warning-free compatibility:** the saved-state table uses a broadly supported nested grid and passes the Community Plugin CSS review without compatibility warnings.
 - **README inside settings:** **Show readme** opens the current plugin documentation directly from the About settings without creating a Vault file or automatically loading README images.
 - **Stable integration:** the public Canvas Folding API remains at version 1, so existing optional Canvas HTML Exporter integration continues to receive fold state in the same format.
 

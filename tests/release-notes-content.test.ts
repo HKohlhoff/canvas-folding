@@ -12,7 +12,7 @@ void test("keeps the transient update note and repository Markdown synchronized"
     version: string;
   };
   assert.equal(CURRENT_RELEASE_NOTES_ID, `release-${manifest.version}`);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Canvas Folding 1\.2\.0/);
+  assert.ok(CURRENT_RELEASE_NOTES_MARKDOWN.includes(`Canvas Folding ${manifest.version}`));
   assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Complete folded totals/);
   assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Show readme/);
   assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Show last update/);

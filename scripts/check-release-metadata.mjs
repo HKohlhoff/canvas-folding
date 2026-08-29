@@ -30,6 +30,11 @@ assert.doesNotMatch(
   /!important\b/,
   "styles.css must not use !important; use Canvas-scoped selector specificity instead",
 );
+assert.doesNotMatch(
+  styles,
+  /display:\s*contents\b/,
+  "styles.css must not use display: contents; keep Community Plugin CSS checks warning-free",
+);
 
 console.log(
   `Release metadata ${manifest.version} for Obsidian ${manifest.minAppVersion}+ is consistent.`,
