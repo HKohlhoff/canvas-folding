@@ -1,29 +1,26 @@
-export const CURRENT_RELEASE_NOTES_ID = "release-1.1.1";
+export const CURRENT_RELEASE_NOTES_ID = "release-1.2.0";
 
-export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding 1.1.1: clearer node controls
+export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding 1.2.0: compact controls and clearer counts
 
-This update makes folding and focus controls more informative, flexible, and consistent with Canvas HTML pages created by the Canvas HTML Exporter plugin.
+This update makes Canvas Folding controls more reliable across themes and touch devices, gives card content more room, and makes saved states and documentation easier to access.
 
 ## Highlights
 
-- **Focus every node and group:** every visible Canvas item now has a focus control, including groups and items without children. Focusing a group keeps all items geometrically contained by it active as part of the focus area.
-- **Direct focus toggle:** click the focus symbol to focus that node or branch, then click the active symbol again to exit.
-- **Independent controls:** folding controls and focus controls can be shown or hidden separately through settings, commands, and the Canvas toolbar.
-- **State stays intact:** hiding controls does not expand folded branches or end an active focus.
-- **Clear branch size:** an expanded branch still shows a minus sign. After folding, the control shows the number of hidden content nodes; if shared nodes remain visible through another parent, a plus sign reports the hidden branch connection.
-- **Predictable shared branches:** shared descendants stay visible while another open parent branch still reaches them. Only exclusive descendants and the collapsed branch connections disappear.
-- **Complete group branches:** hiding a connected group also hides the nodes geometrically contained by it, even when they have no separate parent edge. The group frame itself follows its own directed branch and stays visible when only a separate branch inside it is folded. If a visible node's complete branch is unavailable behind a folded group, its folding control stays in place but is disabled until the group is expanded.
-- **Clean Advanced Canvas groups:** Canvas Folding controls disappear while Advanced Canvas has a group collapsed and return when it is expanded.
-- **Readable large counts:** controls grow for two- or three-digit counts without covering the focus control or node content.
-- **Consistent node layout:** focus stays to the left of folding, with the same order for pointer and keyboard use.
-- **Clear toolbar grouping:** the focus-control visibility action sits directly before the focus action in its own toolbar section.
+- **Theme-stable compact controls:** folding and focus controls keep the same circular or pill geometry, compact size, and neutral highlight states across Obsidian's default theme, Minimal, and AnuPpuccin. The maintained profiles were tested on macOS, iPadOS, and iOS.
+- **More room for card content:** controls use the compact desktop size on touch devices and sit close inside the upper-right node corner. The node border remains available for resizing.
+- **Complete folded totals:** a collapsed branch now counts every hidden node and group, including nodes that disappear with a contained group. The control shows the total; its tooltip separates nodes from groups.
+- **Cleaner collapsed parents:** a collapsed parent shows only its folding control. Its focus control returns after expanding unless focus controls are hidden globally.
+- **Reliable visibility actions:** the two toolbar eye actions immediately hide or restore their corresponding folding and focus controls without changing fold or focus state.
+- **Sortable saved states:** **Manage persisted canvas states** now shows **Canvas**, **Path**, and **Action** columns. Click **Canvas** or **Path** to sort in either direction.
+- **README inside settings:** **Show readme** opens the current plugin documentation directly from the About settings without creating a Vault file or automatically loading README images.
+- **Stable integration:** the public Canvas Folding API remains at version 1, so existing optional Canvas HTML Exporter integration continues to receive fold state in the same format.
 
-## Using the new controls
+## Using the update
 
-1. Open a Canvas with Canvas Folding enabled.
-2. Use the focus symbol on any node or group to focus it individually or together with its descendants.
-3. Use the folding control on a parent node to collapse or expand its directed branch.
-4. Use the two visibility actions in the Canvas toolbar when you want to hide folding controls, focus controls, or both without changing the Canvas view state.
+1. Open a Canvas and use the controls in the upper-right interior of a node.
+2. Collapse a branch to see the complete hidden-item total; on desktop, hover over the count to see the node/group breakdown.
+3. Use the two eye actions in the Canvas toolbar to show or hide folding and focus controls independently.
+4. Open Canvas Folding settings to sort saved Canvas states or choose **Show readme** for the full documentation.
 
 Canvas Folding still changes only the current view. It never writes folding data into your Canvas files.
 

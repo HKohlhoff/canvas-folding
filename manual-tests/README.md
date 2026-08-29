@@ -15,7 +15,7 @@ Before a clean pass:
 
 ## Update note and plugin data
 
-- Upgrade once from Canvas Folding 1.0.1 data. Confirm that settings and any
+- Upgrade once from Canvas Folding 1.1.1 data. Confirm that settings and any
   persisted Canvas states remain intact and the Markdown-rendered update note
   opens once.
 - Close the note, verify that no release-note file is created in the Vault,
