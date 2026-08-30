@@ -31,7 +31,9 @@ Before a clean pass:
 - Open **Manage persisted canvas states** with multiple same-named and numbered
   Canvases in different folders. Confirm the **Canvas**, **Path** and **Action**
   columns, default Canvas-name order, ascending/descending header clicks and
-  correct per-row removal.
+  correct per-row removal. Add enough entries to exceed the available height;
+  confirm that only the list scrolls vertically, its column header remains
+  visible and the explanation plus **Remove all** stay outside the scroll area.
 
 For the separate release gate with Advanced Canvas enabled, use the focused
 fixture, captured settings profile, and full matrix under

@@ -5,8 +5,11 @@ Use this checklist before publishing an Obsidian plugin release.
 ## Metadata
 
 - `manifest.json` version is correct.
-- The embedded update-note ID matches the plugin version so this release opens
-  its note once, and `Last Update.md` contains the identical Markdown.
+- For feature releases, the embedded update-note ID matches the plugin version
+  so the release opens its note once, and `Last Update.md` contains the
+  identical Markdown. A maintenance release may retain the preceding feature
+  note only through an explicit version-specific test exception, so it does not
+  reopen an already read note.
 - Every user-facing feature release follows the shared update-note standard:
   open a transient Markdown view once after update, mark it as read only after
   it closes, create no Vault file, and keep **Show last update** at the bottom
@@ -53,6 +56,9 @@ npm run build:prod
 - Confirm that removed display-only content leaves no repeated blank lines.
 - Open the persisted-state manager and verify its Canvas/Path/Action columns,
   default Canvas-name order, both sort directions and removal after sorting.
+  With enough entries to exceed the available height, verify that only the list
+  scrolls vertically while its column header, the explanation and **Remove all**
+  remain available.
 - Complete the node-control theme matrix with Obsidian's default theme, Minimal
   and the maintained AnuPpuccin profile on macOS, iPhone and iPad. Record the
   exact theme versions and results before updating the README compatibility

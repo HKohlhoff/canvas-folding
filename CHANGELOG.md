@@ -6,6 +6,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.2] – 2026-08-30
+
 ### Fixed
 
 - Keep the persisted-state manager compact for larger Canvas collections by
