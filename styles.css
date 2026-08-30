@@ -226,16 +226,24 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
   grid-template-columns: minmax(20rem, 2.4fr) 7rem;
 }
 
-.canvas-folding-persisted-states-modal {
-  overflow-x: auto;
+.canvas-folding-persisted-states-list {
+  max-height: min(50vh, 28rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 
 .canvas-folding-persisted-states-header {
+  background: var(--background-primary);
   border-bottom: 1px solid var(--background-modifier-border);
   color: var(--text-muted);
   font-size: var(--font-ui-small);
   font-weight: var(--font-semibold);
   padding: var(--size-4-2) 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .canvas-folding-persisted-states-sort {
