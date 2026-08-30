@@ -6,6 +6,12 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep the persisted-state manager compact for larger Canvas collections by
+  scrolling only its state list while leaving the explanation, column header
+  and **Remove all** action available.
+
 ## [1.2.1] – 2026-08-29
 
 ### Fixed

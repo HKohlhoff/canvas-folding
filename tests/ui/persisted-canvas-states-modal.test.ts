@@ -31,9 +31,11 @@ interface RenderedModal {
 }
 
 interface RenderedElement {
+  attributes: Map<string, string>;
   children: RenderedElement[];
   classes: Set<string>;
   click(): void;
+  settings: RenderedSetting[];
   textContent: string;
 }
 
@@ -90,11 +92,14 @@ void test("reverses Canvas sorting when its header is clicked", async () => {
   modal.onOpen();
   await settleAsyncRender();
   let rendered = getRenderedModal(modal);
+  let list = getStateList(rendered);
   assert.deepEqual(
-    rendered.contentEl.settings.slice(0, 2).map((setting) => setting.name),
+    list.settings.map((setting) => setting.name),
     ["A", "B"],
   );
-  const header = rendered.contentEl.children.find((child) =>
+  assert.equal(list.attributes.get("role"), "region");
+  assert.equal(list.attributes.get("aria-label"), "Persisted canvas states");
+  const header = list.children.find((child) =>
     child.classes.has("canvas-folding-persisted-states-header")
   );
   assert.ok(header !== undefined);
@@ -102,11 +107,12 @@ void test("reverses Canvas sorting when its header is clicked", async () => {
 
   header.children[0]?.children[0]?.click();
   rendered = getRenderedModal(modal);
+  list = getStateList(rendered);
   assert.deepEqual(
-    rendered.contentEl.settings.slice(0, 2).map((setting) => setting.name),
+    list.settings.map((setting) => setting.name),
     ["B", "A"],
   );
-  const rerenderedHeader = rendered.contentEl.children.find((child) =>
+  const rerenderedHeader = list.children.find((child) =>
     child.classes.has("canvas-folding-persisted-states-header")
   );
   assert.equal(
@@ -133,7 +139,7 @@ void test("removes one persisted state and then clears all remaining states", as
 
   modal.onOpen();
   await settleAsyncRender();
-  let settings = getRenderedModal(modal).contentEl.settings;
+  let settings = getRenderedSettings(getRenderedModal(modal));
   assert.deepEqual(
     settings.map((setting) => setting.name),
     ["A", "B", "Remove all persisted canvas states."],
@@ -154,7 +160,7 @@ void test("removes one persisted state and then clears all remaining states", as
 
   await settings[0]?.buttons[0]?.onClickCallback?.();
   assert.deepEqual(removed, ["Folder/A.canvas"]);
-  settings = getRenderedModal(modal).contentEl.settings;
+  settings = getRenderedSettings(getRenderedModal(modal));
   assert.deepEqual(
     settings.map((setting) => setting.name),
     ["B", "Remove all persisted canvas states."],
@@ -212,6 +218,18 @@ function createModal(
 
 function getRenderedModal(modal: PersistedCanvasStatesModal): RenderedModal {
   return modal as unknown as RenderedModal;
+}
+
+function getStateList(rendered: RenderedModal): RenderedElement {
+  const list = rendered.contentEl.children.find((child) =>
+    child.classes.has("canvas-folding-persisted-states-list")
+  );
+  assert.ok(list !== undefined);
+  return list;
+}
+
+function getRenderedSettings(rendered: RenderedModal): RenderedSetting[] {
+  return [...getStateList(rendered).settings, ...rendered.contentEl.settings];
 }
 
 async function settleAsyncRender(): Promise<void> {

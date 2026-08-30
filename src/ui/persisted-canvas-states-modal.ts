@@ -89,10 +89,15 @@ export class PersistedCanvasStatesModal extends Modal {
       return;
     }
 
-    this.renderColumnHeaders();
+    const list = this.contentEl.createDiv({
+      cls: "canvas-folding-persisted-states-list",
+    });
+    list.setAttribute("role", "region");
+    list.setAttribute("aria-label", "Persisted canvas states");
+    this.renderColumnHeaders(list);
 
     for (const canvasPath of paths) {
-      const row = new Setting(this.contentEl)
+      const row = new Setting(list)
         .setName(getPersistedCanvasName(canvasPath))
         .setDesc(canvasPath)
         .addButton((button) => {
@@ -123,8 +128,8 @@ export class PersistedCanvasStatesModal extends Modal {
     removeAllSetting.settingEl.addClass("canvas-folding-persisted-states-remove-all");
   }
 
-  private renderColumnHeaders(): void {
-    const header = this.contentEl.createDiv({
+  private renderColumnHeaders(containerEl: HTMLElement): void {
+    const header = containerEl.createDiv({
       cls: "canvas-folding-persisted-states-header",
     });
     header.setAttribute("role", "row");

@@ -317,8 +317,10 @@ Canvas files.
 - **Show status notices** enables action confirmations.
 - **Manage persisted canvas states** lists the Canvas name, full path and remove
   action for every cross-session state. Click **Canvas** or **Path** to sort in
-  either direction. Missing files and stale node references are cleaned when
-  the manager opens; currently open tabs keep their session state.
+  either direction. Longer lists scroll vertically while the column header and
+  **Remove all** action remain available. Missing files and stale node
+  references are cleaned when the manager opens; currently open tabs keep their
+  session state.
 - **Debug logging** writes diagnostic details to the developer console.
 
 ## Update Description

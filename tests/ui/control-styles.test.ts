@@ -52,3 +52,14 @@ void test("keeps hover styling off touch-only pointers", () => {
     /\.canvas-folding-focus-control\.is-active \{[^}]+background: var\(--interactive-accent\)/,
   );
 });
+
+void test("keeps long persisted-state lists vertically scrollable", () => {
+  assert.match(
+    styles,
+    /\.canvas-folding-persisted-states-list \{[^}]*max-height: min\(50vh, 28rem\);[^}]*overflow: auto;[^}]*overscroll-behavior: contain;/,
+  );
+  assert.match(
+    styles,
+    /\.canvas-folding-persisted-states-header \{[^}]*position: sticky;[^}]*top: 0;/,
+  );
+});
