@@ -18,6 +18,11 @@ Before a clean pass:
 - Upgrade once from Canvas Folding 1.1.1 data. Confirm that settings and any
   persisted Canvas states remain intact and the Markdown-rendered update note
   opens once.
+- With a non-empty state persisted, turn persistence off and change that Canvas
+  to a different non-empty state. Turn persistence on again and confirm that
+  the saved state returns. Repeat with a Canvas that has no saved state and
+  confirm that its temporary folds are discarded in favor of the default
+  expanded state.
 - Close the note, verify that no release-note file is created in the Vault,
   then reload or restart Obsidian and confirm that it does not reopen.
 - At the bottom of settings, choose **Show last update** and confirm that the

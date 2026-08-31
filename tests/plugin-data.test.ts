@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  createPluginData,
+  discardSessionStatesForPersistenceEnable,
   getSortedCanvasStatePaths,
   normalizePluginData,
   PLUGIN_DATA_VERSION,
@@ -53,6 +55,62 @@ void test("normalizes saved canvas states defensively", () => {
       },
     },
   );
+});
+
+void test("retains saved canvas states across a plugin data version update", () => {
+  const data = normalizePluginData({
+    dataVersion: 1,
+    settings: { rememberCanvasStates: true },
+    canvasStates: {
+      "Folder/Test.canvas": {
+        visibleDepths: { A: 0 },
+        revealedBranches: {},
+      },
+    },
+  });
+
+  assert.deepEqual(data.canvasStates, {
+    "Folder/Test.canvas": {
+      visibleDepths: { A: 0 },
+      revealedBranches: {},
+    },
+  });
+  assert.equal(data.dataVersion, PLUGIN_DATA_VERSION);
+});
+
+void test("writes saved canvas states while persistence is disabled", () => {
+  const savedState = {
+    visibleDepths: { A: 0 },
+    revealedBranches: {},
+  };
+  const data = createPluginData(
+    { ...DEFAULT_SETTINGS, rememberCanvasStates: false },
+    new Map([["Folder/Test.canvas", savedState]]),
+    "release-1.2.1",
+  );
+
+  assert.deepEqual(data.canvasStates, {
+    "Folder/Test.canvas": savedState,
+  });
+  assert.equal(data.settings.rememberCanvasStates, false);
+});
+
+void test("discards all off-phase changes before restoring persistence", () => {
+  const changedWhileOff = { source: "off-phase" };
+  const newCanvasState = { source: "new-canvas" };
+  const firstLeafStates = new Map([
+    ["Saved.canvas", changedWhileOff],
+    ["New.canvas", newCanvasState],
+  ]);
+  const secondLeafStates = new Map([
+    ["Saved.canvas", changedWhileOff],
+  ]);
+  discardSessionStatesForPersistenceEnable(
+    [firstLeafStates, secondLeafStates],
+  );
+
+  assert.equal(firstLeafStates.size, 0);
+  assert.equal(secondLeafStates.size, 0);
 });
 
 void test("retains a persisted global canvas depth without local restrictions", () => {

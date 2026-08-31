@@ -24,13 +24,13 @@ import {
   type VisibilityResult,
 } from "./canvas/visibility";
 import {
+  createPluginData,
+  discardSessionStatesForPersistenceEnable,
   getSortedCanvasStatePaths,
   isCanvasPath,
   normalizePluginData,
-  PLUGIN_DATA_VERSION,
   removePathEntries,
   renamePathEntries,
-  type CanvasFoldingPluginData,
 } from "./plugin-data";
 import { CURRENT_RELEASE_NOTES_ID } from "./release-notes-content";
 import {
@@ -408,15 +408,9 @@ export default class CanvasFoldingPlugin extends Plugin {
       !wasRememberingCanvasStates &&
       this.settings.rememberCanvasStates
     ) {
-      for (const statesByPath of this.collapseStates.values()) {
-        for (const [canvasPath, state] of [...statesByPath]) {
-          if (state.isEmpty() && this.savedCanvasStates.has(canvasPath)) {
-            statesByPath.delete(canvasPath);
-            continue;
-          }
-          this.storeCanvasState(canvasPath, state);
-        }
-      }
+      discardSessionStatesForPersistenceEnable(
+        this.collapseStates.values(),
+      );
     }
 
     await this.flushPluginDataSave();
@@ -636,14 +630,11 @@ export default class CanvasFoldingPlugin extends Plugin {
   }
 
   private writePluginData(): Promise<void> {
-    const data: CanvasFoldingPluginData = {
-      canvasStates: Object.fromEntries(this.savedCanvasStates),
-      dataVersion: PLUGIN_DATA_VERSION,
-      settings: this.settings,
-      ui: {
-        lastShownReleaseNotesId: this.lastShownReleaseNotesId,
-      },
-    };
+    const data = createPluginData(
+      this.settings,
+      this.savedCanvasStates,
+      this.lastShownReleaseNotesId,
+    );
     const write = this.dataSaveChain.then(async () => {
       await this.saveData(data);
     });

@@ -13,6 +13,7 @@ void test("keeps the transient update note and repository Markdown synchronized"
   };
   const releaseNoteIdExceptions: Readonly<Record<string, string>> = {
     "1.2.2": "release-1.2.1",
+    "1.2.3": "release-1.2.1",
   };
   const expectedReleaseNoteId = releaseNoteIdExceptions[manifest.version]
     ?? `release-${manifest.version}`;
