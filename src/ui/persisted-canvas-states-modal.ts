@@ -1,7 +1,6 @@
 import { App, Modal, Setting } from "obsidian";
 
 export interface PersistedCanvasStatesModalHost {
-  cleanup(): Promise<void>;
   clearAll(): Promise<void>;
   getPaths(): readonly string[];
   remove(canvasPath: string): Promise<void>;
@@ -55,19 +54,12 @@ export class PersistedCanvasStatesModal extends Modal {
 
   onOpen(): void {
     this.contentEl.addClass("canvas-folding-persisted-states-modal");
-    void this.prepareAndRender();
+    this.renderStates();
   }
 
   onClose(): void {
     this.renderSequence += 1;
     this.contentEl.empty();
-  }
-
-  private async prepareAndRender(): Promise<void> {
-    const sequence = ++this.renderSequence;
-    await this.host.cleanup();
-    if (sequence !== this.renderSequence) return;
-    this.renderStates();
   }
 
   private renderStates(): void {

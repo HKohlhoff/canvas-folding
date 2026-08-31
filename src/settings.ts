@@ -15,7 +15,6 @@ type CanvasFoldingSettingKey = keyof CanvasFoldingSettings;
 
 interface CanvasFoldingSettingsHost extends Plugin {
   settings: CanvasFoldingSettings;
-  cleanupSavedCanvasStates(): Promise<void>;
   clearSavedCanvasStates(): Promise<void>;
   getSavedCanvasStatePaths(): readonly string[];
   removeSavedCanvasState(canvasPath: string): Promise<void>;
@@ -33,7 +32,6 @@ export class CanvasFoldingSettingTab extends PluginSettingTab {
     return getCanvasFoldingSettingDefinitions(
       () => {
         new PersistedCanvasStatesModal(this.app, {
-          cleanup: () => this.plugin.cleanupSavedCanvasStates(),
           clearAll: () => this.plugin.clearSavedCanvasStates(),
           getPaths: () => this.plugin.getSavedCanvasStatePaths(),
           remove: (canvasPath) => this.plugin.removeSavedCanvasState(canvasPath),

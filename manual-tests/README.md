@@ -18,6 +18,10 @@ Before a clean pass:
 - Upgrade once from Canvas Folding 1.1.1 data. Confirm that settings and any
   persisted Canvas states remain intact and the Markdown-rendered update note
   opens once.
+- Keep at least one persisted entry whose Canvas is closed or temporarily
+  unavailable. Reload and update the plugin, then open and close **Manage
+  persisted canvas states**. Confirm that the entry and its node state remain
+  unchanged until an explicit remove action or actual Vault event occurs.
 - With a non-empty state persisted, turn persistence off and change that Canvas
   to a different non-empty state. Turn persistence on again and confirm that
   the saved state returns. Repeat with a Canvas that has no saved state and
