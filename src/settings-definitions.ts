@@ -63,7 +63,7 @@ export function getCanvasFoldingSettingDefinitions(
         },
         {
           name: "Remember canvas states between sessions",
-          desc: "Canvas Folding remembers states in each open tab for back navigation. Enable this to also restore them in newly opened tabs and after Obsidian or the plugin restarts. Canvas files remain unchanged.",
+          desc: "Canvas Folding remembers states in each open tab for back navigation. Enable this to also restore them in newly opened tabs and after Obsidian or the plugin restarts. Turning this off keeps existing saved states unchanged; turning it on again restores them. Canvas files remain unchanged.",
           control: {
             type: "toggle",
             key: "rememberCanvasStates",

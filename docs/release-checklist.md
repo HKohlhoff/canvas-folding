@@ -47,6 +47,11 @@ npm run build:prod
 - Upgrade once from the previous plugin data and confirm that the Markdown-
   rendered update description opens once, settings and persisted Canvas states
   survive, closing it creates no Vault file, and restart does not reopen it.
+- With a non-empty state saved, turn persistence off and change the same Canvas
+  to a different non-empty state. Turn persistence on again and confirm that
+  the previously saved state is restored rather than the temporary state from
+  the off phase. Confirm separately that a Canvas without a previously saved
+  state discards its temporary folds and returns to the default expanded state.
 - Use **Show last update** at the bottom of settings and confirm that the same
   description can be reopened at any time.
 - Use **Show readme** beside it and confirm that the embedded repository README

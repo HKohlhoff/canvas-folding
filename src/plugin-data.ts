@@ -19,6 +19,27 @@ export interface CanvasFoldingPluginData {
   };
 }
 
+export function createPluginData(
+  settings: CanvasFoldingSettings,
+  canvasStates: ReadonlyMap<string, BranchCollapseStateData>,
+  lastShownReleaseNotesId: string,
+): CanvasFoldingPluginData {
+  return {
+    canvasStates: Object.fromEntries(canvasStates),
+    dataVersion: PLUGIN_DATA_VERSION,
+    settings,
+    ui: { lastShownReleaseNotesId },
+  };
+}
+
+export function discardSessionStatesForPersistenceEnable<T>(
+  sessionStates: Iterable<Map<string, T>>,
+): void {
+  for (const statesByPath of sessionStates) {
+    statesByPath.clear();
+  }
+}
+
 export function normalizePluginData(data: unknown): CanvasFoldingPluginData {
   const root = isRecord(data) ? data : {};
   const settings = normalizeSettings(

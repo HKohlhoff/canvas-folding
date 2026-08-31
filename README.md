@@ -265,6 +265,12 @@ Folding's local `data.json`, never in the `.canvas` file. Entries for deleted or
 renamed Canvas files and stale node IDs are cleaned automatically and can also
 be reviewed or removed from the settings.
 
+Turning persistence off does not delete existing saved states. Changes made
+while it is off remain limited to the current tab. Turning persistence on again
+discards those temporary changes and restores the previously saved states.
+Canvases without an existing saved state return to their default expanded
+state.
+
 Canvas Folding does not synchronize settings or persisted states between
 devices. They belong to the local Obsidian plugin configuration, so the same
 Canvas can intentionally have different folding states on a Mac, iPhone, and
