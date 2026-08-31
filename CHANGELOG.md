@@ -6,6 +6,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.4] – 2026-08-31
+
 ### Fixed
 
 - Keep persisted Canvas states unchanged while the plugin starts, reloads, or
