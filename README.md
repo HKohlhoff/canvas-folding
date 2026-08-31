@@ -262,8 +262,10 @@ the tab discards it.
 Enable **Remember canvas states between sessions** to also restore state in new
 tabs and after restarting Obsidian or the plugin. The data is stored in Canvas
 Folding's local `data.json`, never in the `.canvas` file. Entries for deleted or
-renamed Canvas files and stale node IDs are cleaned automatically and can also
-be reviewed or removed from the settings.
+renamed Canvas files follow actual Vault events, and stale node IDs are cleaned
+after actual Canvas modifications. Temporary runtime unavailability during
+plugin startup or updates and opening the state manager never remove saved
+states. Every entry can be reviewed or removed explicitly from the settings.
 
 Turning persistence off does not delete existing saved states. Changes made
 while it is off remain limited to the current tab. Turning persistence on again
@@ -324,9 +326,9 @@ Canvas files.
 - **Manage persisted canvas states** lists the Canvas name, full path and remove
   action for every cross-session state. Click **Canvas** or **Path** to sort in
   either direction. Longer lists scroll vertically while the column header and
-  **Remove all** action remain available. Missing files and stale node
-  references are cleaned when the manager opens; currently open tabs keep their
-  session state.
+  **Remove all** action remain available. Opening the manager is read-only;
+  entries change only after an actual Vault event or an explicit **Remove** or
+  **Remove all** action. Currently open tabs keep their session state.
 - **Debug logging** writes diagnostic details to the developer console.
 
 ## Update Description

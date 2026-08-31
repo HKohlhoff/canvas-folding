@@ -111,8 +111,9 @@ export default class CanvasFoldingPlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadPluginData();
-    this.cleanupMissingCanvasStates();
-    await this.pruneAllSavedCanvasNodeStates();
+    // Vault indexes and Canvas contents can be transient during startup,
+    // hot reload, updates, and sync. Loading must never validate away saved
+    // states against runtime availability.
     await this.writePluginData();
     this.branchControlsVisible = this.settings.showBranchControls;
     this.focusControlsVisible = this.settings.showFocusControls;
@@ -451,15 +452,6 @@ export default class CanvasFoldingPlugin extends Plugin {
     return getSortedCanvasStatePaths(this.savedCanvasStates);
   }
 
-  async cleanupSavedCanvasStates(): Promise<void> {
-    const removedCount =
-      this.cleanupMissingCanvasStates() +
-      (await this.pruneAllSavedCanvasNodeStates());
-    if (removedCount > 0) {
-      await this.flushPluginDataSave();
-    }
-  }
-
   async removeSavedCanvasState(canvasPath: string): Promise<void> {
     if (!this.savedCanvasStates.delete(canvasPath)) return;
     await this.flushPluginDataSave();
@@ -479,36 +471,6 @@ export default class CanvasFoldingPlugin extends Plugin {
     for (const [canvasPath, state] of Object.entries(data.canvasStates)) {
       this.savedCanvasStates.set(canvasPath, state);
     }
-  }
-
-  private cleanupMissingCanvasStates(): number {
-    let removedCount = 0;
-    for (const canvasPath of this.savedCanvasStates.keys()) {
-      const file = this.app.vault.getAbstractFileByPath(canvasPath);
-      if (
-        !(file instanceof TFile) ||
-        file.extension.toLowerCase() !== "canvas"
-      ) {
-        this.savedCanvasStates.delete(canvasPath);
-        removedCount += 1;
-      }
-    }
-    return removedCount;
-  }
-
-  private async pruneAllSavedCanvasNodeStates(): Promise<number> {
-    let changedCanvasCount = 0;
-    for (const canvasPath of [...this.savedCanvasStates.keys()]) {
-      const file = this.app.vault.getAbstractFileByPath(canvasPath);
-      if (
-        file instanceof TFile &&
-        file.extension.toLowerCase() === "canvas" &&
-        (await this.pruneCanvasNodeStates(file))
-      ) {
-        changedCanvasCount += 1;
-      }
-    }
-    return changedCanvasCount;
   }
 
   private scheduleCanvasNodeStatePrune(file: TFile): void {
@@ -566,6 +528,8 @@ export default class CanvasFoldingPlugin extends Plugin {
   }
 
   private removeCanvasStatePath(path: string): void {
+    // Actual Vault path events remain authoritative even while restoration is
+    // disabled; the persistence toggle must not leave obsolete path keys.
     const removedSavedCount = removePathEntries(this.savedCanvasStates, path);
     for (const statesByPath of this.collapseStates.values()) {
       removePathEntries(statesByPath, path);

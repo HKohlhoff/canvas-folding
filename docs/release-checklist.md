@@ -47,6 +47,11 @@ npm run build:prod
 - Upgrade once from the previous plugin data and confirm that the Markdown-
   rendered update description opens once, settings and persisted Canvas states
   survive, closing it creates no Vault file, and restart does not reopen it.
+- Record a non-empty `canvasStates` entry, then reload and update the plugin
+  while its Canvas is closed or temporarily unavailable. Confirm that the
+  entry remains byte-equivalent in plugin data. Open **Manage persisted canvas
+  states** and confirm that merely opening and closing it does not rewrite or
+  remove any entry.
 - With a non-empty state saved, turn persistence off and change the same Canvas
   to a different non-empty state. Turn persistence on again and confirm that
   the previously saved state is restored rather than the temporary state from

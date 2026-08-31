@@ -6,6 +6,13 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep persisted Canvas states unchanged while the plugin starts, reloads, or
+  updates and while the persisted-state manager opens. Runtime Vault indexes
+  and Canvas contents can be temporarily unavailable during these operations
+  and are no longer used for destructive startup validation.
+
 ## [1.2.3] – 2026-08-31
 
 ### Fixed

@@ -39,31 +39,20 @@ interface RenderedElement {
   textContent: string;
 }
 
-void test("cleans stale states before rendering the empty state", async () => {
-  let cleanupCount = 0;
-  let paths = ["Deleted.canvas"];
+void test("renders every saved state without cleanup side effects", () => {
+  const paths = ["Unavailable.canvas"];
   const modal = createModal({
-    cleanup: async () => {
-      cleanupCount += 1;
-      paths = [];
-    },
     getPaths: () => paths,
   });
 
   modal.onOpen();
-  await settleAsyncRender();
 
   const rendered = getRenderedModal(modal);
-  assert.equal(cleanupCount, 1);
   assert.equal(rendered.title, "Manage persisted canvas states");
   assert.deepEqual(
-    rendered.contentEl.children.map((child) => child.textContent),
-    [
-      "Removing persisted states only disables their restoration between sessions. Folding state and visibility in currently open tabs remain unchanged.",
-      "No persisted canvas states are stored.",
-    ],
+    getStateList(rendered).settings.map((setting) => setting.name),
+    ["Unavailable"],
   );
-  assert.equal(rendered.contentEl.settings.length, 0);
 });
 
 void test("derives Canvas names and sorts by Canvas or path", () => {
@@ -208,7 +197,6 @@ function createModal(
   overrides: Partial<PersistedCanvasStatesModalHost>,
 ): PersistedCanvasStatesModal {
   return new PersistedCanvasStatesModal({} as App, {
-    cleanup: async () => {},
     clearAll: async () => {},
     getPaths: () => [],
     remove: async () => {},
