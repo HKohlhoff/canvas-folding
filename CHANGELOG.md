@@ -6,6 +6,14 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.3] – 2026-08-31
+
+### Fixed
+
+- Preserve existing saved Canvas states across plugin updates and while
+  persistence is disabled. Re-enabling persistence restores those states
+  instead of replacing them with non-persistent changes from open tabs.
+
 ## [1.2.2] – 2026-08-30
 
 ### Fixed
