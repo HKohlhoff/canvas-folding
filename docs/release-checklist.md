@@ -5,11 +5,10 @@ Use this checklist before publishing an Obsidian plugin release.
 ## Metadata
 
 - `manifest.json` version is correct.
-- For feature releases, the embedded update-note ID matches the plugin version
-  so the release opens its note once, and `Last Update.md` contains the
-  identical Markdown. A maintenance release may retain the preceding feature
-  note only through an explicit version-specific test exception, so it does not
-  reopen an already read note.
+- For every release, including maintenance releases, the embedded update-note
+  ID and displayed version exactly match `manifest.json`, the settings display
+  names the same version, and `Last Update.md` contains identical Markdown.
+  Version-specific exceptions are not permitted.
 - Every user-facing feature release follows the shared update-note standard:
   open a transient Markdown view once after update, mark it as read only after
   it closes, create no Vault file, and keep **Show last update** at the bottom

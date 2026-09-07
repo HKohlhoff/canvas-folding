@@ -16,6 +16,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 - Clamp restored toolbar positions to the current Canvas bounds after layout,
   split-view, and device-size changes.
 - Keep the About settings version synchronized with the embedded feature note.
+- Require the manifest, update-note ID and heading, settings description, and
+  repository update note to name the exact same version for every release.
 - Prevent older plugin versions from overwriting data written by a newer,
   unsupported plugin-data schema.
 - Handle queued background save failures without unhandled promise rejections.
