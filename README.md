@@ -415,11 +415,11 @@ npm test
 npm run build:prod
 ```
 
-For local deployment, set `OBSIDIAN_PLUGINS_DIR` to a test vault's plugin
-directory:
+For a local runtime test, explicitly set `OBSIDIAN_PLUGINS_DIR` to the target
+vault's `.obsidian/plugins` directory:
 
 ```bash
-OBSIDIAN_PLUGINS_DIR="/path/to/vault/.obsidian/plugins" npm run build:prod:deploy
+OBSIDIAN_PLUGINS_DIR="/path/to/TestVault/.obsidian/plugins" npm run deploy:test-vault
 ```
 
 The production release contains `main.js`, `manifest.json`, and `styles.css`.
