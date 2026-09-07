@@ -1,4 +1,5 @@
 import type { SettingDefinitionItem } from "obsidian";
+import { CURRENT_RELEASE_NOTES_VERSION } from "./release-notes-content";
 import {
   DEFAULT_SETTINGS,
   type CanvasFoldingSettings,
@@ -119,7 +120,7 @@ export function getCanvasFoldingSettingDefinitions(
       items: [
         {
           name: "Last update",
-          desc: "Review the features and usage notes for version 1.1.1.",
+          desc: `Review the features and usage notes for version ${CURRENT_RELEASE_NOTES_VERSION}.`,
           render: (setting) => {
             setting.addButton((button) => {
               button

@@ -1,6 +1,6 @@
 {
   "name": "canvas-folding",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Collapse and expand hierarchical branches in Canvas.",
   "main": "main.js",
   "type": "module",
@@ -9,11 +9,13 @@
   },
   "scripts": {
     "create:test-vault": "node scripts/create-test-vault.mjs",
+    "deploy:test-vault": "node build.mjs --production --deploy",
     "lint": "eslint . --max-warnings=0",
     "build": "node build.mjs --production",
     "build:deploy": "node build.mjs --deploy",
     "test": "npm run lint && npm run typecheck && npm run test:metadata && npm run test:unit",
     "test:metadata": "node scripts/check-release-metadata.mjs",
+    "test:release-tag": "node scripts/check-release-tag.mjs",
     "test:unit": "node scripts/run-unit-tests.mjs",
     "typecheck": "tsc --noEmit",
     "dev": "node build.mjs --watch",

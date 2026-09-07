@@ -1,8 +1,9 @@
-import { App, Modal, Setting } from "obsidian";
+import { App, Modal, Notice, Setting } from "obsidian";
 
 export interface PersistedCanvasStatesModalHost {
   clearAll(): Promise<void>;
   getPaths(): readonly string[];
+  isReadOnly(): boolean;
   remove(canvasPath: string): Promise<void>;
 }
 
@@ -44,6 +45,7 @@ export function sortPersistedCanvasStatePaths(
 }
 
 export class PersistedCanvasStatesModal extends Modal {
+  private busy = false;
   private renderSequence = 0;
   private sortDirection: PersistedCanvasStateSortDirection = "asc";
   private sortKey: PersistedCanvasStateSortKey = "canvas";
@@ -68,6 +70,12 @@ export class PersistedCanvasStatesModal extends Modal {
     this.contentEl.createEl("p", {
       text: "Removing persisted states only disables their restoration between sessions. Folding state and visibility in currently open tabs remain unchanged.",
     });
+    const readOnly = this.host.isReadOnly();
+    if (readOnly) {
+      this.contentEl.createEl("p", {
+        text: "Saved states are read-only because the stored plugin data belongs to a newer canvas folding version.",
+      });
+    }
 
     const paths = sortPersistedCanvasStatePaths(
       this.host.getPaths(),
@@ -84,7 +92,7 @@ export class PersistedCanvasStatesModal extends Modal {
     const list = this.contentEl.createDiv({
       cls: "canvas-folding-persisted-states-list",
     });
-    list.setAttribute("role", "region");
+    list.setAttribute("role", "table");
     list.setAttribute("aria-label", "Persisted canvas states");
     this.renderColumnHeaders(list);
 
@@ -96,11 +104,16 @@ export class PersistedCanvasStatesModal extends Modal {
           button
             .setButtonText("Remove")
             .setDestructive()
+            .setDisabled(this.busy || readOnly)
             .onClick(async () => {
               await this.runAndRender(() => this.host.remove(canvasPath));
             });
         });
       row.settingEl.addClass("canvas-folding-persisted-states-row");
+      row.settingEl.setAttribute("role", "row");
+      row.nameEl.setAttribute("role", "cell");
+      row.descEl.setAttribute("role", "cell");
+      row.controlEl.setAttribute("role", "cell");
     }
 
     this.contentEl.createEl("hr", {
@@ -110,10 +123,17 @@ export class PersistedCanvasStatesModal extends Modal {
       .setName("Remove all persisted canvas states.")
       .setDesc("Remove every stored state used for restoration between sessions.")
       .addButton((button) => {
+        let confirmed = false;
         button
           .setButtonText("Remove all")
           .setDestructive()
+          .setDisabled(this.busy || readOnly)
           .onClick(async () => {
+            if (!confirmed) {
+              confirmed = true;
+              button.setButtonText("Confirm remove all");
+              return;
+            }
             await this.runAndRender(() => this.host.clearAll());
           });
       });
@@ -166,8 +186,17 @@ export class PersistedCanvasStatesModal extends Modal {
   }
 
   private async runAndRender(operation: () => Promise<void>): Promise<void> {
+    if (this.busy || this.host.isReadOnly()) return;
+    this.busy = true;
     const sequence = this.renderSequence;
-    await operation();
+    this.renderStates();
+    try {
+      await operation();
+    } catch (error: unknown) {
+      console.error("[Canvas Folding] Could not update persisted canvas states", error);
+      new Notice("Canvas folding could not save the persisted-state change.", 5000);
+    }
+    this.busy = false;
     if (sequence !== this.renderSequence) return;
     this.renderStates();
   }

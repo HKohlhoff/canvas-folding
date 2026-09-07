@@ -5,6 +5,7 @@ import {
   createPluginData,
   discardSessionStatesForPersistenceEnable,
   getSortedCanvasStatePaths,
+  hasUnsupportedPluginDataVersion,
   normalizePluginData,
   PLUGIN_DATA_VERSION,
   removePathEntries,
@@ -76,6 +77,19 @@ void test("retains saved canvas states across a plugin data version update", () 
     },
   });
   assert.equal(data.dataVersion, PLUGIN_DATA_VERSION);
+});
+
+void test("recognizes future plugin data versions before migration writes", () => {
+  assert.equal(
+    hasUnsupportedPluginDataVersion({ dataVersion: PLUGIN_DATA_VERSION + 1 }),
+    true,
+  );
+  assert.equal(
+    hasUnsupportedPluginDataVersion({ dataVersion: PLUGIN_DATA_VERSION }),
+    false,
+  );
+  assert.equal(hasUnsupportedPluginDataVersion({ dataVersion: "future" }), false);
+  assert.equal(hasUnsupportedPluginDataVersion({}), false);
 });
 
 void test("writes saved canvas states while persistence is disabled", () => {

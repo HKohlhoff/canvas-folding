@@ -5,11 +5,10 @@ Use this checklist before publishing an Obsidian plugin release.
 ## Metadata
 
 - `manifest.json` version is correct.
-- For feature releases, the embedded update-note ID matches the plugin version
-  so the release opens its note once, and `Last Update.md` contains the
-  identical Markdown. A maintenance release may retain the preceding feature
-  note only through an explicit version-specific test exception, so it does not
-  reopen an already read note.
+- For every release, including maintenance releases, the embedded update-note
+  ID and displayed version exactly match `manifest.json`, the settings display
+  names the same version, and `Last Update.md` contains identical Markdown.
+  Version-specific exceptions are not permitted.
 - Every user-facing feature release follows the shared update-note standard:
   open a transient Markdown view once after update, mark it as read only after
   it closes, create no Vault file, and keep **Show last update** at the bottom
@@ -37,6 +36,9 @@ npm run build:prod
 - `release/styles.css` exists only if the plugin needs styles.
 - CI and release workflows use reviewed current major versions of their
   official GitHub Actions and grant only the permissions they require.
+- A release tag must exactly match `manifest.json`, `package.json`, and the
+  corresponding `versions.json` entry before provenance is attested or a draft
+  release is created.
 
 ## Manual Obsidian Test
 
@@ -52,6 +54,10 @@ npm run build:prod
   entry remains byte-equivalent in plugin data. Open **Manage persisted canvas
   states** and confirm that merely opening and closing it does not rewrite or
   remove any entry.
+- Load a copy of plugin data with a deliberately newer `dataVersion`. Confirm
+  that Canvas Folding warns once, permits non-persistent viewing, and does not
+  rewrite the file or reopen the feature note until a compatible plugin version
+  is restored.
 - With a non-empty state saved, turn persistence off and change the same Canvas
   to a different non-empty state. Turn persistence on again and confirm that
   the previously saved state is restored rather than the temporary state from
@@ -73,7 +79,8 @@ npm run build:prod
   and the maintained AnuPpuccin profile on macOS, iPhone and iPad. Record the
   exact theme versions and results before updating the README compatibility
   statement.
-- Verify desktop-only behavior if `isDesktopOnly` is `true`.
+- Confirm that `isDesktopOnly` remains `false` and that Canvas Folding can be
+  enabled and used on both desktop and mobile Obsidian.
 
 ### Canvas Folding matrix
 
@@ -98,8 +105,10 @@ npm run build:prod
 - Open the same Canvas in two leaves and verify that controls, focus and visibility remain leaf-specific.
 - Navigate away and back in one leaf, then close and reopen the leaf with persistence disabled and enabled.
 - Open the persisted-state manager after saving a new state and after reopening
-  the settings tab. Verify stale entries are cleaned, paths are sorted, one
-  state and all states can be removed, and currently open tabs stay unchanged.
+  the settings tab. Verify that merely opening it is read-only, paths are
+  sorted, one state can be removed, removing all requires confirmation, and
+  currently open tabs stay unchanged. Verify separately that actual Vault
+  rename and delete events migrate or remove the affected stored paths.
 - Disable and re-enable Canvas Folding and verify that no managed classes, controls or interaction handlers remain stale.
 - Focus a branch and verify that neither dimmed nodes nor dimmed edges can be selected or open Obsidian's item toolbar.
 - Focus a branch whose descendants are inside a Canvas group and verify that the group frame remains active.
@@ -116,6 +125,9 @@ npm run build:prod
   the folding control must grow without covering or shrinking the focus
   control or node content.
 - Move the toolbar handle with every arrow key and verify that it remains inside a narrow Canvas view.
+- Move the toolbar near the lower/right edge, then shrink the window or split
+  and reopen the Canvas. Verify that the restored toolbar is clamped inside the
+  current Canvas bounds.
 - On a touch device, tap Canvas nodes with the plugin toolbar visible, tap a branch control, drag the toolbar handle, horizontally scroll a narrow toolbar and check whether a long press opens the branch-level menu.
 - Discover the plugin by ID `canvas-folding`, verify `api.apiVersion === 1`, and compare `getFoldState()` for an active leaf, a persisted closed Canvas and a path without applicable state.
 

@@ -356,6 +356,21 @@ void test("keeps control placement independent of node selection", () => {
   assert.equal(container.classes.has("is-node-selected"), false);
 });
 
+void test("removes controls and tab order for a closed leaf", () => {
+  const manager = new CanvasNodeControlManager();
+  const attached = createContext("attached.canvas", {});
+  const closed = createContext("closed.canvas", {});
+  sync(manager, attached.context);
+  sync(manager, closed.context);
+
+  manager.removeLeavesExcept(new Set([attached.context.leaf]));
+
+  assert.equal(requireContainer(attached.host).removed, false);
+  assert.equal(requireContainer(closed.host).removed, true);
+  assert.equal(getControlOrderByLeaf(manager).has(attached.context.leaf), true);
+  assert.equal(getControlOrderByLeaf(manager).has(closed.context.leaf), false);
+});
+
 function sync(
   manager: CanvasNodeControlManager,
   context: ActiveCanvasContext,

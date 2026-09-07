@@ -22,6 +22,8 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: npm test
+      - name: Verify release tag
+        run: npm run test:release-tag -- "$GITHUB_REF_NAME"
       - run: npm run build:prod
       - name: Attest build provenance
         uses: actions/attest@v4

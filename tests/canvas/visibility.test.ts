@@ -103,6 +103,24 @@ void test("keeps managed visibility isolated between canvas leaves", () => {
   assert.equal(second.nodeB.has("canvas-folding-hidden"), true);
 });
 
+void test("restores visibility and interaction management for closed leaves", () => {
+  const attached = createContext();
+  const closed = createContext();
+  const closedTarget = { id: "B" };
+  const closedLayer = createInteractionLayer(closedTarget);
+  closed.context.nodeInteractionLayer = closedLayer;
+  const manager = new CanvasVisibilityManager();
+  manager.apply(attached.context, new Set(["B"]));
+  manager.apply(closed.context, new Set(["B"]));
+
+  manager.restoreLeavesExcept(new Set([attached.context.leaf]));
+
+  assert.equal(attached.nodeB.has("canvas-folding-hidden"), true);
+  assert.equal(closed.nodeB.has("canvas-folding-hidden"), false);
+  closedLayer.setTarget(closedTarget);
+  assert.equal(closedLayer.target, closedTarget);
+});
+
 void test("blocks the interaction layer from targeting hidden nodes", () => {
   const { context } = createContext();
   const targetNode = { id: "B" };
