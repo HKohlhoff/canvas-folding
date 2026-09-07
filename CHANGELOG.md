@@ -6,6 +6,8 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.5] – 2026-09-07
+
 ### Fixed
 
 - Keep closed Canvas leaves from retaining Folding controls, toolbars,

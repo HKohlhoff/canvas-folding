@@ -1,25 +1,23 @@
-# Canvas Folding 1.2.1: compact controls and clearer counts
+# Canvas Folding 1.2.5: safer state and cleaner lifecycle
 
-This update makes Canvas Folding controls more reliable across themes and touch devices, gives card content more room, and makes saved states and documentation easier to access.
+This maintenance update strengthens data safety, cleans up closed Canvas tabs more reliably, and keeps the toolbar reachable after layout changes.
 
 ## Highlights
 
-- **Theme-stable compact controls:** folding and focus controls keep the same circular or pill geometry, compact size, and neutral highlight states across Obsidian's default theme, Minimal, and AnuPpuccin. The maintained profiles were tested on macOS, iPadOS, and iOS.
-- **More room for card content:** controls use the compact desktop size on touch devices and sit close inside the upper-right node corner. The node border remains available for resizing.
-- **Complete folded totals:** a collapsed branch now counts every hidden node and group, including nodes that disappear with a contained group. The control shows the total; its tooltip separates nodes from groups.
-- **Cleaner collapsed parents:** a collapsed parent shows only its folding control. Its focus control returns after expanding unless focus controls are hidden globally.
-- **Reliable visibility actions:** the two toolbar eye actions immediately hide or restore their corresponding folding and focus controls without changing fold or focus state.
-- **Sortable saved states:** **Manage persisted canvas states** now shows **Canvas**, **Path**, and **Action** columns. Click **Canvas** or **Path** to sort in either direction.
-- **Warning-free compatibility:** the saved-state table uses a broadly supported nested grid and passes the Community Plugin CSS review without compatibility warnings.
-- **README inside settings:** **Show readme** opens the current plugin documentation directly from the About settings without creating a Vault file or automatically loading README images.
-- **Stable integration:** the public Canvas Folding API remains at version 1, so existing optional Canvas HTML Exporter integration continues to receive fold state in the same format.
+- **Safer saved states:** queued saves, failed writes, and rapid manager actions can no longer leave a successful later save with an outdated intermediate state.
+- **Protected downgrades:** if plugin data belongs to a newer Canvas Folding version, this version leaves it untouched and clearly marks settings and saved states as read-only.
+- **Complete tab cleanup:** closing one Canvas tab removes its controls, toolbar, visibility classes, and interaction references while other Canvas tabs continue normally.
+- **Reachable toolbar:** restored toolbar positions are kept inside the current Canvas after a window resize, split-layout change, or move to a smaller device.
+- **Safer state management:** **Remove all** now requires confirmation, and the saved-state table exposes clearer structure to assistive technology.
+- **Stronger release safeguards:** builds, test-vault deployment, version tags, and release artifacts receive additional consistency checks.
+- **Stable integration:** Canvas files remain untouched, and the public Canvas Folding API remains at version 1.
 
 ## Using the update
 
-1. Open a Canvas and use the controls in the upper-right interior of a node.
-2. Collapse a branch to see the complete hidden-item total; on desktop, hover over the count to see the node/group breakdown.
-3. Use the two eye actions in the Canvas toolbar to show or hide folding and focus controls independently.
-4. Open Canvas Folding settings to sort saved Canvas states or choose **Show readme** for the full documentation.
+1. Update Canvas Folding and continue using existing Canvas files and saved states normally.
+2. If you resize or split a Canvas view, the floating toolbar now remains within the visible Canvas area.
+3. Open **Manage persisted canvas states** to remove individual entries or use the confirmed **Remove all** action.
+4. If a newer plugin-data format is detected after a downgrade, update Canvas Folding again before changing settings or saved states.
 
 Canvas Folding still changes only the current view. It never writes folding data into your Canvas files.
 
