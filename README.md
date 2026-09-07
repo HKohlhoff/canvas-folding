@@ -24,7 +24,7 @@ maintained test profile.
 If Canvas Folding is useful to you, you can support its continued development
 by buying me a coffee.
 
-<a href="https://ko-fi.com/R5R2151DS7" target="_blank"><img height="36" style="border:0;height:36px" src="https://storage.ko-fi.com/cdn/kofi1.png?v=6" border="0" alt="Buy Me a Coffee at ko-fi.com"></a>
+<a href="https://ko-fi.com/hokdev" target="_blank"><img height="36" style="border:0;height:36px" src="https://storage.ko-fi.com/cdn/kofi1.png?v=6" border="0" alt="Buy Me a Coffee at ko-fi.com"></a>
 
 ## Features
 
@@ -281,13 +281,19 @@ plugin settings and data, it may also transfer Canvas Folding's `data.json`;
 that behavior is controlled by the synchronization setup, not by Canvas
 Folding.
 
+If an older Canvas Folding version encounters plugin data written by a newer
+schema version, it preserves that data and shows a notice instead of
+overwriting unknown fields. Existing settings and saved states remain
+read-only, while folding continues to work temporarily in open tabs. Reinstall
+the newer plugin version to resume persistence.
+
 ## Installation
 
-After Canvas Folding is listed, install it directly from Obsidian Community
-Plugins.
+Install Canvas Folding directly from **Settings → Community plugins → Browse**
+in Obsidian.
 
-Until then, or for a manual installation, download `main.js`, `manifest.json`,
-and `styles.css` from a GitHub release and place them in:
+For a manual installation, download `main.js`, `manifest.json`, and `styles.css`
+from a GitHub release and place them in:
 
 ```text
 <vault>/.obsidian/plugins/canvas-folding/

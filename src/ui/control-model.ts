@@ -141,14 +141,17 @@ export function buildFocusControlModels(
   graph: CanvasGraph,
   state: Pick<
     BranchCollapseState,
-    "getFocusedNodeId" | "getHiddenNodeIds" | "isBranchCollapsed"
+    "getFocusedNodeId" | "getHiddenNodeIds" | "isCollapsed"
   >,
 ): readonly FocusControlModel[] {
   const hiddenNodeIds = state.getHiddenNodeIds(graph);
   const focusedNodeId = state.getFocusedNodeId();
 
   return getNodesInDepthFirstOrder(graph).flatMap((node) =>
-    hiddenNodeIds.has(node.id) || state.isBranchCollapsed(graph, node.id)
+    hiddenNodeIds.has(node.id) || state.isCollapsed(node.id) ||
+      (graph.childrenByNode.get(node.id) ?? []).some((childId) =>
+        hiddenNodeIds.has(childId)
+      )
       ? []
       : [{
           active: node.id === focusedNodeId,

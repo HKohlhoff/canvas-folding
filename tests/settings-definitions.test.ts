@@ -4,6 +4,7 @@ import test from "node:test";
 import type { ButtonComponent, Setting, SettingGroup } from "obsidian";
 
 import { getCanvasFoldingSettingDefinitions } from "../src/settings-definitions";
+import { CURRENT_RELEASE_NOTES_VERSION } from "../src/release-notes-content";
 
 void test("starts settings with a non-destructive Canvas notice", () => {
   const definitions = getCanvasFoldingSettingDefinitions();
@@ -88,6 +89,10 @@ void test("places a reusable last-update action at the bottom", () => {
 
   const item = about.items?.[0];
   assert.ok(item !== undefined && "render" in item);
+  assert.equal(
+    item.desc,
+    `Review the features and usage notes for version ${CURRENT_RELEASE_NOTES_VERSION}.`,
+  );
   const button = new FakeButton();
   const setting = {
     addButton: (configure: (component: ButtonComponent) => unknown) => {

@@ -17,6 +17,7 @@ interface CanvasFoldingSettingsHost extends Plugin {
   settings: CanvasFoldingSettings;
   clearSavedCanvasStates(): Promise<void>;
   getSavedCanvasStatePaths(): readonly string[];
+  isPluginDataReadOnly(): boolean;
   removeSavedCanvasState(canvasPath: string): Promise<void>;
   showLastUpdate(): void;
   showReadme(): void;
@@ -34,6 +35,7 @@ export class CanvasFoldingSettingTab extends PluginSettingTab {
         new PersistedCanvasStatesModal(this.app, {
           clearAll: () => this.plugin.clearSavedCanvasStates(),
           getPaths: () => this.plugin.getSavedCanvasStatePaths(),
+          isReadOnly: () => this.plugin.isPluginDataReadOnly(),
           remove: (canvasPath) => this.plugin.removeSavedCanvasState(canvasPath),
         }).open();
       },

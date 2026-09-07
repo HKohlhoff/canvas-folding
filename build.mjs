@@ -140,6 +140,20 @@ function deployToVault() {
     return;
   }
 
+  const requiredReleaseFiles = [
+    path.join(RELEASE_DIR, "main.js"),
+    path.join(RELEASE_DIR, "manifest.json"),
+    ...(fs.existsSync("styles.css")
+      ? [path.join(RELEASE_DIR, "styles.css")]
+      : []),
+  ];
+  if (requiredReleaseFiles.some((file) => !fs.existsSync(file))) {
+    console.warn(
+      "[deploy] skipped: release artifacts are incomplete; run a successful build first"
+    );
+    return;
+  }
+
   ensureDir(OBSIDIAN_PLUGINS_DIR);
   ensureDir(VAULT_PLUGIN_DIR);
 
@@ -188,7 +202,6 @@ function watchStaticFile(file, onChange) {
 }
 
 ensureReleaseDir();
-copyStaticToRelease();
 
 if (deployMode && !OBSIDIAN_PLUGINS_DIR) {
   console.warn(
@@ -215,13 +228,19 @@ const common = {
       name: "copy-static-and-deploy",
       setup(build) {
         build.onEnd((result) => {
-          copyStaticToRelease();
-
           if (result.errors.length === 0) {
+            copyStaticToRelease();
             copyMainToRelease();
             deployToVault();
           } else {
-            console.log("[deploy] skipped because the build reported errors");
+            const invalidatedMain = removeIfExists(
+              path.join(RELEASE_DIR, "main.js")
+            );
+            console.log(
+              `[deploy] skipped because the build reported errors; release/main.js=${
+                invalidatedMain ? "removed" : "absent"
+              }`
+            );
           }
         });
       },

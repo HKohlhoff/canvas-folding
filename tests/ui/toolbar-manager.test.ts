@@ -64,6 +64,22 @@ void test("still removes every managed toolbar during full cleanup", () => {
   assert.equal(getEntries(manager).size, 0);
 });
 
+void test("removes a closed leaf even while its toolbar still appears connected", () => {
+  const manager = new CanvasToolbarManager();
+  const attachedLeaf = {};
+  const closedLeaf = {};
+  const attached = createEntry();
+  const closed = createEntry();
+  getEntries(manager).set(attachedLeaf, attached);
+  getEntries(manager).set(closedLeaf, closed);
+
+  manager.removeLeavesExcept(new Set([attachedLeaf]));
+
+  assert.equal(attached.toolbar.removed, false);
+  assert.equal(closed.toolbar.removed, true);
+  assert.deepEqual([...getEntries(manager).keys()], [attachedLeaf]);
+});
+
 function createEntry(): ToolbarEntry {
   return {
     host: createElement(),

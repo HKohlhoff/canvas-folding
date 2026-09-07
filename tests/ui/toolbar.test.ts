@@ -5,6 +5,7 @@ import { buildCanvasGraph } from "../../src/tree/graph";
 import { BranchCollapseState } from "../../src/tree/state";
 import {
   buildToolbarButtonModels,
+  clampToolbarPosition,
   getToolbarButtonAriaPressed,
   getToolbarLeftPosition,
   isToolbarSpaceKey,
@@ -132,6 +133,27 @@ void test("moves and clamps the toolbar with arrow keys", () => {
       bounds,
     ),
     null,
+  );
+});
+
+void test("clamps restored toolbar positions to the current canvas bounds", () => {
+  const bounds = { minXPercent: 20, maxXPercent: 80, maxYPixels: 120 };
+
+  assert.deepEqual(
+    clampToolbarPosition({ xPercent: 95, yPixels: 5000 }, bounds),
+    { xPercent: 80, yPixels: 120 },
+  );
+  assert.deepEqual(
+    clampToolbarPosition({ xPercent: 5, yPixels: -10 }, bounds),
+    { xPercent: 20, yPixels: 0 },
+  );
+  assert.deepEqual(
+    moveToolbarPositionWithArrowKey(
+      clampToolbarPosition({ xPercent: 95, yPixels: 5000 }, bounds),
+      "ArrowLeft",
+      bounds,
+    ),
+    { xPercent: 78, yPixels: 120 },
   );
 });
 
