@@ -79,7 +79,8 @@ npm run build:prod
   and the maintained AnuPpuccin profile on macOS, iPhone and iPad. Record the
   exact theme versions and results before updating the README compatibility
   statement.
-- Verify desktop-only behavior if `isDesktopOnly` is `true`.
+- Confirm that `isDesktopOnly` remains `false` and that Canvas Folding can be
+  enabled and used on both desktop and mobile Obsidian.
 
 ### Canvas Folding matrix
 
