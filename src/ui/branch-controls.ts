@@ -155,6 +155,19 @@ export class CanvasNodeControlManager {
     }
   }
 
+  removeLeavesExcept(attachedLeaves: ReadonlySet<object>): void {
+    const removedLeaves = new Set<object>();
+    for (const [host, entry] of this.entries) {
+      if (attachedLeaves.has(entry.leaf)) continue;
+      entry.container.remove();
+      this.entries.delete(host);
+      removedLeaves.add(entry.leaf);
+    }
+    for (const leaf of removedLeaves) {
+      this.controlOrderByLeaf.delete(leaf);
+    }
+  }
+
   private getOrCreateEntry(
     host: CanvasNodeElementHandle,
     leaf: object,

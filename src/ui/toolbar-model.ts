@@ -87,6 +87,19 @@ export function moveToolbarPositionWithArrowKey(
   return next;
 }
 
+export function clampToolbarPosition(
+  position: ToolbarPosition,
+  bounds: ToolbarPositionBounds,
+): ToolbarPosition {
+  return {
+    xPercent: Math.min(
+      bounds.maxXPercent,
+      Math.max(bounds.minXPercent, position.xPercent),
+    ),
+    yPixels: Math.min(bounds.maxYPixels, Math.max(0, position.yPixels)),
+  };
+}
+
 export function buildToolbarButtonModels(
   graph: CanvasGraph,
   state: BranchCollapseState,

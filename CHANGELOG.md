@@ -6,6 +6,36 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep closed Canvas leaves from retaining Folding controls, toolbars,
+  visibility classes, or interaction-layer references while another Canvas
+  remains active.
+- Clamp restored toolbar positions to the current Canvas bounds after layout,
+  split-view, and device-size changes.
+- Keep the About settings version synchronized with the embedded feature note.
+- Prevent older plugin versions from overwriting data written by a newer,
+  unsupported plugin-data schema.
+- Handle queued background save failures without unhandled promise rejections.
+- Serialize destructive persisted-state changes, roll back failed setting saves,
+  and make future-version plugin data visibly read-only in the manager.
+- Make test-vault creation fail before mutation when release artifacts are
+  incomplete, stale, or internally inconsistent and preserve other enabled
+  community plugins in an existing target vault.
+- Invalidate `release/main.js` after a failed build instead of leaving a mixed
+  release directory with stale JavaScript.
+- Update the vulnerable transitive development dependency `fast-uri`.
+
+### Changed
+
+- Update the installation instructions for the published Community Plugin and
+  use the canonical Ko-fi profile URL throughout metadata and documentation.
+- Reject release tags that do not match the plugin version before creating or
+  attesting release artifacts.
+- Require confirmation before removing every persisted Canvas state, expose
+  complete table semantics to assistive technology, and avoid repeated hidden-
+  state calculations while rebuilding focus controls.
+
 ## [1.2.4] – 2026-08-31
 
 ### Fixed

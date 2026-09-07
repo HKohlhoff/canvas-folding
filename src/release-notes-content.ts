@@ -1,6 +1,7 @@
 export const CURRENT_RELEASE_NOTES_ID = "release-1.2.1";
+export const CURRENT_RELEASE_NOTES_VERSION = "1.2.1";
 
-export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding 1.2.1: compact controls and clearer counts
+export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding ${CURRENT_RELEASE_NOTES_VERSION}: compact controls and clearer counts
 
 This update makes Canvas Folding controls more reliable across themes and touch devices, gives card content more room, and makes saved states and documentation easier to access.
 

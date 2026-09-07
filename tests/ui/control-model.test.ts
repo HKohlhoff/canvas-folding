@@ -121,6 +121,24 @@ void test("restores a focus control after its branch is expanded", () => {
   );
 });
 
+void test("derives focus controls from one hidden-state calculation per refresh", () => {
+  const graph = buildCanvasGraph(createData());
+  let hiddenStateCalls = 0;
+  const state = {
+    getFocusedNodeId: () => null,
+    getHiddenNodeIds: () => {
+      hiddenStateCalls += 1;
+      return new Set(["D"]);
+    },
+    isCollapsed: () => false,
+  };
+
+  const models = buildFocusControlModels(graph, state);
+
+  assert.equal(hiddenStateCalls, 1);
+  assert.deepEqual(models.map((model) => model.nodeId), ["A", "C"]);
+});
+
 void test("marks a branch with any descendants hidden by an external collapsed group", () => {
   const graph = buildCanvasGraph(createData());
   const state = new BranchCollapseState();

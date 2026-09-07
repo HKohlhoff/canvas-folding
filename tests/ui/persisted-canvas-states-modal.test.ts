@@ -12,14 +12,19 @@ import {
 
 interface RenderedButton {
   destructive: boolean;
+  disabled: boolean;
   onClickCallback: (() => void | Promise<void>) | null;
   text: string;
 }
 
 interface RenderedSetting {
   buttons: RenderedButton[];
+  controlEl: RenderedElement;
   desc: string;
+  descEl: RenderedElement;
   name: string;
+  nameEl: RenderedElement;
+  settingEl: RenderedElement;
 }
 
 interface RenderedModal {
@@ -86,12 +91,33 @@ void test("reverses Canvas sorting when its header is clicked", async () => {
     list.settings.map((setting) => setting.name),
     ["A", "B"],
   );
-  assert.equal(list.attributes.get("role"), "region");
+  assert.equal(list.attributes.get("role"), "table");
   assert.equal(list.attributes.get("aria-label"), "Persisted canvas states");
+  assert.deepEqual(
+    list.settings.map((setting) => [
+      setting.settingEl.attributes.get("role"),
+      setting.nameEl.attributes.get("role"),
+      setting.descEl.attributes.get("role"),
+      setting.controlEl.attributes.get("role"),
+    ]),
+    [
+      ["row", "cell", "cell", "cell"],
+      ["row", "cell", "cell", "cell"],
+    ],
+  );
   const header = list.children.find((child) =>
     child.classes.has("canvas-folding-persisted-states-header")
   );
   assert.ok(header !== undefined);
+  assert.equal(header.attributes.get("role"), "row");
+  assert.deepEqual(
+    header.children.map((column) => column.attributes.get("role")),
+    ["columnheader", "columnheader", "columnheader"],
+  );
+  assert.deepEqual(
+    header.children.map((column) => column.attributes.get("aria-sort")),
+    ["ascending", "none", undefined],
+  );
   assert.equal(header.children[0]?.children[0]?.textContent, "Canvas ↑");
 
   header.children[0]?.children[0]?.click();
@@ -156,6 +182,9 @@ void test("removes one persisted state and then clears all remaining states", as
   );
 
   await settings[1]?.buttons[0]?.onClickCallback?.();
+  assert.equal(clearCount, 0);
+  assert.equal(settings[1]?.buttons[0]?.text, "Confirm remove all");
+  await settings[1]?.buttons[0]?.onClickCallback?.();
   assert.equal(clearCount, 1);
   const emptyContent = getRenderedModal(modal).contentEl;
   assert.equal(emptyContent.settings.length, 0);
@@ -181,6 +210,9 @@ void test("does not render detached content after an operation finishes", async 
     await settleAsyncRender();
     const settings = getRenderedModal(modal).contentEl.settings;
     const settingIndex = action === "remove" ? 0 : 1;
+    if (action === "clear") {
+      await settings[settingIndex]?.buttons[0]?.onClickCallback?.();
+    }
     const operation = settings[settingIndex]?.buttons[0]?.onClickCallback?.();
 
     modal.onClose();
@@ -193,12 +225,64 @@ void test("does not render detached content after an operation finishes", async 
   }
 });
 
+void test("serializes destructive actions while a save is pending", async () => {
+  let finishOperation: (() => void) | undefined;
+  const pendingOperation = new Promise<void>((resolve) => {
+    finishOperation = resolve;
+  });
+  const removed: string[] = [];
+  const modal = createModal({
+    getPaths: () => ["Folder/A.canvas", "Folder/B.canvas"],
+    remove: async (canvasPath) => {
+      removed.push(canvasPath);
+      await pendingOperation;
+    },
+  });
+
+  modal.onOpen();
+  const originalSettings = getRenderedSettings(getRenderedModal(modal));
+  const first = originalSettings[0]?.buttons[0]?.onClickCallback?.();
+  await Promise.resolve();
+
+  assert.equal(
+    getRenderedSettings(getRenderedModal(modal)).every(
+      (setting) => setting.buttons[0]?.disabled,
+    ),
+    true,
+  );
+  await originalSettings[1]?.buttons[0]?.onClickCallback?.();
+  assert.deepEqual(removed, ["Folder/A.canvas"]);
+
+  finishOperation?.();
+  await first;
+});
+
+void test("explains and disables controls for future-version data", () => {
+  const modal = createModal({
+    getPaths: () => ["Folder/A.canvas"],
+    isReadOnly: () => true,
+  });
+
+  modal.onOpen();
+
+  const rendered = getRenderedModal(modal);
+  assert.match(
+    rendered.contentEl.children.map((child) => child.textContent).join(" "),
+    /newer canvas folding version/u,
+  );
+  assert.equal(
+    getRenderedSettings(rendered).every((setting) => setting.buttons[0]?.disabled),
+    true,
+  );
+});
+
 function createModal(
   overrides: Partial<PersistedCanvasStatesModalHost>,
 ): PersistedCanvasStatesModal {
   return new PersistedCanvasStatesModal({} as App, {
     clearAll: async () => {},
     getPaths: () => [],
+    isReadOnly: () => false,
     remove: async () => {},
     ...overrides,
   });

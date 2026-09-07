@@ -27,11 +27,13 @@ import {
   createPluginData,
   discardSessionStatesForPersistenceEnable,
   getSortedCanvasStatePaths,
+  hasUnsupportedPluginDataVersion,
   isCanvasPath,
   normalizePluginData,
   removePathEntries,
   renamePathEntries,
 } from "./plugin-data";
+import { LatestSnapshotWriteQueue } from "./plugin-data-write-queue";
 import { CURRENT_RELEASE_NOTES_ID } from "./release-notes-content";
 import {
   CanvasFoldingSettingTab,
@@ -97,16 +99,30 @@ export default class CanvasFoldingPlugin extends Plugin {
     object,
     Map<string, BranchCollapseState>
   >();
-  private dataSaveChain: Promise<void> = Promise.resolve();
   private dataSaveTimer: number | null = null;
   private liveCanvasFollowUpTimer: number | null = null;
   private liveCanvasRefreshTimer: number | null = null;
+  private pluginDataWriteBlocked = false;
+  private persistedStateMutationChain: Promise<void> = Promise.resolve();
+  private settingsMutationChain: Promise<void> = Promise.resolve();
   private lastShownReleaseNotesId = "";
   private readonly nodePruneTimers = new Map<string, number>();
   private readonly savedCanvasStates = new Map<
     string,
     BranchCollapseStateData
   >();
+  private readonly pluginDataWriteQueue = new LatestSnapshotWriteQueue(
+    () =>
+      createPluginData(
+        this.settings,
+        this.savedCanvasStates,
+        this.lastShownReleaseNotesId,
+      ),
+    async (data) => this.saveData(data),
+    (error) => {
+      console.error("[Canvas Folding] Failed to save plugin data", error);
+    },
+  );
   private readonly visibility = new CanvasVisibilityManager(Platform.isDesktop);
 
   async onload(): Promise<void> {
@@ -114,7 +130,14 @@ export default class CanvasFoldingPlugin extends Plugin {
     // Vault indexes and Canvas contents can be transient during startup,
     // hot reload, updates, and sync. Loading must never validate away saved
     // states against runtime availability.
-    await this.writePluginData();
+    if (this.pluginDataWriteBlocked) {
+      new Notice(
+        "Canvas folding found plugin data from a newer version. Settings and saved states are read-only to prevent data loss.",
+        8000,
+      );
+    } else {
+      await this.writePluginData();
+    }
     this.branchControlsVisible = this.settings.showBranchControls;
     this.focusControlsVisible = this.settings.showFocusControls;
     this.canvasToolbarVisible = this.settings.showCanvasToolbar;
@@ -401,20 +424,37 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.collapseStates.clear();
   }
 
-  async updateSettings(update: Partial<CanvasFoldingSettings>): Promise<void> {
-    const wasRememberingCanvasStates = this.settings.rememberCanvasStates;
-    this.settings = normalizeSettings({ ...this.settings, ...update });
+  updateSettings(update: Partial<CanvasFoldingSettings>): Promise<void> {
+    const mutation = this.settingsMutationChain.then(() =>
+      this.applySettingsUpdate(update)
+    );
+    this.settingsMutationChain = mutation.catch(() => {});
+    return mutation;
+  }
 
-    if (
-      !wasRememberingCanvasStates &&
-      this.settings.rememberCanvasStates
-    ) {
-      discardSessionStatesForPersistenceEnable(
-        this.collapseStates.values(),
+  private async applySettingsUpdate(
+    update: Partial<CanvasFoldingSettings>,
+  ): Promise<void> {
+    if (this.pluginDataWriteBlocked) {
+      new Notice(
+        "Canvas folding settings cannot be changed because the stored data belongs to a newer plugin version.",
+        5000,
       );
+      return;
+    }
+    const previousSettings = this.settings;
+    const wasRememberingCanvasStates = previousSettings.rememberCanvasStates;
+    this.settings = normalizeSettings({ ...previousSettings, ...update });
+    try {
+      await this.flushPluginDataSave();
+    } catch (error: unknown) {
+      this.settings = previousSettings;
+      throw error;
     }
 
-    await this.flushPluginDataSave();
+    if (!wasRememberingCanvasStates && this.settings.rememberCanvasStates) {
+      discardSessionStatesForPersistenceEnable(this.collapseStates.values());
+    }
 
     if (typeof update.showBranchControls === "boolean") {
       this.branchControlsVisible = update.showBranchControls;
@@ -452,19 +492,62 @@ export default class CanvasFoldingPlugin extends Plugin {
     return getSortedCanvasStatePaths(this.savedCanvasStates);
   }
 
+  isPluginDataReadOnly(): boolean {
+    return this.pluginDataWriteBlocked;
+  }
+
   async removeSavedCanvasState(canvasPath: string): Promise<void> {
-    if (!this.savedCanvasStates.delete(canvasPath)) return;
-    await this.flushPluginDataSave();
+    await this.enqueuePersistedStateMutation(async () => {
+      if (this.pluginDataWriteBlocked) {
+        throw new Error("Persisted states are read-only for a newer data version.");
+      }
+      const previous = this.savedCanvasStates.get(canvasPath);
+      if (previous === undefined) return;
+      this.savedCanvasStates.delete(canvasPath);
+      try {
+        await this.flushPluginDataSave();
+      } catch (error: unknown) {
+        if (!this.savedCanvasStates.has(canvasPath)) {
+          this.savedCanvasStates.set(canvasPath, previous);
+        }
+        throw error;
+      }
+    });
   }
 
   async clearSavedCanvasStates(): Promise<void> {
-    if (this.savedCanvasStates.size === 0) return;
-    this.savedCanvasStates.clear();
-    await this.flushPluginDataSave();
+    await this.enqueuePersistedStateMutation(async () => {
+      if (this.pluginDataWriteBlocked) {
+        throw new Error("Persisted states are read-only for a newer data version.");
+      }
+      if (this.savedCanvasStates.size === 0) return;
+      const previous = new Map(this.savedCanvasStates);
+      this.savedCanvasStates.clear();
+      try {
+        await this.flushPluginDataSave();
+      } catch (error: unknown) {
+        for (const [canvasPath, state] of previous) {
+          if (!this.savedCanvasStates.has(canvasPath)) {
+            this.savedCanvasStates.set(canvasPath, state);
+          }
+        }
+        throw error;
+      }
+    });
+  }
+
+  private enqueuePersistedStateMutation(
+    operation: () => Promise<void>,
+  ): Promise<void> {
+    const mutation = this.persistedStateMutationChain.then(operation);
+    this.persistedStateMutationChain = mutation.catch(() => {});
+    return mutation;
   }
 
   private async loadPluginData(): Promise<void> {
-    const data = normalizePluginData(await this.loadData());
+    const rawData: unknown = await this.loadData();
+    this.pluginDataWriteBlocked = hasUnsupportedPluginDataVersion(rawData);
+    const data = normalizePluginData(rawData);
     this.settings = data.settings;
     this.lastShownReleaseNotesId = data.ui.lastShownReleaseNotesId;
     this.savedCanvasStates.clear();
@@ -508,7 +591,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     const graph = buildCanvasGraph(graphData);
     let persistedChanged = false;
     const savedData = this.savedCanvasStates.get(file.path);
-    if (savedData !== undefined) {
+    if (!this.pluginDataWriteBlocked && savedData !== undefined) {
       const savedState = BranchCollapseState.fromData(savedData);
       if (savedState.prune(graph)) {
         persistedChanged = true;
@@ -530,7 +613,9 @@ export default class CanvasFoldingPlugin extends Plugin {
   private removeCanvasStatePath(path: string): void {
     // Actual Vault path events remain authoritative even while restoration is
     // disabled; the persistence toggle must not leave obsolete path keys.
-    const removedSavedCount = removePathEntries(this.savedCanvasStates, path);
+    const removedSavedCount = this.pluginDataWriteBlocked
+      ? 0
+      : removePathEntries(this.savedCanvasStates, path);
     for (const statesByPath of this.collapseStates.values()) {
       removePathEntries(statesByPath, path);
     }
@@ -540,11 +625,9 @@ export default class CanvasFoldingPlugin extends Plugin {
   }
 
   private renameCanvasStatePath(oldPath: string, newPath: string): void {
-    const renamedSavedCount = renamePathEntries(
-      this.savedCanvasStates,
-      oldPath,
-      newPath,
-    );
+    const renamedSavedCount = this.pluginDataWriteBlocked
+      ? 0
+      : renamePathEntries(this.savedCanvasStates, oldPath, newPath);
     for (const statesByPath of this.collapseStates.values()) {
       renamePathEntries(statesByPath, oldPath, newPath);
     }
@@ -560,6 +643,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     if (!this.settings.rememberCanvasStates) {
       return;
     }
+    if (this.pluginDataWriteBlocked) return;
     if (!isCanvasPath(canvasPath)) {
       console.warn("[Canvas Folding] Skipped state persistence: invalid canvas path", {
         canvasPath,
@@ -590,31 +674,35 @@ export default class CanvasFoldingPlugin extends Plugin {
       window.clearTimeout(this.dataSaveTimer);
       this.dataSaveTimer = null;
     }
-    await this.writePluginData();
+    await this.writePluginDataOrThrow();
   }
 
   private writePluginData(): Promise<void> {
-    const data = createPluginData(
-      this.settings,
-      this.savedCanvasStates,
-      this.lastShownReleaseNotesId,
-    );
-    const write = this.dataSaveChain.then(async () => {
-      await this.saveData(data);
-    });
-    this.dataSaveChain = write.catch((error: unknown) => {
-      console.error("[Canvas Folding] Failed to save plugin data", error);
-    });
-    return write;
+    return this.enqueuePluginDataWrite(false);
+  }
+
+  private writePluginDataOrThrow(): Promise<void> {
+    return this.enqueuePluginDataWrite(true);
+  }
+
+  private enqueuePluginDataWrite(throwOnFailure: boolean): Promise<void> {
+    if (this.pluginDataWriteBlocked) {
+      const error = new Error(
+        "Plugin data writes are disabled because the stored data version is newer.",
+      );
+      return throwOnFailure ? Promise.reject(error) : Promise.resolve();
+    }
+    return this.pluginDataWriteQueue.enqueue(throwOnFailure);
   }
 
   private async showCurrentReleaseNotesOnce(): Promise<void> {
+    if (this.pluginDataWriteBlocked) return;
     if (this.lastShownReleaseNotesId === CURRENT_RELEASE_NOTES_ID) return;
     if (!(await this.openLastUpdate())) return;
 
     this.lastShownReleaseNotesId = CURRENT_RELEASE_NOTES_ID;
     try {
-      await this.writePluginData();
+      await this.writePluginDataOrThrow();
     } catch (error: unknown) {
       console.error("[Canvas Folding] Could not save release-note state", error);
       new Notice("The feature update description may appear again after restart.", 5000);
@@ -947,6 +1035,9 @@ export default class CanvasFoldingPlugin extends Plugin {
         this.collapseStates.delete(leaf);
       }
     }
+    this.nodeControls.removeLeavesExcept(attachedLeaves);
+    this.canvasToolbar.removeLeavesExcept(attachedLeaves);
+    this.visibility.restoreLeavesExcept(attachedLeaves);
   }
 
   private notifySuccess(message: string): void {

@@ -5,8 +5,10 @@ import type {
   ToolbarAction,
   ToolbarButtonModel,
   ToolbarPosition,
+  ToolbarPositionBounds,
 } from "./toolbar-model";
 import {
+  clampToolbarPosition,
   getToolbarButtonAriaPressed,
   getToolbarLeftPosition,
   isToolbarSpaceKey,
@@ -103,8 +105,8 @@ export class CanvasToolbarManager {
         if (!event.repeat && model.disabled !== true) onAction(model.action);
       });
     }
-    if (isNewEntry) revealAtInitialPosition(entry.toolbar, position);
-    else applyPosition(entry.toolbar, position);
+    if (isNewEntry) revealAtInitialPosition(entry.toolbar, entry.host, position);
+    else applyPosition(entry.toolbar, entry.host, position);
     installKeyboardMove(
       dragHandle,
       entry.toolbar,
@@ -127,21 +129,30 @@ export class CanvasToolbarManager {
       this.entries.delete(leaf);
     }
   }
+
+  removeLeavesExcept(attachedLeaves: ReadonlySet<object>): void {
+    for (const [leaf, entry] of this.entries) {
+      if (attachedLeaves.has(leaf)) continue;
+      entry.toolbar.remove();
+      this.entries.delete(leaf);
+    }
+  }
 }
 
 function revealAtInitialPosition(
   toolbar: HTMLElement,
+  host: HTMLElement,
   position: ToolbarPosition,
 ): void {
   const view = toolbar.ownerDocument.defaultView;
   if (view === null) {
-    applyPosition(toolbar, position);
+    applyPosition(toolbar, host, position);
     toolbar.removeClass("is-initializing");
     return;
   }
   view.setTimeout(() => {
     if (!toolbar.isConnected) return;
-    applyPosition(toolbar, position);
+    applyPosition(toolbar, host, position);
     toolbar.removeClass("is-initializing");
   }, INITIAL_POSITION_DELAY_MS);
 }
@@ -164,13 +175,18 @@ function restoreToolbarFocus(toolbar: HTMLElement, key: string | null): void {
 
 function applyPosition(
   toolbar: HTMLElement,
+  host: HTMLElement,
   position: ToolbarPosition,
 ): void {
+  const clamped = clampToolbarPosition(
+    position,
+    getToolbarPositionBounds(host, toolbar),
+  );
   toolbar.style.left = getToolbarLeftPosition(
-    position.xPercent,
+    clamped.xPercent,
     toolbar.offsetWidth,
   );
-  toolbar.style.top = `${position.yPixels}px`;
+  toolbar.style.top = `${clamped.yPixels}px`;
 }
 
 function installDrag(
@@ -200,7 +216,7 @@ function installDrag(
         Math.max(0, topY + moveEvent.clientY - startY),
       );
       latest = { xPercent: (nextCenterX / hostRect.width) * 100, yPixels: nextTop };
-      applyPosition(toolbar, latest);
+      applyPosition(toolbar, host, latest);
     };
     const finish = (): void => {
       handle.removeEventListener("pointermove", move);
@@ -223,22 +239,31 @@ function installKeyboardMove(
 ): void {
   let position = { ...initialPosition };
   handle.addEventListener("keydown", (event) => {
-    const hostRect = host.getBoundingClientRect();
-    const toolbarRect = toolbar.getBoundingClientRect();
-    const halfWidthPercent = hostRect.width === 0
-      ? 0
-      : Math.min(50, (toolbarRect.width / 2 / hostRect.width) * 100);
-    const next = moveToolbarPositionWithArrowKey(position, event.key, {
-      minXPercent: halfWidthPercent,
-      maxXPercent: 100 - halfWidthPercent,
-      maxYPixels: Math.max(0, hostRect.height - toolbarRect.height),
-    });
+    const bounds = getToolbarPositionBounds(host, toolbar);
+    position = clampToolbarPosition(position, bounds);
+    const next = moveToolbarPositionWithArrowKey(position, event.key, bounds);
     if (next === null) return;
     blockCanvasInteraction(event);
     position = next;
-    applyPosition(toolbar, position);
+    applyPosition(toolbar, host, position);
     onPositionChange(position);
   });
+}
+
+function getToolbarPositionBounds(
+  host: HTMLElement,
+  toolbar: HTMLElement,
+): ToolbarPositionBounds {
+  const hostRect = host.getBoundingClientRect();
+  const toolbarRect = toolbar.getBoundingClientRect();
+  const halfWidthPercent = hostRect.width === 0
+    ? 0
+    : Math.min(50, (toolbarRect.width / 2 / hostRect.width) * 100);
+  return {
+    minXPercent: halfWidthPercent,
+    maxXPercent: 100 - halfWidthPercent,
+    maxYPixels: Math.max(0, hostRect.height - toolbarRect.height),
+  };
 }
 
 function blockCanvasInteraction(event: Event): void {

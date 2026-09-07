@@ -37,10 +37,14 @@ Before a clean pass:
   support link remains visible and opens only after an explicit click; relative
   documentation links likewise open the repository only after a click.
 - Confirm that removed display-only content leaves no repeated blank lines.
+- On a disposable plugin-data copy, increase `dataVersion` beyond the supported
+  value. Confirm that Canvas Folding reports read-only operation and leaves the
+  file byte-equivalent until the compatible plugin version is restored.
 - Open **Manage persisted canvas states** with multiple same-named and numbered
   Canvases in different folders. Confirm the **Canvas**, **Path** and **Action**
   columns, default Canvas-name order, ascending/descending header clicks and
-  correct per-row removal. Add enough entries to exceed the available height;
+  correct per-row removal. Confirm that **Remove all** requires a second,
+  explicit confirmation click. Add enough entries to exceed the available height;
   confirm that only the list scrolls vertically, its column header remains
   visible and the explanation plus **Remove all** stay outside the scroll area.
 
@@ -179,6 +183,11 @@ Use `01-basic-tree.canvas` unless stated otherwise.
 - Test Tab, Shift+Tab, Enter, Space, the context-menu key and all arrow
   keys on node controls and the toolbar handle.
 - In a narrow split view, move and horizontally scroll the toolbar.
+- Move the toolbar near the lower/right edge, shrink the split, navigate away
+  and back, and confirm that its restored position remains inside the Canvas.
+- With two Canvas leaves open, close one while the other remains active. Confirm
+  that the closed leaf leaves no controls, toolbar, visibility classes, or
+  blocked interaction behind and that the remaining leaf stays unchanged.
 - On macOS, iPhone and iPad, open the same Canvas with Obsidian's default theme,
   Minimal and AnuPpuccin using the maintained test profile. Confirm that all
   enabled controls remain directly visible inside the upper-right corner before

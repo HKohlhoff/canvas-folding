@@ -46,6 +46,6 @@ void test("keeps the actual embedded README display contract", () => {
   assert.doesNotMatch(prepared, /<img|!\[|Image omitted|\n{3,}/u);
   assert.match(
     prepared,
-    /\[Support this plugin on Ko-fi\]\(https:\/\/ko-fi\.com\/R5R2151DS7\)/u,
+    /\[Support this plugin on Ko-fi\]\(https:\/\/ko-fi\.com\/hokdev\)/u,
   );
 });

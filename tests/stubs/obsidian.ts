@@ -1,5 +1,11 @@
 export class App {}
 
+export class ItemView {}
+
+export class Notice {
+  constructor(_message: string, _timeout?: number) {}
+}
+
 export class Modal {
   readonly contentEl = new StubElement();
   title = "";
@@ -27,6 +33,9 @@ export class Setting {
   name = "";
   desc = "";
   readonly buttons: StubButton[] = [];
+  readonly controlEl = new StubElement();
+  readonly descEl = new StubElement();
+  readonly nameEl = new StubElement();
   readonly settingEl = new StubElement();
 
   constructor(containerEl: StubElement) {
@@ -57,6 +66,7 @@ export function setIcon(): void {
 
 class StubButton {
   destructive = false;
+  disabled = false;
   onClickCallback: (() => void | Promise<void>) | null = null;
   text = "";
 
@@ -67,6 +77,11 @@ class StubButton {
 
   setDestructive(): this {
     this.destructive = true;
+    return this;
+  }
+
+  setDisabled(disabled: boolean): this {
+    this.disabled = disabled;
     return this;
   }
 

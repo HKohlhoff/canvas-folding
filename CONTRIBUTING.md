@@ -14,6 +14,11 @@ For local Obsidian testing, set `OBSIDIAN_PLUGINS_DIR` to a vault plugin directo
 npm run build:deploy
 ```
 
+Alternatively, `npm run create:test-vault -- /path/to/TestVault` copies a
+complete production build into a test vault. The command refuses incomplete
+release artifacts and preserves other enabled community plugins and existing
+app configuration in the target vault.
+
 Feature work belongs on a `feature/*` branch. Do not merge, tag, push, or
 publish until the intended test matrix has passed and the release has been
 explicitly approved.

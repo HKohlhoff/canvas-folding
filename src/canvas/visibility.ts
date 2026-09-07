@@ -143,6 +143,20 @@ export class CanvasVisibilityManager {
     this.interactionLayers.clear();
   }
 
+  restoreLeavesExcept(attachedLeaves: ReadonlySet<object>): void {
+    for (const [element, leaf] of this.managedElements) {
+      if (attachedLeaves.has(leaf)) continue;
+      this.restoreElement(element);
+      this.managedElements.delete(element);
+    }
+
+    for (const [layer, managed] of this.interactionLayers) {
+      if (attachedLeaves.has(managed.leaf)) continue;
+      this.restoreInteractionLayer(layer, managed);
+      this.interactionLayers.delete(layer);
+    }
+  }
+
   private updateInteractionLayer(
     layer: CanvasNodeInteractionLayer | null,
     hiddenNodeIds: ReadonlySet<string>,

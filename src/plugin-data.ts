@@ -10,6 +10,13 @@ import {
 
 export const PLUGIN_DATA_VERSION = 2;
 
+export function hasUnsupportedPluginDataVersion(data: unknown): boolean {
+  return isRecord(data) &&
+    typeof data.dataVersion === "number" &&
+    Number.isSafeInteger(data.dataVersion) &&
+    data.dataVersion > PLUGIN_DATA_VERSION;
+}
+
 export interface CanvasFoldingPluginData {
   canvasStates: Readonly<Record<string, BranchCollapseStateData>>;
   dataVersion: typeof PLUGIN_DATA_VERSION;
