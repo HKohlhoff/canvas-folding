@@ -1,7 +1,7 @@
 # Canvas Folding V1 manual test collection
 
 Copy this directory to
-`Publizieren/Obsidian-Plugins/canvas-folding/V1-Test-Sammlung` in the test
+`Obsidian-Plugins/canvas-folding_published/V1-Test-Sammlung` in the test
 vault. The file-node paths in `05-groups-and-node-types.canvas` use that
 location.
 

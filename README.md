@@ -415,11 +415,11 @@ npm test
 npm run build:prod
 ```
 
-The designated local runtime target is the ignored `TestVault/` in this
-repository:
+For a local runtime test, explicitly set `OBSIDIAN_PLUGINS_DIR` to the target
+vault's `.obsidian/plugins` directory:
 
 ```bash
-npm run deploy:test-vault
+OBSIDIAN_PLUGINS_DIR="/path/to/TestVault/.obsidian/plugins" npm run deploy:test-vault
 ```
 
 The production release contains `main.js`, `manifest.json`, and `styles.css`.

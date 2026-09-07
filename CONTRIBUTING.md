@@ -8,11 +8,11 @@ npm test
 npm run build:prod
 ```
 
-The designated local runtime target is the repository-local, ignored
-`TestVault/`. Build and deploy the production candidate with:
+For a local runtime test, explicitly set `OBSIDIAN_PLUGINS_DIR` to the target
+vault's `.obsidian/plugins` directory and deploy the production candidate:
 
 ```bash
-npm run deploy:test-vault
+OBSIDIAN_PLUGINS_DIR="/path/to/TestVault/.obsidian/plugins" npm run deploy:test-vault
 ```
 
 The command refuses incomplete or stale release artifacts and preserves other
