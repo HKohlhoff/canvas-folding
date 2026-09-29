@@ -15,9 +15,9 @@ void test("keeps the transient update note and repository Markdown synchronized"
   assert.equal(CURRENT_RELEASE_NOTES_ID, `release-${manifest.version}`);
   assert.equal(CURRENT_RELEASE_NOTES_VERSION, manifest.version);
   assert.ok(CURRENT_RELEASE_NOTES_MARKDOWN.includes(`Canvas Folding ${manifest.version}`));
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Safer saved states/);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Protected downgrades/);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Complete tab cleanup/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Multi-selection folding/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Smart mixed selections/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Clear toolbar text/);
   assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Show last update/);
   assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /leaves no note or other content file in your Vault/);
   assert.equal(

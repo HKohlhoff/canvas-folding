@@ -1,26 +1,24 @@
-export const CURRENT_RELEASE_NOTES_ID = "release-1.2.5";
-export const CURRENT_RELEASE_NOTES_VERSION = "1.2.5";
+export const CURRENT_RELEASE_NOTES_ID = "release-1.2.6";
+export const CURRENT_RELEASE_NOTES_VERSION = "1.2.6";
 
-export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding ${CURRENT_RELEASE_NOTES_VERSION}: safer state and cleaner lifecycle
+export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding ${CURRENT_RELEASE_NOTES_VERSION}: fold multiple selected branches
 
-This maintenance update strengthens data safety, cleans up closed Canvas tabs more reliably, and keeps the toolbar reachable after layout changes.
+This small update lets you collapse or expand several selected Canvas branches in one action.
 
 ## Highlights
 
-- **Safer saved states:** queued saves, failed writes, and rapid manager actions can no longer leave a successful later save with an outdated intermediate state.
-- **Protected downgrades:** if plugin data belongs to a newer Canvas Folding version, this version leaves it untouched and clearly marks settings and saved states as read-only.
-- **Complete tab cleanup:** closing one Canvas tab removes its controls, toolbar, visibility classes, and interaction references while other Canvas tabs continue normally.
-- **Reachable toolbar:** restored toolbar positions are kept inside the current Canvas after a window resize, split-layout change, or move to a smaller device.
-- **Safer state management:** **Remove all** now requires confirmation, and the saved-state table exposes clearer structure to assistive technology.
-- **Stronger release safeguards:** builds, test-vault deployment, version tags, and release artifacts receive additional consistency checks.
-- **Stable integration:** Canvas files remain untouched, and the public Canvas Folding API remains at version 1.
+- **Multi-selection folding:** select two or more parent nodes and use the toolbar to collapse or expand every applicable branch together.
+- **Smart mixed selections:** leaves and branches already in the requested state are skipped while the remaining selected branches are processed.
+- **Independent nested folds:** when a selected parent and descendant are collapsed together, both remain separate fold points.
+- **Clear toolbar text:** the collapse and expand tooltips now use singular or plural wording to match the current selection.
+- **Stable graph handling:** shared descendants and cycles remain deterministic and finite during multi-selection actions.
 
 ## Using the update
 
-1. Update Canvas Folding and continue using existing Canvas files and saved states normally.
-2. If you resize or split a Canvas view, the floating toolbar now remains within the visible Canvas area.
-3. Open **Manage persisted canvas states** to remove individual entries or use the confirmed **Remove all** action.
-4. If a newer plugin-data format is detected after a downgrade, update Canvas Folding again before changing settings or saved states.
+1. Select one or more parent nodes in a Canvas.
+2. Choose **Collapse selected branch** or **Collapse selected branches** in the Canvas Folding toolbar.
+3. Select the folded parents and use the matching expand action to reveal them together.
+4. Branch focus still requires exactly one selected node.
 
 Canvas Folding still changes only the current view. It never writes folding data into your Canvas files.
 
