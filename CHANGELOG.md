@@ -6,6 +6,12 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+### Changed
+
+- Allow **Collapse selected branch** and **Expand selected branch** to process
+  every applicable node in a multi-selection while skipping leaves and branches
+  that are already in the requested state.
+
 ## [1.2.5] – 2026-09-07
 
 ### Fixed

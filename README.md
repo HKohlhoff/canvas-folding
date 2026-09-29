@@ -28,7 +28,7 @@ by buying me a coffee.
 
 ## Features
 
-- Collapse or expand one selected branch recursively.
+- Collapse or expand one or more selected branches recursively in one action.
 - Collapse every rooted branch while keeping roots and isolated nodes visible.
 - Show the complete Canvas through a chosen global level.
 - Show one node, a limited number of levels, or an entire branch from a node
@@ -193,7 +193,7 @@ On narrow views and mobile devices, the toolbar can be scrolled horizontally.
 
 The toolbar includes actions for:
 
-- the selected branch: collapse and expand;
+- one or more selected branches: collapse and expand every applicable branch;
 - the whole Canvas: collapse all rooted branches, select a global visible
   level, and expand all branches;
 - showing or hiding folding controls;
@@ -212,8 +212,8 @@ is valid:
 
 | Command | Purpose |
 | --- | --- |
-| `Collapse selected branch` | Hide all directed descendants of the selected node. |
-| `Expand selected branch` | Reveal the folded branch at the selected node. |
+| `Collapse selected branch` | Hide all directed descendants of every applicable selected node. |
+| `Expand selected branch` | Reveal every applicable folded branch in the selection. |
 | `Focus selected branch` | Keep the selected node and descendants active while dimming the rest. |
 | `Exit branch focus` | Remove focus without changing the underlying fold state. |
 | `Collapse all branches` | Collapse every rooted branch. |
