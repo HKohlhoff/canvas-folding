@@ -87,6 +87,13 @@ npm run build:prod
 - Copy `manual-tests/` into the documented vault location and complete its V1 test matrix.
 - Copy `examples/Canvas Folding Demo/` to the vault root, open the demo Canvas and follow every explanatory card once.
 - Fold and expand branches containing text, file, image, link and group nodes.
+- Select multiple parent nodes and verify that **Collapse selected branch** and
+  **Expand selected branch** process every applicable branch in one action,
+  skip leaves and branches already in the requested state, and report the
+  number processed. Include a parent and its descendant in the same collapse
+  selection and confirm that expanding only the parent preserves the
+  descendant's independent fold point. Confirm that branch focus still
+  requires exactly one selected node.
 - Connect multiple groups through directed edges and verify clickable folding
   and focus controls plus recursive collapse and expand for the group branch.
 - Hide the only geometrically contained node through a separate branch and

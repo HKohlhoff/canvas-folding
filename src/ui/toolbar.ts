@@ -18,6 +18,8 @@ import {
 
 export {
   buildToolbarButtonModels,
+  getCollapsibleSelectedNodeIds,
+  getExpandableSelectedNodeIds,
   type ToolbarAction,
 } from "./toolbar-model";
 

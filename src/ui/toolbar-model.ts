@@ -1,8 +1,4 @@
-import {
-  getDescendantIds,
-  getRootDepths,
-  type CanvasGraph,
-} from "../tree/graph";
+import { getRootDepths, type CanvasGraph } from "../tree/graph";
 import type { BranchCollapseState } from "../tree/state";
 
 export type ToolbarAction =
@@ -36,6 +32,11 @@ export interface ToolbarPositionBounds {
   maxXPercent: number;
   maxYPixels: number;
   minXPercent: number;
+}
+
+export interface SelectedBranchActionNodeIds {
+  collapsibleNodeIds: readonly string[];
+  expandableNodeIds: readonly string[];
 }
 
 export const TOOLBAR_POINTER_EVENT_NAMES = [
@@ -109,20 +110,21 @@ export function buildToolbarButtonModels(
 ): readonly ToolbarButtonModel[] {
   const selectedNodeId =
     selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
-  const hasSelectedDescendants =
-    selectedNodeId !== undefined &&
-    getDescendantIds(graph, selectedNodeId).length > 0;
-  const selectedBranchCollapsed =
-    selectedNodeId !== undefined &&
-    state.isBranchCollapsed(graph, selectedNodeId);
+  const selectedBranchLabel =
+    selectedNodeIds.length > 1 ? "selected branches" : "selected branch";
+  const selectedBranchActions = getSelectedBranchActionNodeIds(
+    graph,
+    state,
+    selectedNodeIds,
+  );
   const hasRootedBranches = graph.rootIds.some(
     (rootId) => (graph.childrenByNode.get(rootId) ?? []).length > 0,
   );
   const hasRootDepths = Math.max(0, ...getRootDepths(graph).values()) > 0;
 
   return [
-    { action: "collapse-selected", disabled: !hasSelectedDescendants || selectedBranchCollapsed, icon: "minus", label: "Collapse selected branch" },
-    { action: "expand-selected", disabled: !selectedBranchCollapsed, icon: "plus", label: "Expand selected branch" },
+    { action: "collapse-selected", disabled: selectedBranchActions.collapsibleNodeIds.length === 0, icon: "minus", label: `Collapse ${selectedBranchLabel}` },
+    { action: "expand-selected", disabled: selectedBranchActions.expandableNodeIds.length === 0, icon: "plus", label: `Expand ${selectedBranchLabel}` },
     { action: "collapse-all", disabled: !hasRootedBranches, icon: "minus", label: "Collapse all branches", separatorBefore: true },
     { action: "show-level", disabled: !hasRootDepths, icon: "layers", label: "Show canvas through level…" },
     { action: "expand-all", icon: "plus", label: "Expand all branches" },
@@ -133,4 +135,56 @@ export function buildToolbarButtonModels(
     { action: "show-status", icon: "info", label: "Show current status" },
     { action: "hide-toolbar", icon: "x", label: "Hide canvas toolbar", separatorBefore: true },
   ];
+}
+
+export function getCollapsibleSelectedNodeIds(
+  graph: CanvasGraph,
+  state: BranchCollapseState,
+  selectedNodeIds: readonly string[],
+): readonly string[] {
+  return getSelectedBranchActionNodeIds(
+    graph,
+    state,
+    selectedNodeIds,
+  ).collapsibleNodeIds;
+}
+
+export function getExpandableSelectedNodeIds(
+  graph: CanvasGraph,
+  state: BranchCollapseState,
+  selectedNodeIds: readonly string[],
+): readonly string[] {
+  return getSelectedBranchActionNodeIds(
+    graph,
+    state,
+    selectedNodeIds,
+  ).expandableNodeIds;
+}
+
+export function getSelectedBranchActionNodeIds(
+  graph: CanvasGraph,
+  state: BranchCollapseState,
+  selectedNodeIds: readonly string[],
+): SelectedBranchActionNodeIds {
+  const uniqueSelectedNodeIds = new Set(selectedNodeIds);
+  if (uniqueSelectedNodeIds.size === 0) {
+    return { collapsibleNodeIds: [], expandableNodeIds: [] };
+  }
+
+  const hiddenNodeIds = state.getHiddenNodeIds(graph);
+  const collapsibleNodeIds: string[] = [];
+  const expandableNodeIds: string[] = [];
+
+  for (const nodeId of uniqueSelectedNodeIds) {
+    const childIds = graph.childrenByNode.get(nodeId) ?? [];
+    const collapsed = state.isCollapsed(nodeId) ||
+      childIds.some((childId) => hiddenNodeIds.has(childId));
+    if (collapsed) {
+      expandableNodeIds.push(nodeId);
+    } else if (childIds.length > 0) {
+      collapsibleNodeIds.push(nodeId);
+    }
+  }
+
+  return { collapsibleNodeIds, expandableNodeIds };
 }
