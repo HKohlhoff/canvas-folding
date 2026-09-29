@@ -74,6 +74,8 @@ import {
 import {
   buildToolbarButtonModels,
   CanvasToolbarManager,
+  getCollapsibleSelectedNodeIds,
+  getExpandableSelectedNodeIds,
   type ToolbarAction,
 } from "./ui/toolbar";
 
@@ -832,55 +834,65 @@ export default class CanvasFoldingPlugin extends Plugin {
   }
 
   private collapseSelectedBranch(context: ActiveCanvasContext): void {
-    const selectedNodeId = this.getSingleSelectedNodeId(context);
-    if (selectedNodeId === null) {
+    if (context.selectedNodeIds.length === 0) {
+      new Notice("Select one or more canvas nodes first.");
       return;
     }
 
     const graph = buildCanvasGraph(context.data);
-    const descendants = getDescendantIds(graph, selectedNodeId);
-    if (descendants.length === 0) {
-      new Notice("The selected node has no descendants to collapse.");
-      return;
-    }
-
     const state = this.getCollapseState(context, graph);
-    if (state.isBranchCollapsed(graph, selectedNodeId)) {
-      new Notice("The selected branch is already collapsed.");
+    const nodeIds = getCollapsibleSelectedNodeIds(
+      graph,
+      state,
+      context.selectedNodeIds,
+    );
+    if (nodeIds.length === 0) {
+      new Notice("None of the selected branches can be collapsed.");
       return;
     }
 
-    state.collapse(selectedNodeId);
+    for (const nodeId of nodeIds) state.collapse(nodeId);
     this.storeCanvasState(context.key, state);
     const result = this.applyCollapsedState(context, graph, state);
     this.syncNodeControls(context, graph, state);
-    this.debug("Collapsed branch", { selectedNodeId, ...result });
-    this.notifySuccess(`Collapsed branch with ${formatDescendantCount(descendants.length)}.`);
+    this.debug("Collapsed selected branches", { nodeIds, ...result });
+    this.notifySuccess(
+      `Collapsed ${formatSelectedBranchCount(nodeIds.length)}.`,
+    );
   }
 
   private expandSelectedBranch(context: ActiveCanvasContext): void {
-    const selectedNodeId = this.getSingleSelectedNodeId(context);
-    if (selectedNodeId === null) {
+    if (context.selectedNodeIds.length === 0) {
+      new Notice("Select one or more canvas nodes first.");
       return;
     }
 
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
-    if (!state.isBranchCollapsed(graph, selectedNodeId)) {
-      new Notice("The selected branch is not collapsed.");
+    const nodeIds = getExpandableSelectedNodeIds(
+      graph,
+      state,
+      context.selectedNodeIds,
+    );
+    if (nodeIds.length === 0) {
+      new Notice("None of the selected branches can be expanded.");
       return;
     }
 
-    if (state.isCollapsed(selectedNodeId)) {
-      state.expand(selectedNodeId);
-    } else {
-      state.revealBranch(graph, selectedNodeId);
+    for (const nodeId of nodeIds) {
+      if (state.isCollapsed(nodeId)) {
+        state.expand(nodeId);
+      } else {
+        state.revealBranch(graph, nodeId);
+      }
     }
     this.storeCanvasState(context.key, state);
     const result = this.applyVisibilityState(context, graph, state);
     this.syncNodeControls(context, graph, state);
-    this.debug("Expanded branch", { selectedNodeId, ...result });
-    this.notifySuccess("Expanded selected branch.");
+    this.debug("Expanded selected branches", { nodeIds, ...result });
+    this.notifySuccess(
+      `Expanded ${formatSelectedBranchCount(nodeIds.length)}.`,
+    );
   }
 
   private focusSelectedBranch(context: ActiveCanvasContext): void {
@@ -1472,4 +1484,8 @@ export default class CanvasFoldingPlugin extends Plugin {
       state.getRestrictedEdgeIds(graph),
     );
   }
+}
+
+function formatSelectedBranchCount(count: number): string {
+  return `${count} selected ${count === 1 ? "branch" : "branches"}`;
 }
