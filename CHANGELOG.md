@@ -6,11 +6,14 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.6] – 2026-09-29
+
 ### Changed
 
 - Allow **Collapse selected branch** and **Expand selected branch** to process
   every applicable node in a multi-selection while skipping leaves and branches
   that are already in the requested state.
+- Match the Canvas toolbar tooltips to a singular or plural branch selection.
 
 ## [1.2.5] – 2026-09-07
 
