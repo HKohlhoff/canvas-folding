@@ -135,6 +135,17 @@ File: `04-rootless-cycle.canvas`
 File: `05-groups-and-node-types.canvas`
 
 - Verify controls and folding for text, note, image and link nodes.
+- With Advanced Canvas disabled, verify that every group's `−` appears in a
+  square, group-colored frame matching the group-name height directly to the
+  right of its name, then collapse every group through that control. Fully
+  contained nodes, nested groups, incident edges and edge labels
+  disappear; the group frame remains with `+`. Expand it and confirm that any
+  nested group-fold and directed branch-fold states are preserved.
+- Collapse an empty group. It remains available with `+` and expands without
+  changing any nearby item.
+- Keep a branch inside a group collapsed while collapsing and expanding the
+  group, then reverse the order. The two states remain independent. **Expand
+  all branches** clears both kinds of fold.
 - Collapse `Root`: all contained nodes disappear and the non-empty group frame
   disappears with them.
 - Focus `Root`: all contained nodes and the group frame remain active.
@@ -153,9 +164,16 @@ File: `05-groups-and-node-types.canvas`
   by folded group**. Expanding the group must restore the control without
   changing the separate branch's previous state.
 - With Advanced Canvas active, collapse a group through Advanced Canvas and
-  confirm both Canvas Folding controls disappear from its compact frame; expand
-  it and confirm the controls return exactly once.
-- Add an empty group: it remains visible when nearby branches are collapsed.
+  confirm the Advanced Canvas group switch is the only group switch. Expand it
+  and confirm Canvas Folding does not add a duplicate while the Advanced Canvas
+  switch is present. Undo/redo, copy, compact bounds and collapsed-group drag
+  preview continue to behave as Advanced Canvas defines them.
+- Disable Advanced Canvas again without closing the Canvas. Its switch must be
+  replaced visually by exactly one current, square Canvas Folding switch to the
+  right of the group name; no former inline or Advanced Canvas switch may remain
+  visible. Repeat after closing and reopening the Canvas once.
+- Add an empty group: it remains visible when nearby branches are collapsed and
+  receives the same group-fold control when Advanced Canvas is disabled.
 
 ## Cross-file and lifecycle matrix
 

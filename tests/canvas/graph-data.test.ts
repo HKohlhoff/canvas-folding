@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parseCanvasGraphData } from "../../src/canvas/graph-data";
+import {
+  parseCanvasGraphData,
+  restoreCollapsedCanvasData,
+} from "../../src/canvas/graph-data";
 
 void test("reads nodes and edges retained inside collapsed group data", () => {
   const graph = parseCanvasGraphData({
@@ -177,6 +180,67 @@ void test("restores nested collapsed node coordinates recursively", () => {
     width: 100,
     height: 50,
   });
+});
+
+void test("restores complete nested Canvas records for rendering", () => {
+  const restored = restoreCollapsedCanvasData({
+    nodes: [
+      {
+        id: "OUTER",
+        type: "group",
+        collapsed: true,
+        x: 100,
+        y: 200,
+        collapsedData: {
+          nodes: [
+            {
+              id: "INNER",
+              type: "group",
+              collapsed: true,
+              x: 50,
+              y: 60,
+              collapsedData: {
+                nodes: [
+                  { id: "CHILD", type: "text", text: "D1", x: 20, y: 30 },
+                ],
+                edges: [
+                  { id: "INNER_EDGE", fromNode: "INNER", toNode: "CHILD" },
+                ],
+              },
+            },
+          ],
+          edges: [
+            { id: "OUTER_EDGE", fromNode: "OUTER", toNode: "INNER" },
+          ],
+        },
+      },
+    ],
+    edges: [],
+    metadata: { version: "1.0" },
+  });
+
+  assert.deepEqual(restored, {
+    nodes: [
+      { id: "OUTER", type: "group", x: 100, y: 200 },
+      { id: "INNER", type: "group", x: 150, y: 260 },
+      { id: "CHILD", type: "text", text: "D1", x: 170, y: 290 },
+    ],
+    edges: [
+      { id: "OUTER_EDGE", fromNode: "OUTER", toNode: "INNER" },
+      { id: "INNER_EDGE", fromNode: "INNER", toNode: "CHILD" },
+    ],
+    metadata: { version: "1.0" },
+  });
+});
+
+void test("does not rewrite a Canvas without collapsed records", () => {
+  assert.equal(
+    restoreCollapsedCanvasData({
+      nodes: [{ id: "NODE", type: "text" }],
+      edges: [],
+    }),
+    null,
+  );
 });
 
 void test("ignores malformed foreign collapsed records", () => {

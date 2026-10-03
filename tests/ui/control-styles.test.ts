@@ -6,6 +6,7 @@ const styles = readFileSync("styles.css", "utf8");
 
 void test("isolates node-control geometry from theme button styles", () => {
   assert.match(styles, /\.workspace-leaf-content\[data-type="canvas"\][\s\S]+\.canvas-folding-branch-control/);
+  assert.match(styles, /\.canvas-folding-group-control/);
   assert.match(styles, /-webkit-appearance: none;/);
   assert.match(styles, /appearance: none;/);
   assert.match(styles, /box-sizing: border-box;/);
@@ -21,6 +22,33 @@ void test("places controls inside the upper-right corner beyond the resize borde
     /\.canvas-folding-node-controls \{[\s\S]+right: 4px;[\s\S]+top: 4px;[\s\S]+width: max-content;/,
   );
   assert.doesNotMatch(styles, /\.canvas-folding-node-controls\.is-node-selected/);
+});
+
+void test("places the group control beside the native group label", () => {
+  assert.match(
+    styles,
+    /\.canvas-folding-group-control-host \{[\s\S]+--canvas-folding-group-label-width[\s\S]+position: absolute;[\s\S]+scale\(var\(--zoom-multiplier\)\);/,
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.canvas-group-label \+ \.canvas-folding-group-control-host/,
+  );
+  assert.match(
+    styles,
+    /\.canvas-folding-group-control-host \{[\s\S]+background-color: color-mix[\s\S]+var\(--background-primary\)[\s\S]+height: var\(--canvas-folding-group-label-height\);[\s\S]+padding: 0;[\s\S]+width: var\(--canvas-folding-group-label-height\);[\s\S]+z-index: 31;/,
+  );
+  assert.match(
+    styles,
+    /\.canvas-node:has\(> \.canvas-folding-group-control-host\)[\s\S]+> \.collapse-button \{[\s\S]+display: none;/,
+  );
+  assert.match(
+    styles,
+    /\.canvas-node\.canvas-folding-group-collapsed[\s\S]+\.canvas-node-container \{[\s\S]+display: none;/,
+  );
+  assert.match(
+    styles,
+    /\.canvas-node\.canvas-folding-group-collapsed[\s\S]+> \.canvas-folding-node-controls \{[\s\S]+display: none;/,
+  );
 });
 
 void test("keeps node actions directly visible and interactive", () => {

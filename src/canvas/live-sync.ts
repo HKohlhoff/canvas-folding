@@ -1,5 +1,5 @@
 const PLUGIN_UI_SELECTOR =
-  ".canvas-folding-toolbar, .canvas-folding-branch-control";
+  ".canvas-folding-toolbar, .canvas-folding-branch-control, .canvas-folding-group-control-host, .canvas-folding-group-control";
 const IGNORED_CANVAS_CLASSES = new Set([
   "canvas-folding-dimmed",
   "canvas-folding-hidden",
@@ -40,6 +40,37 @@ export class CanvasLiveSync {
       attributeFilter: ["class"],
       attributeOldValue: true,
       attributes: true,
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  disconnect(): void {
+    this.observer?.disconnect();
+    this.observer = null;
+    this.host = null;
+  }
+}
+
+export class StylesheetLiveSync {
+  private host: Node | null = null;
+  private observer: CanvasMutationObserver | null = null;
+
+  constructor(
+    private readonly createObserver: CanvasMutationObserverFactory =
+      (callback) => new MutationObserver(callback),
+  ) {}
+
+  watch(host: Node, onChange: () => void): void {
+    if (this.host === host) return;
+
+    this.disconnect();
+    this.host = host;
+    this.observer = this.createObserver(() => onChange());
+    this.observer.observe(host, {
+      attributeFilter: ["disabled", "href", "media"],
+      attributes: true,
+      characterData: true,
       childList: true,
       subtree: true,
     });

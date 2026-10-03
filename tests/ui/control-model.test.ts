@@ -7,6 +7,7 @@ import { BranchCollapseState } from "../../src/tree/state";
 import {
   buildBranchControlModels,
   buildFocusControlModels,
+  buildGroupControlModels,
   getExternallyCollapsedDescendantCount,
   getRenderedDescendantDepths,
 } from "../../src/ui/control-model";
@@ -19,6 +20,61 @@ void test("creates controls only for nodes with descendants", () => {
     { nodeId: "A", collapsed: false, descendantCount: 3 },
     { nodeId: "B", collapsed: false, descendantCount: 1 },
   ]);
+});
+
+void test("creates group controls for non-empty and empty groups", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "FULL", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "NESTED", type: "group", x: 20, y: 20, width: 120, height: 100 },
+      { id: "CARD", type: "text", x: 160, y: 20, width: 100, height: 60 },
+      { id: "EMPTY", type: "group", x: 400, y: 0, width: 200, height: 100 },
+    ],
+    edges: [],
+  });
+
+  assert.deepEqual(
+    buildGroupControlModels(graph, new Set(["FULL"])),
+    [
+      {
+        collapsed: true,
+        containedGroupCount: 1,
+        containedItemCount: 2,
+        containedNodeCount: 1,
+        nodeId: "FULL",
+      },
+      {
+        collapsed: false,
+        containedGroupCount: 0,
+        containedItemCount: 0,
+        containedNodeCount: 0,
+        nodeId: "EMPTY",
+      },
+      {
+        collapsed: false,
+        containedGroupCount: 0,
+        containedItemCount: 0,
+        containedNodeCount: 0,
+        nodeId: "NESTED",
+      },
+    ],
+  );
+});
+
+void test("omits controls hidden inside a collapsed outer group", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "OUTER", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "INNER", type: "group", x: 20, y: 20, width: 120, height: 100 },
+    ],
+    edges: [],
+  });
+
+  assert.deepEqual(
+    buildGroupControlModels(graph, new Set(["OUTER"]), new Set(["INNER"]))
+      .map((model) => model.nodeId),
+    ["OUTER"],
+  );
 });
 
 void test("reflects collapsed state without changing graph structure", () => {

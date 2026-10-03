@@ -27,9 +27,23 @@ export interface FocusControlModel {
   nodeId: string;
 }
 
+export interface GroupControlModel {
+  collapsed: boolean;
+  containedGroupCount: number;
+  containedItemCount: number;
+  containedNodeCount: number;
+  nodeId: string;
+}
+
 export interface BranchControlRuntimeState {
   externallyCollapsedNodeIds: ReadonlySet<string>;
   groupHiddenNodeIds: ReadonlySet<string>;
+  hiddenNodeIds?: ReadonlySet<string>;
+}
+
+export interface FocusControlRuntimeState {
+  collapsedGroupIds: ReadonlySet<string>;
+  hiddenNodeIds: ReadonlySet<string>;
 }
 
 export function formatDescendantCount(count: number): string {
@@ -62,7 +76,7 @@ export function buildBranchControlModels(
   const groupContainmentIndex = buildGroupContainmentIndex(graph.nodes);
 
   return getNodesInDepthFirstOrder(graph).flatMap((node) => {
-    if (hiddenNodeIds.has(node.id)) {
+    if (hiddenNodeIds.has(node.id) || runtime?.hiddenNodeIds?.has(node.id)) {
       return [];
     }
     const descendantIds = getDescendantIds(graph, node.id);
@@ -143,12 +157,14 @@ export function buildFocusControlModels(
     BranchCollapseState,
     "getFocusedNodeId" | "getHiddenNodeIds" | "isCollapsed"
   >,
+  runtime?: FocusControlRuntimeState,
 ): readonly FocusControlModel[] {
-  const hiddenNodeIds = state.getHiddenNodeIds(graph);
+  const hiddenNodeIds = runtime?.hiddenNodeIds ?? state.getHiddenNodeIds(graph);
   const focusedNodeId = state.getFocusedNodeId();
 
   return getNodesInDepthFirstOrder(graph).flatMap((node) =>
     hiddenNodeIds.has(node.id) || state.isCollapsed(node.id) ||
+      runtime?.collapsedGroupIds.has(node.id) === true ||
       (graph.childrenByNode.get(node.id) ?? []).some((childId) =>
         hiddenNodeIds.has(childId)
       )
@@ -159,6 +175,31 @@ export function buildFocusControlModels(
           nodeId: node.id,
         }],
   );
+}
+
+export function buildGroupControlModels(
+  graph: CanvasGraph,
+  collapsedGroupIds: ReadonlySet<string>,
+  hiddenNodeIds: ReadonlySet<string> = new Set(),
+): readonly GroupControlModel[] {
+  const groupNodeIds = new Set(
+    graph.nodes.filter((node) => node.type === "group").map((node) => node.id),
+  );
+  const containment = buildGroupContainmentIndex(graph.nodes);
+  return getNodesInDepthFirstOrder(graph).flatMap((node) => {
+    if (node.type !== "group" || hiddenNodeIds.has(node.id)) return [];
+    const containedItemIds = containment.get(node.id) ?? [];
+    const containedGroupCount = containedItemIds.filter((nodeId) =>
+      groupNodeIds.has(nodeId)
+    ).length;
+    return [{
+      collapsed: collapsedGroupIds.has(node.id),
+      containedGroupCount,
+      containedItemCount: containedItemIds.length,
+      containedNodeCount: containedItemIds.length - containedGroupCount,
+      nodeId: node.id,
+    }];
+  });
 }
 
 export function getRenderedDescendantDepths(

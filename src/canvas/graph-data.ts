@@ -45,6 +45,22 @@ export function parseCanvasGraphData(value: unknown): CanvasGraphData | null {
   return { nodes, edges };
 }
 
+export function restoreCollapsedCanvasData(
+  value: unknown,
+): Record<string, unknown> | null {
+  if (!isRecord(value) || !Array.isArray(value.nodes) || !Array.isArray(value.edges)) {
+    return null;
+  }
+  if (!containsCollapsedCanvasData(value.nodes)) return null;
+
+  const expanded = expandCollapsedCanvasRecords(value.nodes, value.edges);
+  return {
+    ...value,
+    nodes: expanded.nodes.map(removeExternalCollapseFields),
+    edges: expanded.edges,
+  };
+}
+
 interface ExpandedCanvasRecords {
   edges: unknown[];
   nodes: unknown[];
@@ -207,6 +223,27 @@ function readCanvasNodeGeometry(
 
 function readFiniteNumber(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function containsCollapsedCanvasData(nodes: readonly unknown[]): boolean {
+  return nodes.some((node) => {
+    if (!isRecord(node) || !isRecord(node.collapsedData)) return false;
+    if (
+      !Array.isArray(node.collapsedData.nodes) ||
+      !Array.isArray(node.collapsedData.edges)
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function removeExternalCollapseFields(value: unknown): unknown {
+  if (!isRecord(value)) return value;
+  const restored = { ...value };
+  delete restored.collapsed;
+  delete restored.collapsedData;
+  return restored;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

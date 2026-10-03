@@ -63,6 +63,7 @@ export function normalizePluginData(data: unknown): CanvasFoldingPluginData {
       const state = normalizeBranchCollapseStateData(value);
       if (
         Object.keys(state.visibleDepths).length > 0 ||
+        (state.collapsedGroups?.length ?? 0) > 0 ||
         state.globalVisibleDepth !== undefined ||
         state.focusedNodeId !== undefined
       ) {

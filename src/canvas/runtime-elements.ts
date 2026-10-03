@@ -12,9 +12,21 @@ export interface CanvasElementHandle {
 export interface CanvasNodeView {
   id: string;
   element: CanvasNodeElementHandle;
+  groupLabelElement?: CanvasNodeGroupLabelHandle;
   externallyCollapsed?: boolean;
   externallyCollapsedNodeIds?: readonly string[];
+  externalGroupControl?: CanvasElementHandle;
   visibilityOwnerNodeId?: string;
+}
+
+export interface CanvasNodeGroupLabelHandle extends CanvasElementHandle {
+  insertAdjacentElement(
+    where: InsertPosition,
+    element: Element,
+  ): Element | null;
+  nextElementSibling: Element | null;
+  offsetHeight: number;
+  offsetWidth: number;
 }
 
 export interface CanvasNodeElementHandle extends CanvasElementHandle {
@@ -58,21 +70,78 @@ export function extractCanvasNodeViews(
     const element = asCanvasNodeElement(value.nodeEl);
     if (element !== null) {
       const externalCollapse = readExternalCollapseState(value);
+      const externalGroupControl = readExternalGroupControl(value.collapseEl);
+      const groupLabelElement = asCanvasNodeGroupLabel(value.labelEl);
       const visibilityOwnerNodeId = readPortalVisibilityOwnerNodeId(value.id);
       nodeViews.push({
         id: value.id,
         element,
+        ...(groupLabelElement === null ? {} : { groupLabelElement }),
         ...(externalCollapse.collapsed
           ? { externallyCollapsed: true }
           : {}),
         ...(externalCollapse.nodeIds.length > 0
           ? { externallyCollapsedNodeIds: externalCollapse.nodeIds }
           : {}),
+        ...(externalGroupControl === null ? {} : { externalGroupControl }),
         ...(visibilityOwnerNodeId === null ? {} : { visibilityOwnerNodeId }),
       });
     }
   }
   return nodeViews;
+}
+
+function asCanvasNodeGroupLabel(
+  value: unknown,
+): CanvasNodeGroupLabelHandle | null {
+  const element = asCanvasElement(value);
+  if (
+    element === null ||
+    !isRecord(value) ||
+    typeof value.insertAdjacentElement !== "function" ||
+    typeof value.offsetHeight !== "number" ||
+    typeof value.offsetWidth !== "number"
+  ) {
+    return null;
+  }
+
+  return value as unknown as CanvasNodeGroupLabelHandle;
+}
+
+function readExternalGroupControl(
+  value: unknown,
+): CanvasElementHandle | null {
+  const element = asCanvasElement(value);
+  if (element === null) return null;
+  if (!isRecord(value) || value.isConnected === false) {
+    return null;
+  }
+  if (
+    value.isConnected === true &&
+    hasInactiveExternalControlStyle(value)
+  ) {
+    return null;
+  }
+  return element;
+}
+
+function hasInactiveExternalControlStyle(value: Record<string, unknown>): boolean {
+  const ownerDocument = value.ownerDocument;
+  if (!isRecord(ownerDocument) || !isRecord(ownerDocument.defaultView)) {
+    return false;
+  }
+  const { defaultView } = ownerDocument;
+  if (typeof defaultView.getComputedStyle !== "function") return false;
+
+  try {
+    const style = defaultView.getComputedStyle.call(
+      defaultView,
+      value,
+    ) as CSSStyleDeclaration;
+    return style.position !== "absolute";
+  } catch {
+    return false;
+  }
 }
 
 function readExternalCollapseState(

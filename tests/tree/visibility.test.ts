@@ -69,6 +69,28 @@ void test("hides a non-empty group when all contained nodes are hidden", () => {
   assert.deepEqual([...visibility.hiddenNodeIds], ["A", "B", "G"]);
 });
 
+void test("keeps an explicitly collapsed group host visible", () => {
+  const groupGraph = buildCanvasGraph({
+    nodes: [
+      { id: "G", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "A", type: "text", x: 20, y: 20, width: 80, height: 50 },
+      { id: "B", type: "file", x: 150, y: 80, width: 100, height: 80 },
+    ],
+    edges: [{ id: "AB", fromNode: "A", toNode: "B" }],
+  });
+
+  const visibility = deriveCanvasVisibility(
+    groupGraph,
+    new Set(["A", "B"]),
+    new Set(),
+    new Set(),
+    new Set(["G"]),
+  );
+
+  assert.deepEqual([...visibility.hiddenNodeIds], ["A", "B"]);
+  assert.deepEqual([...visibility.hiddenEdgeIds], ["AB"]);
+});
+
 void test("hides unconnected nodes contained by a hidden group", () => {
   const groupGraph = buildCanvasGraph({
     nodes: [

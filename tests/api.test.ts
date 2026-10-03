@@ -151,6 +151,31 @@ void test("includes unconnected contents of a structurally hidden group", () => 
   assert.deepEqual(snapshot.hiddenEdgeIds, ["ROOT_GROUP"]);
 });
 
+void test("includes contents and incident edges hidden by group folding", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "GROUP", type: "group", x: 0, y: 0, width: 300, height: 200 },
+      { id: "CARD", type: "text", x: 20, y: 20, width: 100, height: 60 },
+      { id: "OUTSIDE", type: "text", x: 400, y: 20, width: 100, height: 60 },
+    ],
+    edges: [{ id: "CARD_OUTSIDE", fromNode: "CARD", toNode: "OUTSIDE" }],
+  });
+
+  const snapshot = createCanvasFoldStateSnapshot(
+    "Folder/Groups.canvas",
+    "active-leaf",
+    {
+      collapsedGroups: ["GROUP"],
+      revealedBranches: {},
+      visibleDepths: {},
+    },
+    graph,
+  );
+
+  assert.deepEqual(snapshot.hiddenNodeIds, ["CARD"]);
+  assert.deepEqual(snapshot.hiddenEdgeIds, ["CARD_OUTSIDE"]);
+});
+
 void test("keeps the complete B1 branch when the asymmetric A1 branch collapses", () => {
   const graph = buildCanvasGraph({
     nodes: ["A1", "A2", "B1", "B2", "LEAF"].map((id) => ({
