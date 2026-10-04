@@ -20,9 +20,10 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 - Keep group folding separate from directed branch folding while allowing
   **Expand all branches** to open both kinds of fold.
-- Defer to Advanced Canvas whenever it owns a group's folding control and
-  coordinate control, content, and edge-geometry hand-off without introducing
-  a plugin dependency.
+- Keep the usual Advanced Canvas group switches to the left of group names and
+  internally disable Canvas Folding's own group-folding mechanism while
+  coordinating control, content, and edge-geometry hand-off without a plugin
+  dependency.
 - Clarify that Canvas Folding stores its own state outside Canvas files and may
   normalize an Advanced Canvas collapsed representation when control returns.
 
