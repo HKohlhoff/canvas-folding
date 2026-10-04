@@ -88,6 +88,118 @@ void test("hides only the frame of an explicitly collapsed group", () => {
   assert.equal(elements.nodeA.has("canvas-folding-group-collapsed"), false);
 });
 
+void test("keeps only selected nodes visible inside a hidden group", () => {
+  const group = new FakeClassList();
+  const selected = new FakeClassList();
+  const sibling = new FakeClassList();
+  const outside = new FakeClassList();
+  const selectedEdge = new FakeClassList();
+  const siblingEdge = new FakeClassList();
+  const groupEdge = new FakeClassList();
+  const context: ActiveCanvasContext = {
+    key: "filtered.canvas",
+    leaf: {},
+    data: {
+      nodes: [
+        { id: "GROUP", type: "group", x: 0, y: 0, width: 300, height: 200 },
+        { id: "NEW", type: "text", x: 20, y: 20, width: 100, height: 60 },
+        { id: "OLD", type: "text", x: 160, y: 20, width: 100, height: 60 },
+        { id: "OUTSIDE", type: "text", x: 400, y: 20, width: 100, height: 60 },
+      ],
+      edges: [
+        { id: "NEW_OUTSIDE", fromNode: "NEW", toNode: "OUTSIDE" },
+        { id: "OLD_OUTSIDE", fromNode: "OLD", toNode: "OUTSIDE" },
+        { id: "GROUP_OUTSIDE", fromNode: "GROUP", toNode: "OUTSIDE" },
+      ],
+    },
+    deselectItems: () => 0,
+    selectedNodeIds: ["NEW"],
+    nodeViews: [
+      { id: "GROUP", element: createNodeElement(group) },
+      { id: "NEW", element: createNodeElement(selected) },
+      { id: "OLD", element: createNodeElement(sibling) },
+      { id: "OUTSIDE", element: createNodeElement(outside) },
+    ],
+    edgeViews: [
+      { id: "NEW_OUTSIDE", elements: [createElement(selectedEdge)] },
+      { id: "OLD_OUTSIDE", elements: [createElement(siblingEdge)] },
+      { id: "GROUP_OUTSIDE", elements: [createElement(groupEdge)] },
+    ],
+    nodeInteractionLayer: null,
+    toolbarHost: {} as HTMLElement,
+  };
+
+  new CanvasVisibilityManager().apply(
+    context,
+    new Set(["GROUP"]),
+    new Set(),
+    20,
+    new Set(),
+    new Set(),
+    new Set(["NEW"]),
+  );
+
+  assert.equal(group.has("canvas-folding-hidden"), true);
+  assert.equal(selected.has("canvas-folding-hidden"), false);
+  assert.equal(sibling.has("canvas-folding-hidden"), true);
+  assert.equal(outside.has("canvas-folding-hidden"), false);
+  assert.equal(selectedEdge.has("canvas-folding-hidden"), false);
+  assert.equal(siblingEdge.has("canvas-folding-hidden"), true);
+  assert.equal(groupEdge.has("canvas-folding-hidden"), true);
+});
+
+void test("keeps a selected hidden group visible without revealing its contents", () => {
+  const group = new FakeClassList();
+  const contained = new FakeClassList();
+  const outside = new FakeClassList();
+  const containedEdge = new FakeClassList();
+  const groupEdge = new FakeClassList();
+  const context: ActiveCanvasContext = {
+    key: "filtered.canvas",
+    leaf: {},
+    data: {
+      nodes: [
+        { id: "GROUP", type: "group", x: 0, y: 0, width: 300, height: 200 },
+        { id: "OLD", type: "text", x: 20, y: 20, width: 100, height: 60 },
+        { id: "OUTSIDE", type: "text", x: 400, y: 20, width: 100, height: 60 },
+      ],
+      edges: [
+        { id: "OLD_OUTSIDE", fromNode: "OLD", toNode: "OUTSIDE" },
+        { id: "GROUP_OUTSIDE", fromNode: "GROUP", toNode: "OUTSIDE" },
+      ],
+    },
+    deselectItems: () => 0,
+    selectedNodeIds: ["GROUP"],
+    nodeViews: [
+      { id: "GROUP", element: createNodeElement(group) },
+      { id: "OLD", element: createNodeElement(contained) },
+      { id: "OUTSIDE", element: createNodeElement(outside) },
+    ],
+    edgeViews: [
+      { id: "OLD_OUTSIDE", elements: [createElement(containedEdge)] },
+      { id: "GROUP_OUTSIDE", elements: [createElement(groupEdge)] },
+    ],
+    nodeInteractionLayer: null,
+    toolbarHost: {} as HTMLElement,
+  };
+
+  new CanvasVisibilityManager().apply(
+    context,
+    new Set(["GROUP"]),
+    new Set(),
+    20,
+    new Set(),
+    new Set(),
+    new Set(["GROUP"]),
+  );
+
+  assert.equal(group.has("canvas-folding-hidden"), false);
+  assert.equal(contained.has("canvas-folding-hidden"), true);
+  assert.equal(outside.has("canvas-folding-hidden"), false);
+  assert.equal(groupEdge.has("canvas-folding-hidden"), false);
+  assert.equal(containedEdge.has("canvas-folding-hidden"), true);
+});
+
 void test("restores managed classes from replaced render elements", () => {
   const elements = createContext();
   const manager = new CanvasVisibilityManager();

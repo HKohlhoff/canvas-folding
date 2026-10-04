@@ -4,6 +4,10 @@ import {
   getRootDepths,
   type CanvasGraph,
 } from "./graph";
+import {
+  getGroupLabelCounts,
+  normalizeHiddenGroupLabels,
+} from "./group-filters";
 import { getNodeIdsContainedByGroups } from "./visibility";
 
 export interface BranchCollapseStateData {
@@ -11,6 +15,7 @@ export interface BranchCollapseStateData {
   focusedNodeId?: string;
   globalRevealedBranches?: readonly string[];
   globalVisibleDepth?: number;
+  hiddenGroupLabels?: readonly string[];
   revealedBranches: Readonly<Record<string, readonly string[]>>;
   visibleDepths: Readonly<Record<string, number>>;
 }
@@ -20,6 +25,7 @@ export class BranchCollapseState {
   private focusedNodeId: string | null = null;
   private readonly globallyRevealedNodeIds = new Set<string>();
   private globalVisibleDepth: number | null = null;
+  private readonly hiddenGroupLabels = new Set<string>();
   private readonly revealedNodeIdsByRestriction = new Map<
     string,
     Set<string>
@@ -36,6 +42,9 @@ export class BranchCollapseState {
     }
     for (const groupId of normalized.collapsedGroups ?? []) {
       state.collapsedGroupIds.add(groupId);
+    }
+    for (const label of normalized.hiddenGroupLabels ?? []) {
+      state.hiddenGroupLabels.add(label);
     }
 
     for (const [nodeId, visibleDepth] of Object.entries(
@@ -139,6 +148,7 @@ export class BranchCollapseState {
       this.visibleDepthByNodeId.size === 0 &&
       this.globalVisibleDepth === null &&
       this.collapsedGroupIds.size === 0 &&
+      this.hiddenGroupLabels.size === 0 &&
       this.focusedNodeId === null
     );
   }
@@ -148,6 +158,9 @@ export class BranchCollapseState {
       ...(this.collapsedGroupIds.size === 0
         ? {}
         : { collapsedGroups: [...this.collapsedGroupIds] }),
+      ...(this.hiddenGroupLabels.size === 0
+        ? {}
+        : { hiddenGroupLabels: normalizeHiddenGroupLabels([...this.hiddenGroupLabels]) }),
       revealedBranches: Object.fromEntries(
         [...this.revealedNodeIdsByRestriction].map(
           ([restrictedNodeId, revealedNodeIds]) => [
@@ -188,6 +201,16 @@ export class BranchCollapseState {
     for (const groupId of this.collapsedGroupIds) {
       if (!validGroupIds.has(groupId)) {
         this.collapsedGroupIds.delete(groupId);
+        changed = true;
+      }
+    }
+
+    const validGroupLabels = new Set(
+      getGroupLabelCounts(graph.nodes).map(({ label }) => label),
+    );
+    for (const label of this.hiddenGroupLabels) {
+      if (!validGroupLabels.has(label)) {
+        this.hiddenGroupLabels.delete(label);
         changed = true;
       }
     }
@@ -271,6 +294,33 @@ export class BranchCollapseState {
 
   getCollapsedGroupIds(): ReadonlySet<string> {
     return new Set(this.collapsedGroupIds);
+  }
+
+  toggleHiddenGroupLabel(label: string): boolean {
+    const normalized = normalizeHiddenGroupLabels([label])[0];
+    if (normalized === undefined) return false;
+    if (this.hiddenGroupLabels.delete(normalized)) return false;
+    this.hiddenGroupLabels.add(normalized);
+    return true;
+  }
+
+  isGroupLabelHidden(label: string): boolean {
+    const normalized = normalizeHiddenGroupLabels([label])[0];
+    return normalized !== undefined && this.hiddenGroupLabels.has(normalized);
+  }
+
+  hasHiddenGroupLabels(): boolean {
+    return this.hiddenGroupLabels.size > 0;
+  }
+
+  getHiddenGroupLabels(): ReadonlySet<string> {
+    return new Set(this.hiddenGroupLabels);
+  }
+
+  resetHiddenGroupLabels(): boolean {
+    if (this.hiddenGroupLabels.size === 0) return false;
+    this.hiddenGroupLabels.clear();
+    return true;
   }
 
   getGroupHiddenNodeIds(graph: CanvasGraph): ReadonlySet<string> {
@@ -521,6 +571,7 @@ export function normalizeBranchCollapseStateData(
         (value): value is string => typeof value === "string" && value.length > 0,
       ))]
     : [];
+  const hiddenGroupLabels = normalizeHiddenGroupLabels(data.hiddenGroupLabels);
   if (isRecord(data.visibleDepths)) {
     for (const [nodeId, visibleDepth] of Object.entries(data.visibleDepths)) {
       if (
@@ -561,6 +612,7 @@ export function normalizeBranchCollapseStateData(
     revealedBranches,
     visibleDepths,
     ...(collapsedGroups.length === 0 ? {} : { collapsedGroups }),
+    ...(hiddenGroupLabels.length === 0 ? {} : { hiddenGroupLabels }),
     ...(focusedNodeId === undefined ? {} : { focusedNodeId }),
     ...(globalVisibleDepth === undefined ? {} : { globalVisibleDepth }),
     ...(globalRevealedBranches.length === 0 ? {} : { globalRevealedBranches }),

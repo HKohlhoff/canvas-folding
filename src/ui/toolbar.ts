@@ -3,12 +3,14 @@ import { setIcon } from "obsidian";
 import type { ActiveCanvasContext } from "../canvas/adapter";
 import type {
   ToolbarAction,
+  ToolbarActionPosition,
   ToolbarButtonModel,
   ToolbarPosition,
   ToolbarPositionBounds,
 } from "./toolbar-model";
 import {
   clampToolbarPosition,
+  getToolbarActionPosition,
   getToolbarButtonAriaPressed,
   getToolbarLeftPosition,
   isToolbarSpaceKey,
@@ -21,6 +23,7 @@ export {
   getCollapsibleSelectedNodeIds,
   getExpandableSelectedNodeIds,
   type ToolbarAction,
+  type ToolbarActionPosition,
 } from "./toolbar-model";
 
 interface ToolbarEntry {
@@ -36,7 +39,7 @@ export class CanvasToolbarManager {
   sync(
     context: ActiveCanvasContext,
     models: readonly ToolbarButtonModel[],
-    onAction: (action: ToolbarAction) => void,
+    onAction: (action: ToolbarAction, position: ToolbarActionPosition) => void,
     position: ToolbarPosition,
     onPositionChange: (position: ToolbarPosition) => void,
   ): void {
@@ -99,12 +102,14 @@ export class CanvasToolbarManager {
       setIcon(button, model.icon);
       button.addEventListener("click", (event) => {
         blockCanvasInteraction(event);
-        if (model.disabled !== true) onAction(model.action);
+        if (model.disabled !== true) onAction(model.action, getActionPosition(button));
       });
       button.addEventListener("keydown", (event) => {
         if (!isToolbarSpaceKey(event.key)) return;
         blockCanvasInteraction(event);
-        if (!event.repeat && model.disabled !== true) onAction(model.action);
+        if (!event.repeat && model.disabled !== true) {
+          onAction(model.action, getActionPosition(button));
+        }
       });
     }
     if (isNewEntry) revealAtInitialPosition(entry.toolbar, entry.host, position);
@@ -124,6 +129,15 @@ export class CanvasToolbarManager {
     this.entries.clear();
   }
 
+  focusAction(leaf: object, action: ToolbarAction): void {
+    const toolbar = this.entries.get(leaf)?.toolbar;
+    if (toolbar === undefined) return;
+    const view = toolbar.ownerDocument.defaultView;
+    const focus = (): void => restoreToolbarFocus(toolbar, action);
+    if (view === null) focus();
+    else view.setTimeout(focus, 0);
+  }
+
   removeDetached(): void {
     for (const [leaf, entry] of this.entries) {
       if (entry.host.isConnected && entry.toolbar.isConnected) continue;
@@ -139,6 +153,10 @@ export class CanvasToolbarManager {
       this.entries.delete(leaf);
     }
   }
+}
+
+function getActionPosition(button: HTMLButtonElement): ToolbarActionPosition {
+  return getToolbarActionPosition(button.getBoundingClientRect());
 }
 
 function revealAtInitialPosition(

@@ -6,6 +6,13 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+### Added
+
+- Add a dynamic Canvas-toolbar menu that can hide or show all groups sharing
+  the same label and reset every group-label filter without editing the Canvas.
+- Persist active group-label filters with the existing per-Canvas view state
+  while keeping the public Folding API v1 limited to fold state.
+
 ## [1.2.8] – 2026-10-04
 
 ### Fixed

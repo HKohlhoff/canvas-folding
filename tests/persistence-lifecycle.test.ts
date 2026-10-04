@@ -42,6 +42,38 @@ void test("keeps plugin startup free of destructive state validation", () => {
   assert.doesNotMatch(startupSource, /cleanup|prune/iu);
 });
 
+void test("prunes saved filters only from authoritative Canvas file data", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const liveRefreshSource = getMethodSource(
+    source,
+    "  private refreshActiveCanvasState(",
+    "\n  private scheduleActiveCanvasRefresh(",
+  );
+  const authoritativePruneSource = getMethodSource(
+    source,
+    "  private async pruneCanvasNodeStates(",
+    "\n  private removeCanvasStatePath(",
+  );
+
+  assert.doesNotMatch(liveRefreshSource, /\.prune\(/u);
+  assert.match(authoritativePruneSource, /cachedRead\(file\)/u);
+  assert.match(authoritativePruneSource, /\.prune\(graph\)/u);
+  assert.match(authoritativePruneSource, /sessionChanged/u);
+});
+
+void test("refreshes the active Canvas after session-state pruning", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const scheduleSource = getMethodSource(
+    source,
+    "  private scheduleCanvasNodeStatePrune(",
+    "\n  private async pruneCanvasNodeStates(",
+  );
+
+  assert.match(scheduleSource, /result\.sessionChanged/u);
+  assert.match(scheduleSource, /file\.path === this\.activeCanvasPath/u);
+  assert.match(scheduleSource, /scheduleActiveCanvasRefresh\(true\)/u);
+});
+
 void test("keeps Vault rename and delete handling independent of persistence", () => {
   const source = readFileSync("src/main.ts", "utf8");
   const removeSource = getMethodSource(
