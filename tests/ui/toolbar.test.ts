@@ -9,7 +9,6 @@ import {
   getCollapsibleSelectedNodeIds,
   getExpandableSelectedNodeIds,
   getToolbarButtonAriaPressed,
-  getToolbarActionPosition,
   getToolbarLeftPosition,
   isToolbarSpaceKey,
   moveToolbarPositionWithArrowKey,
@@ -316,33 +315,6 @@ void test("places the focus-control visibility toggle before branch focus", () =
   assert.equal(controls[focusControlsIndex]?.label, "Show focus controls");
 });
 
-void test("enables group filters only for named groups and marks active filters", () => {
-  const unnamedGraph = buildCanvasGraph({
-    nodes: [{ id: "G", type: "group" }],
-    edges: [],
-  });
-  const namedGraph = buildCanvasGraph({
-    nodes: [{ id: "G", type: "group", label: "Orte" }],
-    edges: [],
-  });
-  const state = new BranchCollapseState();
-
-  assert.equal(
-    buildToolbarButtonModels(unnamedGraph, state, [], true, true)
-      .find(({ action }) => action === "filter-groups")?.disabled,
-    true,
-  );
-  const inactive = buildToolbarButtonModels(namedGraph, state, [], true, true)
-    .find(({ action }) => action === "filter-groups");
-  assert.equal(inactive?.disabled, false);
-  assert.equal(inactive?.active, false);
-  state.toggleHiddenGroupLabel("Orte");
-  const active = buildToolbarButtonModels(namedGraph, state, [], true, true)
-    .find(({ action }) => action === "filter-groups");
-  assert.equal(active?.active, true);
-  assert.equal(getToolbarButtonAriaPressed(active ?? {}), "true");
-});
-
 void test("moves and clamps the toolbar with arrow keys", () => {
   const bounds = { minXPercent: 10, maxXPercent: 90, maxYPixels: 100 };
 
@@ -411,11 +383,4 @@ void test("isolates the complete toolbar pointer sequence", () => {
 void test("centers the toolbar without a CSS transform", () => {
   assert.equal(getToolbarLeftPosition(50, 420), "calc(50% - 210px)");
   assert.equal(getToolbarLeftPosition(25, -10), "calc(25% - 0px)");
-});
-
-void test("anchors toolbar actions below the activating button", () => {
-  assert.deepEqual(
-    getToolbarActionPosition({ left: 125, bottom: 240 }),
-    { x: 125, y: 240 },
-  );
 });

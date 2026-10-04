@@ -80,29 +80,6 @@ void test("removes a closed leaf even while its toolbar still appears connected"
   assert.deepEqual([...getEntries(manager).keys()], [attachedLeaf]);
 });
 
-void test("restores focus to the filter button in the originating leaf", () => {
-  const manager = new CanvasToolbarManager();
-  const firstLeaf = {};
-  const secondLeaf = {};
-  let firstFocusCount = 0;
-  let secondFocusCount = 0;
-  const first = createEntry();
-  const second = createEntry();
-  first.toolbar = createFocusableToolbar("filter-groups", () => {
-    firstFocusCount += 1;
-  });
-  second.toolbar = createFocusableToolbar("filter-groups", () => {
-    secondFocusCount += 1;
-  });
-  getEntries(manager).set(firstLeaf, first);
-  getEntries(manager).set(secondLeaf, second);
-
-  manager.focusAction(firstLeaf, "filter-groups");
-
-  assert.equal(firstFocusCount, 1);
-  assert.equal(secondFocusCount, 0);
-});
-
 function createEntry(): ToolbarEntry {
   return {
     host: createElement(),
@@ -119,21 +96,6 @@ function createElement(): FakeElement {
       this.removed = true;
     },
   };
-}
-
-function createFocusableToolbar(
-  action: string,
-  onFocus: () => void,
-): FakeElement {
-  return {
-    ...createElement(),
-    ownerDocument: { defaultView: null },
-    querySelectorAll: () => [{
-      focus: onFocus,
-      getAttribute: (name: string) =>
-        name === "data-canvas-folding-focus-key" ? action : null,
-    }],
-  } as unknown as FakeElement;
 }
 
 function getEntries(manager: CanvasToolbarManager): Map<object, ToolbarEntry> {

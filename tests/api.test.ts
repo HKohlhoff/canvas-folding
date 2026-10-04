@@ -104,35 +104,6 @@ void test("returns effective hidden nodes and edges without focus dimming", () =
   assert.equal(Object.isFrozen(snapshot.hiddenEdgeIds), true);
 });
 
-void test("keeps API v1 fold snapshots unchanged by group visibility filters", () => {
-  const graph = buildCanvasGraph({
-    nodes: [
-      { id: "GROUP", type: "group", label: "Orte" },
-      { id: "CARD", type: "text" },
-    ],
-    edges: [{ id: "EDGE", fromNode: "GROUP", toNode: "CARD" }],
-  });
-
-  assert.deepEqual(
-    createCanvasFoldStateSnapshot(
-      "Folder/Test.canvas",
-      "active-leaf",
-      {
-        hiddenGroupLabels: ["Orte"],
-        revealedBranches: {},
-        visibleDepths: {},
-      },
-      graph,
-    ),
-    {
-      canvasPath: "Folder/Test.canvas",
-      hiddenEdgeIds: [],
-      hiddenNodeIds: [],
-      source: "active-leaf",
-    },
-  );
-});
-
 void test("returns only the collapsed connection when a shared branch remains reachable", () => {
   const graph = buildCanvasGraph({
     nodes: ["A", "B", "D", "E"].map((id) => ({ id, type: "text" })),

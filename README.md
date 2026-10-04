@@ -42,8 +42,6 @@ by buying me a coffee.
 - Show or hide folding and focus controls independently without changing the
   current view state.
 - Use a movable, responsive Canvas Folding toolbar.
-- Filter all equally named Canvas groups from a dynamic toolbar menu without
-  editing the Canvas or its groups individually.
 - Keep state separately for each open Canvas tab.
 - Optionally restore states between sessions without modifying Canvas files.
 - React to node and edge changes, undo/redo, duplication, and Canvas re-renders.
@@ -211,8 +209,6 @@ The toolbar includes actions for:
   level, and expand all branches;
 - showing or hiding folding controls;
 - showing or hiding focus controls, followed by entering or exiting focus;
-- filtering named groups such as repeated chapter categories, with a checked
-  item meaning that group label is visible, plus a reset action to show all;
 - inspecting the graph;
 - showing the current state;
 - hiding the toolbar itself.
@@ -269,9 +265,8 @@ whether the installed Obsidian/WebView version emits a context-menu event.
 
 ## State and persistence
 
-By default, fold state, group-label filters, level restrictions, temporary
-branch-display exceptions, and branch focus are remembered only in the open
-Canvas tab.
+By default, fold state, level restrictions, temporary branch-display
+exceptions, and branch focus are remembered only in the open Canvas tab.
 Navigating to another file and back in that tab restores its state; closing
 the tab discards it.
 
@@ -373,8 +368,7 @@ external services. The Ko-fi image in this README is documentation content and
 is not loaded or contacted by the installed plugin.
 
 When persistence is enabled, local plugin data contains vault-relative Canvas
-paths, node IDs, group labels used as visibility filters, and visibility
-settings. Canvas Folding does not write its own
+paths, node IDs, and visibility settings. Canvas Folding does not write its own
 folding state or layout into Canvas files. If Advanced Canvas is disabled while
 one of its groups is collapsed, Canvas Folding may normalize that external
 collapsed representation once so the original nodes and edges remain available.

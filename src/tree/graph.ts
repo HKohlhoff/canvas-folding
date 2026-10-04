@@ -1,7 +1,6 @@
 export interface CanvasGraphNodeData {
   id: string;
   type: string;
-  label?: string;
   x?: number;
   y?: number;
   width?: number;

@@ -20,7 +20,6 @@ void test("reads nodes and edges retained inside collapsed group data", () => {
       {
         id: "GROUP",
         type: "group",
-        label: "  Kapitel 1  ",
         x: 200,
         y: 100,
         width: 400,
@@ -59,7 +58,6 @@ void test("reads nodes and edges retained inside collapsed group data", () => {
       {
         id: "GROUP",
         type: "group",
-        label: "Kapitel 1",
         x: 200,
         y: 100,
         width: 400,
@@ -123,32 +121,6 @@ void test("keeps top-level nodes authoritative over collapsed duplicates", () =>
     width: 120,
     height: 60,
   });
-});
-
-void test("reads trimmed labels from top-level and expanded collapsed nodes", () => {
-  const graph = parseCanvasGraphData({
-    nodes: [
-      {
-        id: "OUTER",
-        type: "group",
-        label: "  Akt 1 ",
-        collapsedData: {
-          nodes: [
-            { id: "INNER", type: "group", label: " Kapitel 1 " },
-            { id: "EMPTY", type: "group", label: "   " },
-          ],
-          edges: [],
-        },
-      },
-    ],
-    edges: [],
-  });
-
-  assert.deepEqual(graph?.nodes.map(({ id, label }) => ({ id, label })), [
-    { id: "OUTER", label: "Akt 1" },
-    { id: "INNER", label: "Kapitel 1" },
-    { id: "EMPTY", label: undefined },
-  ]);
 });
 
 void test("restores nested collapsed node coordinates recursively", () => {

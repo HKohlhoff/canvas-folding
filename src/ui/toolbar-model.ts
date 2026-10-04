@@ -1,5 +1,4 @@
 import { getRootDepths, type CanvasGraph } from "../tree/graph";
-import { getGroupLabelCounts } from "../tree/group-filters";
 import type { BranchCollapseState } from "../tree/state";
 
 export type ToolbarAction =
@@ -11,7 +10,6 @@ export type ToolbarAction =
   | "show-level"
   | "toggle-controls"
   | "toggle-focus-controls"
-  | "filter-groups"
   | "inspect-graph"
   | "show-status"
   | "hide-toolbar";
@@ -28,11 +26,6 @@ export interface ToolbarButtonModel {
 export interface ToolbarPosition {
   xPercent: number;
   yPixels: number;
-}
-
-export interface ToolbarActionPosition {
-  x: number;
-  y: number;
 }
 
 export interface ToolbarPositionBounds {
@@ -52,12 +45,6 @@ export const TOOLBAR_POINTER_EVENT_NAMES = [
   "pointerup",
   "pointercancel",
 ] as const;
-
-export function getToolbarActionPosition(
-  bounds: Pick<DOMRect, "bottom" | "left">,
-): ToolbarActionPosition {
-  return { x: bounds.left, y: bounds.bottom };
-}
 
 export function getToolbarLeftPosition(
   xPercent: number,
@@ -134,7 +121,6 @@ export function buildToolbarButtonModels(
     (rootId) => (graph.childrenByNode.get(rootId) ?? []).length > 0,
   );
   const hasRootDepths = Math.max(0, ...getRootDepths(graph).values()) > 0;
-  const hasNamedGroups = getGroupLabelCounts(graph.nodes).length > 0;
 
   return [
     { action: "collapse-selected", disabled: selectedBranchActions.collapsibleNodeIds.length === 0, icon: "minus", label: `Collapse ${selectedBranchLabel}` },
@@ -145,8 +131,7 @@ export function buildToolbarButtonModels(
     { action: "toggle-controls", icon: branchControlsVisible ? "eye" : "eye-closed", label: branchControlsVisible ? "Hide branch controls" : "Show branch controls", separatorBefore: true },
     { action: "toggle-focus-controls", icon: focusControlsVisible ? "eye" : "eye-closed", label: focusControlsVisible ? "Hide focus controls" : "Show focus controls", separatorBefore: true },
     { action: "toggle-focus", active: state.isFocusActive(), disabled: !state.isFocusActive() && selectedNodeId === undefined, icon: "focus", label: state.isFocusActive() ? "Exit branch focus" : "Focus selected branch" },
-    { action: "filter-groups", active: state.hasHiddenGroupLabels(), disabled: !hasNamedGroups, icon: "list-filter", label: "Filter groups…", separatorBefore: true },
-    { action: "inspect-graph", icon: "network", label: "Inspect active canvas graph" },
+    { action: "inspect-graph", icon: "network", label: "Inspect active canvas graph", separatorBefore: true },
     { action: "show-status", icon: "info", label: "Show current status" },
     { action: "hide-toolbar", icon: "x", label: "Hide canvas toolbar", separatorBefore: true },
   ];

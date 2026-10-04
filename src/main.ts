@@ -17,6 +17,7 @@ import {
 } from "./canvas/adapter";
 import {
   CanvasLiveSync,
+  getLiveHiddenNodeIds,
   StylesheetLiveSync,
 } from "./canvas/live-sync";
 import { CanvasGroupGeometryManager } from "./canvas/group-geometry";
@@ -50,10 +51,6 @@ import {
   getRootDepths,
 } from "./tree/graph";
 import {
-  getGroupLabelCounts,
-  getMatchingGroupIds,
-} from "./tree/group-filters";
-import {
   BranchCollapseState,
   type BranchCollapseStateData,
 } from "./tree/state";
@@ -83,7 +80,6 @@ import {
   getCollapsibleSelectedNodeIds,
   getExpandableSelectedNodeIds,
   type ToolbarAction,
-  type ToolbarActionPosition,
 } from "./ui/toolbar";
 
 const MAX_DEPTH_MENU_LEVELS = 5;
@@ -579,20 +575,14 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
     const timer = window.setTimeout(() => {
       this.nodePruneTimers.delete(file.path);
-      void this.pruneCanvasNodeStates(file).then((result) => {
-        if (result.persistedChanged) this.schedulePluginDataSave();
-        if (result.sessionChanged && file.path === this.activeCanvasPath) {
-          this.scheduleActiveCanvasRefresh(true);
-        }
+      void this.pruneCanvasNodeStates(file).then((changed) => {
+        if (changed) this.schedulePluginDataSave();
       });
     }, CANVAS_STATE_PRUNE_DELAY_MS);
     this.nodePruneTimers.set(file.path, timer);
   }
 
-  private async pruneCanvasNodeStates(file: TFile): Promise<{
-    persistedChanged: boolean;
-    sessionChanged: boolean;
-  }> {
+  private async pruneCanvasNodeStates(file: TFile): Promise<boolean> {
     let graphData: ReturnType<typeof parseCanvasGraphData>;
     try {
       graphData = parseCanvasGraphData(JSON.parse(await this.app.vault.cachedRead(file)));
@@ -601,13 +591,13 @@ export default class CanvasFoldingPlugin extends Plugin {
         error,
         path: file.path,
       });
-      return { persistedChanged: false, sessionChanged: false };
+      return false;
     }
     if (graphData === null) {
       this.debug("Skipped node-state cleanup for invalid canvas data", {
         path: file.path,
       });
-      return { persistedChanged: false, sessionChanged: false };
+      return false;
     }
 
     const graph = buildCanvasGraph(graphData);
@@ -625,12 +615,11 @@ export default class CanvasFoldingPlugin extends Plugin {
       }
     }
 
-    let sessionChanged = false;
     for (const statesByPath of this.collapseStates.values()) {
       const sessionState = statesByPath.get(file.path);
-      if (sessionState?.prune(graph) === true) sessionChanged = true;
+      sessionState?.prune(graph);
     }
-    return { persistedChanged, sessionChanged };
+    return persistedChanged;
   }
 
   private removeCanvasStatePath(path: string): void {
@@ -1176,12 +1165,11 @@ export default class CanvasFoldingPlugin extends Plugin {
 
     const hiddenNodeIds = state.getHiddenNodeIds(graph);
     const groupHiddenNodeIds = state.getGroupHiddenNodeIds(graph);
-    const filteredGroupIds = getMatchingGroupIds(
-      graph.nodes,
-      state.getHiddenGroupLabels(),
-    );
     const collapsedGroupIds = state.getCollapsedGroupIds();
-    const combinedHiddenNodeIds = this.getCombinedHiddenNodeIds(graph, state);
+    const combinedHiddenNodeIds = new Set([
+      ...hiddenNodeIds,
+      ...groupHiddenNodeIds,
+    ]);
     const effectiveHiddenNodeIds = deriveCanvasVisibility(
       graph,
       combinedHiddenNodeIds,
@@ -1199,10 +1187,7 @@ export default class CanvasFoldingPlugin extends Plugin {
               ),
             ),
             groupHiddenNodeIds: new Set([
-              ...getNodeIdsHiddenByGroups(
-                graph.nodes,
-                new Set([...hiddenNodeIds, ...filteredGroupIds]),
-              ),
+              ...getNodeIdsHiddenByGroups(graph.nodes, hiddenNodeIds),
               ...groupHiddenNodeIds,
             ]),
             hiddenNodeIds: effectiveHiddenNodeIds,
@@ -1283,7 +1268,7 @@ export default class CanvasFoldingPlugin extends Plugin {
         this.branchControlsVisible,
         this.focusControlsVisible,
       ),
-      (action, position) => this.runToolbarAction(action, position),
+      (action) => this.runToolbarAction(action),
       {
         xPercent: this.settings.toolbarPositionXPercent,
         yPixels: this.settings.toolbarPositionYPixels,
@@ -1297,10 +1282,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     );
   }
 
-  private runToolbarAction(
-    action: ToolbarAction,
-    position: ToolbarActionPosition,
-  ): void {
+  private runToolbarAction(action: ToolbarAction): void {
     const result = this.readActiveCanvasContext();
     if (!result.ok) {
       new Notice(result.message);
@@ -1328,7 +1310,6 @@ export default class CanvasFoldingPlugin extends Plugin {
         this.focusControlsVisible = !this.focusControlsVisible;
         this.syncNodeControls(context);
         break;
-      case "filter-groups": this.showGroupFilterMenu(context, position); break;
       case "inspect-graph": this.logCanvasGraph(context.data); break;
       case "show-status": this.showCurrentStatus(context); break;
       case "hide-toolbar":
@@ -1336,46 +1317,6 @@ export default class CanvasFoldingPlugin extends Plugin {
         this.canvasToolbar.removeAll();
         break;
     }
-  }
-
-  private showGroupFilterMenu(
-    context: ActiveCanvasContext,
-    position: ToolbarActionPosition,
-  ): void {
-    const graph = buildCanvasGraph(context.data);
-    const state = this.getCollapseState(context, graph);
-    const labels = getGroupLabelCounts(graph.nodes);
-    if (labels.length === 0) return;
-
-    const menu = new Menu();
-    for (const { count, label } of labels) {
-      menu.addItem((item) =>
-        item
-          .setTitle(`${label} (${count})`)
-          .setChecked(!state.isGroupLabelHidden(label))
-          .onClick(() => {
-            state.toggleHiddenGroupLabel(label);
-            this.storeCanvasState(context.key, state);
-            this.applyCollapsedState(context, graph, state);
-            this.syncNodeControls(context, graph, state);
-            this.canvasToolbar.focusAction(context.leaf, "filter-groups");
-          }),
-      );
-    }
-    menu.addSeparator();
-    menu.addItem((item) => {
-      item
-        .setTitle("Show all groups (reset filters)")
-        .setDisabled(!state.hasHiddenGroupLabels())
-        .onClick(() => {
-          if (!state.resetHiddenGroupLabels()) return;
-          this.storeCanvasState(context.key, state);
-          this.applyCollapsedState(context, graph, state);
-          this.syncNodeControls(context, graph, state);
-          this.canvasToolbar.focusAction(context.leaf, "filter-groups");
-        });
-    });
-    menu.showAtPosition(position);
   }
 
   private refreshControlContext(
@@ -1646,12 +1587,14 @@ export default class CanvasFoldingPlugin extends Plugin {
   ): VisibilityResult {
     const result = this.visibility.apply(
       context,
-      this.getCombinedHiddenNodeIds(graph, state),
+      getLiveHiddenNodeIds(
+        this.getCombinedHiddenNodeIds(graph, state),
+        context.selectedNodeIds,
+      ),
       state.getDimmedNodeIds(graph),
       this.settings.focusBackgroundOpacity,
       state.getRestrictedEdgeIds(graph),
       state.getCollapsedGroupIds(),
-      new Set(context.selectedNodeIds),
     );
     this.syncGroupGeometry(context, state.getCollapsedGroupIds());
     return result;
@@ -1664,7 +1607,6 @@ export default class CanvasFoldingPlugin extends Plugin {
     return new Set([
       ...state.getHiddenNodeIds(graph),
       ...state.getGroupHiddenNodeIds(graph),
-      ...getMatchingGroupIds(graph.nodes, state.getHiddenGroupLabels()),
     ]);
   }
 }

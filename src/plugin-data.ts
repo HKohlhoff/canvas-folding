@@ -8,7 +8,7 @@ import {
   type BranchCollapseStateData,
 } from "./tree/state";
 
-export const PLUGIN_DATA_VERSION = 3;
+export const PLUGIN_DATA_VERSION = 2;
 
 export function hasUnsupportedPluginDataVersion(data: unknown): boolean {
   return isRecord(data) &&
@@ -64,7 +64,6 @@ export function normalizePluginData(data: unknown): CanvasFoldingPluginData {
       if (
         Object.keys(state.visibleDepths).length > 0 ||
         (state.collapsedGroups?.length ?? 0) > 0 ||
-        (state.hiddenGroupLabels?.length ?? 0) > 0 ||
         state.globalVisibleDepth !== undefined ||
         state.focusedNodeId !== undefined
       ) {
