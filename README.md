@@ -174,11 +174,11 @@ node border available for native resizing. Folded branches keep their count or
 When a group is focused, its geometrically contained items belong to the focus
 area even when they have no directed edge from that group.
 
-When Advanced Canvas provides its own group-folding control, it remains the
-sole group control for that group. Canvas Folding does not duplicate or override
-it, and releases any separate Canvas Folding group state for that group. Branch
-and focus controls remain available while the group is expanded and return
-after Advanced Canvas expands a compact group representation.
+When the Advanced Canvas plugin is active, its familiar group switches stay
+to the left of the group names. Canvas Folding does not show its new right-hand
+group switches and internally disables its own group-folding mechanism. It does
+not duplicate or override Advanced Canvas controls. Branch folding and focus
+remain independent and continue to be available where their nodes are visible.
 
 Hidden nodes also hide every incident edge, including edge labels. A collapsed
 branch connection can remain hidden while its shared endpoint stays visible
