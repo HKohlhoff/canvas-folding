@@ -13,6 +13,7 @@ interface CanvasBoundsRecord {
 }
 
 interface ManagedGroupGeometry {
+  geometrySignature: string | null;
   hadOwnGetBBox: boolean;
   leaf: object;
   originalGetBBox: CanvasGroupRuntime["getBBox"];
@@ -27,15 +28,18 @@ export class CanvasGroupGeometryManager {
     collapsedGroupIds: ReadonlySet<string>,
   ): void {
     const geometryViews = context.groupGeometryViews ?? [];
-    const currentRuntimes = new Set(
-      geometryViews.map((view) => view.runtime),
+    const currentViews = new Map(
+      geometryViews.map((view) => [view.runtime, view]),
     );
     for (const [runtime, entry] of this.managed) {
+      const currentView = currentViews.get(runtime);
       if (
         entry.leaf === context.leaf &&
-        (!currentRuntimes.has(runtime) || !collapsedGroupIds.has(entry.view.id))
+        (currentView === undefined || !collapsedGroupIds.has(entry.view.id))
       ) {
         this.restore(runtime, entry);
+      } else if (entry.leaf === context.leaf && currentView !== undefined) {
+        entry.view = currentView;
       }
     }
 
@@ -54,13 +58,17 @@ export class CanvasGroupGeometryManager {
   }
 
   refresh(context: ActiveCanvasContext): void {
-    const currentRuntimes = new Set(
-      (context.groupGeometryViews ?? []).map((view) => view.runtime),
+    const currentViews = new Map(
+      (context.groupGeometryViews ?? []).map((view) => [view.runtime, view]),
     );
     for (const [runtime, entry] of this.managed) {
-      if (entry.leaf === context.leaf && currentRuntimes.has(runtime)) {
-        entry.view.markMoved();
-      }
+      const currentView = currentViews.get(runtime);
+      if (entry.leaf !== context.leaf || currentView === undefined) continue;
+      entry.view = currentView;
+      const geometrySignature = getGeometrySignature(currentView);
+      if (geometrySignature === entry.geometrySignature) continue;
+      entry.geometrySignature = geometrySignature;
+      currentView.markMoved();
     }
   }
 
@@ -76,6 +84,7 @@ export class CanvasGroupGeometryManager {
       "getBBox",
     );
     const entry: ManagedGroupGeometry = {
+      geometrySignature: getGeometrySignature(view),
       hadOwnGetBBox: Object.prototype.hasOwnProperty.call(
         view.runtime,
         "getBBox",
@@ -87,14 +96,14 @@ export class CanvasGroupGeometryManager {
     view.runtime.getBBox = function (...args: unknown[]): unknown {
       const originalBounds = originalGetBBox.apply(this, args);
       const bounds = asCanvasBounds(originalBounds);
-      const labelBounds = view.getLabelBounds();
+      const labelBounds = entry.view.getLabelBounds();
       if (bounds === null || labelBounds === null) return originalBounds;
 
-      const min = view.toCanvasPosition({
+      const min = entry.view.toCanvasPosition({
         x: labelBounds.left,
         y: labelBounds.top,
       });
-      const max = view.toCanvasPosition({
+      const max = entry.view.toCanvasPosition({
         x: labelBounds.right,
         y: labelBounds.bottom,
       });
@@ -119,6 +128,17 @@ export class CanvasGroupGeometryManager {
     this.managed.delete(runtime);
     entry.view.markMoved();
   }
+}
+
+function getGeometrySignature(view: CanvasGroupGeometryView): string | null {
+  const bounds = view.getLabelBounds();
+  if (bounds === null) return null;
+  const min = view.toCanvasPosition({ x: bounds.left, y: bounds.top });
+  const max = view.toCanvasPosition({ x: bounds.right, y: bounds.bottom });
+  if (min === null || max === null) return null;
+  return [min.x, min.y, max.x, max.y]
+    .map((coordinate) => coordinate.toFixed(4))
+    .join(":");
 }
 
 function asCanvasBounds(value: unknown): CanvasBoundsRecord | null {

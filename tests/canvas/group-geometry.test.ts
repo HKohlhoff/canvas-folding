@@ -59,11 +59,22 @@ void test("restores inherited geometry without leaving an instance override", ()
   );
 });
 
-void test("recalculates managed group edges after its header controls render", () => {
+void test("recalculates group edges only when its header geometry changes", () => {
   const manager = new CanvasGroupGeometryManager();
   const { context, moved } = createContext();
+  const view = context.groupGeometryViews?.[0];
+  assert.ok(view !== undefined);
+  let right = 110;
+  view.getLabelBounds = () => ({ bottom: 50, left: 10, right, top: 20 });
 
   manager.sync(context, new Set(["GROUP"]));
+  manager.refresh(context);
+  manager.refresh(context);
+
+  assert.equal(moved.length, 1);
+
+  right = 150;
+  manager.refresh(context);
   manager.refresh(context);
 
   assert.equal(moved.length, 2);
