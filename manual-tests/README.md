@@ -139,7 +139,7 @@ File: `05-groups-and-node-types.canvas`
   square, group-colored frame matching the group-name height directly to the
   right of its name, then collapse every group through that control. Fully
   contained nodes, nested groups, incident edges and edge labels
-  disappear; the group frame remains with `+`. Expand it and confirm that any
+  disappear; only the group name and `+` remain. Expand it and confirm that any
   nested group-fold and directed branch-fold states are preserved.
 - Collapse an empty group. It remains available with `+` and expands without
   changing any nearby item.

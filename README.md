@@ -1,8 +1,8 @@
 # Canvas Folding
 
 Canvas Folding adds hierarchical folding, level views, and branch focus to the
-standard Obsidian Canvas. It changes only the current view: nodes, edges,
-content, positions, and the `.canvas` file itself remain untouched.
+standard Obsidian Canvas. Its own branch, group, and focus states remain outside
+the `.canvas` file.
 
 Requires Obsidian 1.13.0 or later. Canvas Folding works on desktop and mobile
 and has no dependency on Advanced Canvas.
@@ -327,8 +327,9 @@ separately available under [`manual-tests/`](manual-tests/README.md).
 
 ## Settings
 
-The settings page starts with a reminder that Canvas Folding never modifies
-Canvas files.
+The settings page starts with a reminder that Canvas Folding stores its own
+folding state outside Canvas files. It also explains the one-time normalization
+that can be needed when control returns from a collapsed Advanced Canvas group.
 
 - **Show canvas toolbar initially** controls the toolbar's state when the plugin
   loads. Commands can change it at any time.
@@ -367,8 +368,10 @@ external services. The Ko-fi image in this README is documentation content and
 is not loaded or contacted by the installed plugin.
 
 When persistence is enabled, local plugin data contains vault-relative Canvas
-paths, node IDs, and visibility settings. Canvas files themselves are never
-modified by Canvas Folding.
+paths, node IDs, and visibility settings. Canvas Folding does not write its own
+folding state or layout into Canvas files. If Advanced Canvas is disabled while
+one of its groups is collapsed, Canvas Folding may normalize that external
+collapsed representation once so the original nodes and edges remain available.
 
 ## Compatibility and limitations
 
@@ -403,10 +406,12 @@ When both mechanisms are used, check which control owns the hidden content:
   with the hidden-descendant count at the top of the branch display menu.
 - Expanding one mechanism does not automatically expand the other.
 
-After enabling or disabling Advanced Canvas while one of its groups is
-collapsed, close and reopen the Canvas before continuing to edit. The already
-open view can temporarily retain Advanced Canvas group controls or show an
-empty group frame. Reopening rebuilds the Canvas view from the stored data.
+Enabling or disabling Advanced Canvas is handled in the open Canvas. Canvas
+Folding removes duplicate controls, restores complete group content when
+control returns from a collapsed Advanced Canvas group, and recalculates its
+compact edge geometry. This hand-off requires substantial internal coordination
+because both plugins use different group-state and rendering models, but it
+introduces no dependency between them.
 
 ## Public API
 
