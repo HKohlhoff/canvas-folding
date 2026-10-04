@@ -18,6 +18,7 @@ export function deriveCanvasVisibility(
   hiddenNodeIds: ReadonlySet<string>,
   dimmedNodeIds: ReadonlySet<string> = new Set(),
   restrictedEdgeIds: ReadonlySet<string> = new Set(),
+  preservedGroupIds: ReadonlySet<string> = new Set(),
 ): CanvasVisibility {
   const normalizedHiddenNodeIds = new Set(hiddenNodeIds);
   addContentsOfHiddenGroups(graph.nodes, normalizedHiddenNodeIds);
@@ -25,6 +26,7 @@ export function deriveCanvasVisibility(
     graph.nodes,
     graph.edges,
     normalizedHiddenNodeIds,
+    preservedGroupIds,
   );
   const normalizedDimmedNodeIds = new Set(
     [...dimmedNodeIds].filter((nodeId) => !normalizedHiddenNodeIds.has(nodeId)),
@@ -135,11 +137,14 @@ export function summarizeCanvasVisibility(
   graph: Pick<CanvasGraph, "edges" | "nodes">,
   hiddenNodeIds: ReadonlySet<string>,
   dimmedNodeIds: ReadonlySet<string> = new Set(),
+  preservedGroupIds: ReadonlySet<string> = new Set(),
 ): CanvasVisibilitySummary {
   const visibility = deriveCanvasVisibility(
     graph,
     hiddenNodeIds,
     dimmedNodeIds,
+    new Set(),
+    preservedGroupIds,
   );
   return {
     activeNodeCount:
@@ -182,6 +187,7 @@ function addGroupsWithOnlyHiddenContents(
   nodes: readonly CanvasGraphNodeData[],
   edges: CanvasGraph["edges"],
   hiddenNodeIds: Set<string>,
+  preservedGroupIds: ReadonlySet<string>,
 ): void {
   const contentNodes = nodes.filter((node) => node.type !== "group");
   const knownNodeIds = new Set(nodes.map((node) => node.id));
@@ -197,6 +203,7 @@ function addGroupsWithOnlyHiddenContents(
   for (const group of nodes) {
     if (
       group.type !== "group" ||
+      preservedGroupIds.has(group.id) ||
       graphControlledGroupIds.has(group.id) ||
       !hasCompleteBounds(group)
     ) {

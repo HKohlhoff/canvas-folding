@@ -2,22 +2,28 @@ import { setIcon } from "obsidian";
 
 import type {
   ActiveCanvasContext,
+  CanvasNodeGroupLabelHandle,
   CanvasNodeElementHandle,
 } from "../canvas/adapter";
 import {
   formatDescendantCount,
   type BranchControlModel,
   type FocusControlModel,
+  type GroupControlModel,
 } from "./control-model";
 
-type NodeControlKind = "branch" | "focus";
+type NodeControlKind = "branch" | "focus" | "group";
 
 interface ControlEntry {
   activateBranch: () => void;
   activateFocus: () => void;
+  activateGroup: () => void;
   branchButton: HTMLButtonElement | null;
   container: HTMLDivElement;
   focusButton: HTMLButtonElement | null;
+  groupButton: HTMLButtonElement | null;
+  groupHost: HTMLDivElement | null;
+  groupLabelElement: CanvasNodeGroupLabelHandle | null;
   leaf: object;
   nodeId: string;
   openContextMenu: (position: BranchMenuPosition) => void;
@@ -44,6 +50,11 @@ export class CanvasNodeControlManager {
       nodeId: string,
       position: BranchMenuPosition,
     ) => void,
+    groupModels: readonly GroupControlModel[] = [],
+    onToggleGroup: (
+      context: ActiveCanvasContext,
+      nodeId: string,
+    ) => void = () => undefined,
   ): void {
     const controlHostNodeIds = new Set(
       context.nodeViews
@@ -60,17 +71,37 @@ export class CanvasNodeControlManager {
         .filter((model) => controlHostNodeIds.has(model.nodeId))
         .map((model) => [model.nodeId, model]),
     );
+    const groupModelsByNodeId = new Map(
+      groupModels
+        .filter((model) => {
+          const nodeView = context.nodeViews.find(
+            (view) => view.id === model.nodeId,
+          );
+          return controlHostNodeIds.has(model.nodeId) &&
+            nodeView?.externalGroupControl === undefined;
+        })
+        .map((model) => [model.nodeId, model]),
+    );
     const orderedNodeIds = getNodeControlTabOrder(
       [
         ...focusModelsByNodeId.keys(),
-        ...[...branchModelsByNodeId.keys()]
+        ...[...groupModelsByNodeId.keys()]
           .filter((nodeId) => !focusModelsByNodeId.has(nodeId)),
+        ...[...branchModelsByNodeId.keys()]
+          .filter(
+            (nodeId) =>
+              !focusModelsByNodeId.has(nodeId) &&
+              !groupModelsByNodeId.has(nodeId),
+          ),
       ],
       context.selectedNodeIds,
     );
     const controlOrder = orderedNodeIds.flatMap((nodeId) => [
       ...(focusModelsByNodeId.has(nodeId)
         ? [getControlKey(nodeId, "focus")]
+        : []),
+      ...(groupModelsByNodeId.has(nodeId)
+        ? [getControlKey(nodeId, "group")]
         : []),
       ...(branchModelsByNodeId.has(nodeId)
         && branchModelsByNodeId.get(nodeId)?.disabledByHiddenGroup !== true
@@ -92,8 +123,10 @@ export class CanvasNodeControlManager {
           host,
           branchModelsByNodeId,
           focusModelsByNodeId,
+          groupModelsByNodeId,
         ))
       ) {
+        entry.groupHost?.remove();
         entry.container.remove();
         this.entries.delete(host);
       }
@@ -102,7 +135,12 @@ export class CanvasNodeControlManager {
     for (const nodeView of context.nodeViews) {
       const branchModel = branchModelsByNodeId.get(nodeView.id);
       const focusModel = focusModelsByNodeId.get(nodeView.id);
-      if (branchModel === undefined && focusModel === undefined) continue;
+      const groupModel = groupModelsByNodeId.get(nodeView.id);
+      if (
+        branchModel === undefined &&
+        focusModel === undefined &&
+        groupModel === undefined
+      ) continue;
 
       const entry = this.getOrCreateEntry(
         nodeView.element,
@@ -112,10 +150,12 @@ export class CanvasNodeControlManager {
       );
       entry.activateBranch = () => onToggleBranch(context, nodeView.id);
       entry.activateFocus = () => onToggleFocus(context, nodeView.id);
+      entry.activateGroup = () => onToggleGroup(context, nodeView.id);
       entry.openContextMenu = (position) => {
         onContextMenu(context, nodeView.id, position);
       };
       this.syncFocusButton(entry, focusModel);
+      this.syncGroupButton(entry, groupModel, nodeView.groupLabelElement);
       this.syncBranchButton(entry, branchModel);
     }
 
@@ -130,11 +170,18 @@ export class CanvasNodeControlManager {
         entry.branchButton.tabIndex =
           getControlKey(entry.nodeId, "branch") === firstControlKey ? 0 : -1;
       }
+      if (entry.groupButton !== null) {
+        entry.groupButton.tabIndex =
+          getControlKey(entry.nodeId, "group") === firstControlKey ? 0 : -1;
+      }
     }
   }
 
   removeAll(): void {
-    for (const entry of this.entries.values()) entry.container.remove();
+    for (const entry of this.entries.values()) {
+      entry.groupHost?.remove();
+      entry.container.remove();
+    }
     this.entries.clear();
     this.controlOrderByLeaf.clear();
   }
@@ -143,6 +190,7 @@ export class CanvasNodeControlManager {
     const affectedLeaves = new Set<object>();
     for (const [host, entry] of this.entries) {
       if (entry.container.isConnected) continue;
+      entry.groupHost?.remove();
       entry.container.remove();
       this.entries.delete(host);
       affectedLeaves.add(entry.leaf);
@@ -159,6 +207,7 @@ export class CanvasNodeControlManager {
     const removedLeaves = new Set<object>();
     for (const [host, entry] of this.entries) {
       if (attachedLeaves.has(entry.leaf)) continue;
+      entry.groupHost?.remove();
       entry.container.remove();
       this.entries.delete(host);
       removedLeaves.add(entry.leaf);
@@ -186,9 +235,13 @@ export class CanvasNodeControlManager {
     const entry: ControlEntry = {
       activateBranch: () => undefined,
       activateFocus: () => undefined,
+      activateGroup: () => undefined,
       branchButton: null,
       container,
       focusButton: null,
+      groupButton: null,
+      groupHost: null,
+      groupLabelElement: null,
       leaf,
       nodeId,
       openContextMenu: () => undefined,
@@ -219,6 +272,46 @@ export class CanvasNodeControlManager {
       entry.focusButton = button;
     }
     updateFocusButton(entry.focusButton, model);
+  }
+
+  private syncGroupButton(
+    entry: ControlEntry,
+    model: GroupControlModel | undefined,
+    groupLabelElement: CanvasNodeGroupLabelHandle | undefined,
+  ): void {
+    if (model === undefined || groupLabelElement === undefined) {
+      entry.groupHost?.remove();
+      entry.groupButton = null;
+      entry.groupHost = null;
+      entry.groupLabelElement = null;
+      return;
+    }
+    if (entry.groupButton === null || entry.groupHost === null) {
+      const host = entry.container.createDiv();
+      host.className = "canvas-folding-group-control-host";
+      const button = host.createEl("button");
+      button.type = "button";
+      button.className = "canvas-folding-group-control";
+      this.installSharedButtonEvents(button, entry, "group");
+      entry.groupButton = button;
+      entry.groupHost = host;
+    }
+    if (
+      entry.groupLabelElement !== groupLabelElement ||
+      groupLabelElement.nextElementSibling !== entry.groupHost
+    ) {
+      groupLabelElement.insertAdjacentElement("afterend", entry.groupHost);
+      entry.groupLabelElement = groupLabelElement;
+    }
+    entry.groupHost.style.setProperty(
+      "--canvas-folding-group-label-width",
+      `${groupLabelElement.offsetWidth}px`,
+    );
+    entry.groupHost.style.setProperty(
+      "--canvas-folding-group-label-height",
+      `${groupLabelElement.offsetHeight}px`,
+    );
+    updateGroupButton(entry.groupButton, model);
   }
 
   private syncBranchButton(
@@ -262,6 +355,7 @@ export class CanvasNodeControlManager {
       blockCanvasInteraction(event);
       if (button.disabled) return;
       if (kind === "focus") entry.activateFocus();
+      else if (kind === "group") entry.activateGroup();
       else entry.activateBranch();
       if (event.detail === 0) this.restoreControlFocus(entry, kind);
     });
@@ -271,6 +365,7 @@ export class CanvasNodeControlManager {
         if (button.disabled) return;
         if (!event.repeat) {
           if (kind === "focus") entry.activateFocus();
+          else if (kind === "group") entry.activateGroup();
           else entry.activateBranch();
         }
         this.restoreControlFocus(entry, kind);
@@ -321,6 +416,9 @@ export class CanvasNodeControlManager {
       if (getControlKey(entry.nodeId, "branch") === controlKey) {
         return entry.branchButton;
       }
+      if (getControlKey(entry.nodeId, "group") === controlKey) {
+        return entry.groupButton;
+      }
     }
     return null;
   }
@@ -335,9 +433,31 @@ export class CanvasNodeControlManager {
     );
     const button = kind === "focus"
       ? current?.focusButton
-      : current?.branchButton;
+      : kind === "group"
+        ? current?.groupButton
+        : current?.branchButton;
     button?.focus({ preventScroll: true });
   }
+}
+
+function updateGroupButton(
+  button: HTMLButtonElement,
+  model: GroupControlModel,
+): void {
+  const action = model.collapsed ? "Expand" : "Collapse";
+  const counts = [
+    ...(model.containedNodeCount > 0
+      ? [`${model.containedNodeCount} contained node${model.containedNodeCount === 1 ? "" : "s"}`]
+      : []),
+    ...(model.containedGroupCount > 0
+      ? [`${model.containedGroupCount} contained group${model.containedGroupCount === 1 ? "" : "s"}`]
+      : []),
+  ];
+  const label = `${action} group${counts.length > 0 ? ` with ${counts.join(" and ")}` : ""}`;
+  button.textContent = model.collapsed ? "+" : "−";
+  button.setAttribute("aria-expanded", String(!model.collapsed));
+  button.setAttribute("aria-label", label);
+  button.setAttribute("title", label);
 }
 
 function updateBranchButton(
@@ -503,9 +623,12 @@ function hasModelForHost(
   host: CanvasNodeElementHandle,
   branchModelsByNodeId: ReadonlyMap<string, BranchControlModel>,
   focusModelsByNodeId: ReadonlyMap<string, FocusControlModel>,
+  groupModelsByNodeId: ReadonlyMap<string, GroupControlModel>,
 ): boolean {
   const nodeView = context.nodeViews.find((view) => view.element === host);
   return nodeView !== undefined && (
-    branchModelsByNodeId.has(nodeView.id) || focusModelsByNodeId.has(nodeView.id)
+    branchModelsByNodeId.has(nodeView.id) ||
+    focusModelsByNodeId.has(nodeView.id) ||
+    groupModelsByNodeId.has(nodeView.id)
   );
 }

@@ -7,6 +7,7 @@ import {
 import { getNodeIdsContainedByGroups } from "./visibility";
 
 export interface BranchCollapseStateData {
+  collapsedGroups?: readonly string[];
   focusedNodeId?: string;
   globalRevealedBranches?: readonly string[];
   globalVisibleDepth?: number;
@@ -15,6 +16,7 @@ export interface BranchCollapseStateData {
 }
 
 export class BranchCollapseState {
+  private readonly collapsedGroupIds = new Set<string>();
   private focusedNodeId: string | null = null;
   private readonly globallyRevealedNodeIds = new Set<string>();
   private globalVisibleDepth: number | null = null;
@@ -31,6 +33,9 @@ export class BranchCollapseState {
     state.globalVisibleDepth = normalized.globalVisibleDepth ?? null;
     for (const nodeId of normalized.globalRevealedBranches ?? []) {
       state.globallyRevealedNodeIds.add(nodeId);
+    }
+    for (const groupId of normalized.collapsedGroups ?? []) {
+      state.collapsedGroupIds.add(groupId);
     }
 
     for (const [nodeId, visibleDepth] of Object.entries(
@@ -72,6 +77,11 @@ export class BranchCollapseState {
   }
 
   expandAll(): void {
+    this.expandAllBranches();
+    this.collapsedGroupIds.clear();
+  }
+
+  private expandAllBranches(): void {
     this.globalVisibleDepth = null;
     this.globallyRevealedNodeIds.clear();
     this.visibleDepthByNodeId.clear();
@@ -86,7 +96,7 @@ export class BranchCollapseState {
       return 0;
     }
 
-    this.expandAll();
+    this.expandAllBranches();
     for (const rootId of collapsibleRootIds) {
       this.collapse(rootId);
     }
@@ -101,7 +111,7 @@ export class BranchCollapseState {
       (rootId) => (graph.childrenByNode.get(rootId) ?? []).length > 0,
     ).length;
     if (count === 0) return 0;
-    this.expandAll();
+    this.expandAllBranches();
     this.globalVisibleDepth = depth;
     return count;
   }
@@ -128,12 +138,16 @@ export class BranchCollapseState {
     return (
       this.visibleDepthByNodeId.size === 0 &&
       this.globalVisibleDepth === null &&
+      this.collapsedGroupIds.size === 0 &&
       this.focusedNodeId === null
     );
   }
 
   toData(): BranchCollapseStateData {
     const data: BranchCollapseStateData = {
+      ...(this.collapsedGroupIds.size === 0
+        ? {}
+        : { collapsedGroups: [...this.collapsedGroupIds] }),
       revealedBranches: Object.fromEntries(
         [...this.revealedNodeIdsByRestriction].map(
           ([restrictedNodeId, revealedNodeIds]) => [
@@ -164,7 +178,19 @@ export class BranchCollapseState {
 
   prune(graph: CanvasGraph): boolean {
     const validNodeIds = new Set(graph.nodes.map((node) => node.id));
+    const validGroupIds = new Set(
+      graph.nodes
+        .filter((node) => node.type === "group")
+        .map((node) => node.id),
+    );
     let changed = false;
+
+    for (const groupId of this.collapsedGroupIds) {
+      if (!validGroupIds.has(groupId)) {
+        this.collapsedGroupIds.delete(groupId);
+        changed = true;
+      }
+    }
 
     if (this.focusedNodeId !== null && !validNodeIds.has(this.focusedNodeId)) {
       this.focusedNodeId = null;
@@ -229,6 +255,26 @@ export class BranchCollapseState {
 
   isCollapsed(nodeId: string): boolean {
     return this.visibleDepthByNodeId.get(nodeId) === 0;
+  }
+
+  collapseGroup(groupId: string): void {
+    this.collapsedGroupIds.add(groupId);
+  }
+
+  expandGroup(groupId: string): boolean {
+    return this.collapsedGroupIds.delete(groupId);
+  }
+
+  isGroupCollapsed(groupId: string): boolean {
+    return this.collapsedGroupIds.has(groupId);
+  }
+
+  getCollapsedGroupIds(): ReadonlySet<string> {
+    return new Set(this.collapsedGroupIds);
+  }
+
+  getGroupHiddenNodeIds(graph: CanvasGraph): ReadonlySet<string> {
+    return getNodeIdsContainedByGroups(graph.nodes, this.collapsedGroupIds);
   }
 
   isBranchCollapsed(graph: CanvasGraph, nodeId: string): boolean {
@@ -470,6 +516,11 @@ export function normalizeBranchCollapseStateData(
           (value): value is string => typeof value === "string" && value.length > 0,
         ))]
       : [];
+  const collapsedGroups = Array.isArray(data.collapsedGroups)
+    ? [...new Set(data.collapsedGroups.filter(
+        (value): value is string => typeof value === "string" && value.length > 0,
+      ))]
+    : [];
   if (isRecord(data.visibleDepths)) {
     for (const [nodeId, visibleDepth] of Object.entries(data.visibleDepths)) {
       if (
@@ -509,6 +560,7 @@ export function normalizeBranchCollapseStateData(
   return {
     revealedBranches,
     visibleDepths,
+    ...(collapsedGroups.length === 0 ? {} : { collapsedGroups }),
     ...(focusedNodeId === undefined ? {} : { focusedNodeId }),
     ...(globalVisibleDepth === undefined ? {} : { globalVisibleDepth }),
     ...(globalRevealedBranches.length === 0 ? {} : { globalRevealedBranches }),

@@ -4,6 +4,18 @@
 }
 
 .workspace-leaf-content[data-type="canvas"]
+  .canvas-node.canvas-folding-group-collapsed
+  .canvas-node-container {
+  display: none;
+}
+
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-node.canvas-folding-group-collapsed
+  > .canvas-folding-node-controls {
+  display: none;
+}
+
+.workspace-leaf-content[data-type="canvas"]
   .canvas-folding-dimmed.canvas-folding-dimmed {
   opacity: var(--canvas-folding-focus-opacity, 0.2);
   pointer-events: none;
@@ -87,6 +99,8 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 .workspace-leaf-content[data-type="canvas"]
   .canvas-folding-branch-control,
 .workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-group-control,
+.workspace-leaf-content[data-type="canvas"]
   .canvas-folding-focus-control {
   -webkit-appearance: none;
   align-items: center;
@@ -130,6 +144,39 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 }
 
 .workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-group-control-host {
+  align-items: center;
+  background-color: color-mix(
+    in oklch,
+    var(--canvas-color) 10%,
+    var(--background-primary)
+  );
+  border-radius: var(--radius-s);
+  box-sizing: border-box;
+  display: flex;
+  height: var(--canvas-folding-group-label-height);
+  justify-content: center;
+  left: calc(
+    (var(--canvas-folding-group-label-width) + 6px) *
+      var(--zoom-multiplier)
+  );
+  padding: 0;
+  pointer-events: auto;
+  position: absolute;
+  top: calc(-1 * var(--size-4-1) * var(--zoom-multiplier));
+  transform: translate(0, -100%) scale(var(--zoom-multiplier));
+  transform-origin: bottom left;
+  width: var(--canvas-folding-group-label-height);
+  z-index: 31;
+}
+
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-node:has(> .canvas-folding-group-control-host)
+  > .collapse-button {
+  display: none;
+}
+
+.workspace-leaf-content[data-type="canvas"]
   .canvas-folding-focus-control svg {
   height: 14px;
   pointer-events: none;
@@ -138,6 +185,8 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 
 .workspace-leaf-content[data-type="canvas"]
   .canvas-folding-branch-control:focus-visible,
+.workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-group-control:focus-visible,
 .workspace-leaf-content[data-type="canvas"]
   .canvas-folding-focus-control:focus-visible {
   background: var(--background-modifier-hover);
@@ -157,6 +206,8 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 .workspace-leaf-content[data-type="canvas"]
   .canvas-folding-branch-control:active,
 .workspace-leaf-content[data-type="canvas"]
+  .canvas-folding-group-control:active,
+.workspace-leaf-content[data-type="canvas"]
   .canvas-folding-focus-control:active {
   background: var(
     --background-modifier-active-hover,
@@ -167,6 +218,8 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 @media (hover: hover) and (pointer: fine) {
   .workspace-leaf-content[data-type="canvas"]
     .canvas-folding-branch-control:hover,
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-group-control:hover,
   .workspace-leaf-content[data-type="canvas"]
     .canvas-folding-focus-control:hover {
     background: var(--background-modifier-hover);
@@ -186,6 +239,8 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 
   .workspace-leaf-content[data-type="canvas"]
     .canvas-folding-branch-control,
+  .workspace-leaf-content[data-type="canvas"]
+    .canvas-folding-group-control,
   .workspace-leaf-content[data-type="canvas"]
     .canvas-folding-focus-control {
     flex-basis: 20px;
@@ -211,6 +266,7 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
     width: 14px;
   }
 }
+
 .canvas-folding-persisted-states-header {
   align-items: center;
   display: grid;

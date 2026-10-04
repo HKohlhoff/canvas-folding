@@ -73,6 +73,53 @@ void test("expand all clears every collapsed branch", () => {
   assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
 });
 
+void test("collapses group contents independently of directed branches", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "GROUP", type: "group", x: 0, y: 0, width: 400, height: 300 },
+      { id: "NESTED", type: "group", x: 20, y: 20, width: 200, height: 180 },
+      { id: "CARD", type: "text", x: 40, y: 40, width: 100, height: 60 },
+      { id: "OUTSIDE", type: "text", x: 500, y: 20, width: 100, height: 60 },
+    ],
+    edges: [{ id: "OUTSIDE_CARD", fromNode: "OUTSIDE", toNode: "CARD" }],
+  });
+  const state = new BranchCollapseState();
+
+  state.collapseGroup("GROUP");
+
+  assert.equal(state.isGroupCollapsed("GROUP"), true);
+  assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
+  assert.deepEqual(
+    [...state.getGroupHiddenNodeIds(graph)],
+    ["NESTED", "CARD"],
+  );
+  assert.deepEqual(state.toData().visibleDepths, {});
+  assert.deepEqual(state.toData().collapsedGroups, ["GROUP"]);
+});
+
+void test("stores an empty collapsed group and preserves it across branch actions", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "ROOT", type: "text" },
+      { id: "CHILD", type: "text" },
+      { id: "EMPTY", type: "group", x: 0, y: 0, width: 200, height: 100 },
+    ],
+    edges: [{ id: "ROOT_CHILD", fromNode: "ROOT", toNode: "CHILD" }],
+  });
+  const state = new BranchCollapseState();
+
+  state.collapseGroup("EMPTY");
+  state.showAllRootBranchesThroughDepth(graph, 0);
+  assert.equal(state.isGroupCollapsed("EMPTY"), true);
+  state.collapseAllRootBranches(graph);
+
+  assert.equal(state.isGroupCollapsed("EMPTY"), true);
+  assert.deepEqual([...state.getGroupHiddenNodeIds(graph)], []);
+  state.expandAll();
+  assert.equal(state.isGroupCollapsed("EMPTY"), false);
+  assert.equal(state.isCollapsed("ROOT"), false);
+});
+
 void test("collapse all keeps roots visible and hides their descendants", () => {
   const graph = buildCanvasGraph(createTreeData());
   const state = new BranchCollapseState();
@@ -341,6 +388,24 @@ void test("prunes stale globally revealed node ids", () => {
 
   assert.equal(state.prune(graph), true);
   assert.deepEqual(state.toData().globalRevealedBranches, ["B"]);
+});
+
+void test("prunes group folds that no longer refer to groups", () => {
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "GROUP", type: "group" },
+      { id: "TEXT", type: "text" },
+    ],
+    edges: [],
+  });
+  const state = BranchCollapseState.fromData({
+    collapsedGroups: ["GROUP", "TEXT", "MISSING"],
+    revealedBranches: {},
+    visibleDepths: {},
+  });
+
+  assert.equal(state.prune(graph), true);
+  assert.deepEqual(state.toData().collapsedGroups, ["GROUP"]);
 });
 
 function createTreeData(): CanvasGraphData {
