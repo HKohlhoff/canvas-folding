@@ -128,6 +128,18 @@ npm run build:prod
   and command palette. Confirm that hidden controls do not change folded state
   or end active focus, and that the focus visibility action remains directly
   before the focus action in the toolbar.
+- Open the group-filter menu on a Canvas with repeated and uniquely named
+  groups. Confirm that labels are sorted, counts are correct, checked entries
+  are visible, toggling one label hides every matching group with its contained
+  nodes and incident edges, and **Show all groups (reset filters)** restores
+  them. Confirm that unnamed groups do not create menu entries and that the
+  toolbar action is disabled when no named group exists.
+- With persistence enabled, hide a group label, close and reopen the Canvas,
+  and confirm that the filter is restored. Rename or remove every matching
+  group and confirm stale labels are pruned after an actual Canvas change.
+- Confirm that filtered groups do not use collapsed-group geometry, do not
+  move external edge anchors, and do not change the results returned by
+  `CanvasFoldingApi` v1.
 - Check folded branches with one-, two-, and three-digit hidden-node counts;
   the folding control must grow without covering or shrinking the focus
   control or node content.

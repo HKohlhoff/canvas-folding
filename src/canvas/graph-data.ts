@@ -17,9 +17,11 @@ export function parseCanvasGraphData(value: unknown): CanvasGraphData | null {
     }
 
     const geometry = readCanvasNodeGeometry(valueNode);
+    const label = readNonEmptyLabel(valueNode.label);
     nodes.push({
       id: valueNode.id,
       type: typeof valueNode.type === "string" ? valueNode.type : "unknown",
+      ...(label === undefined ? {} : { label }),
       ...geometry,
     });
   }
@@ -223,6 +225,12 @@ function readCanvasNodeGeometry(
 
 function readFiniteNumber(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function readNonEmptyLabel(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const label = value.trim();
+  return label.length === 0 ? undefined : label;
 }
 
 function containsCollapsedCanvasData(nodes: readonly unknown[]): boolean {

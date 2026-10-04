@@ -73,6 +73,59 @@ void test("expand all clears every collapsed branch", () => {
   assert.deepEqual([...state.getHiddenNodeIds(graph)], []);
 });
 
+void test("stores group-label filters separately from group folding", () => {
+  const state = BranchCollapseState.fromData({
+    hiddenGroupLabels: [" Orte ", "Orte", "Szenen"],
+    revealedBranches: {},
+    visibleDepths: {},
+  });
+
+  assert.equal(state.hasHiddenGroupLabels(), true);
+  assert.equal(state.isGroupLabelHidden("Orte"), true);
+  assert.deepEqual(state.toData().hiddenGroupLabels, ["Orte", "Szenen"]);
+  assert.equal(state.toggleHiddenGroupLabel("Orte"), false);
+  assert.equal(state.toggleHiddenGroupLabel(" Figuren "), true);
+  assert.deepEqual(state.toData().hiddenGroupLabels, ["Figuren", "Szenen"]);
+  state.expandAll();
+  assert.deepEqual(state.toData().hiddenGroupLabels, ["Figuren", "Szenen"]);
+  assert.equal(state.resetHiddenGroupLabels(), true);
+  assert.equal(state.resetHiddenGroupLabels(), false);
+  assert.equal(state.isEmpty(), true);
+});
+
+void test("prunes filters whose named groups no longer exist", () => {
+  const state = BranchCollapseState.fromData({
+    hiddenGroupLabels: ["Orte", "Szenen"],
+    revealedBranches: {},
+    visibleDepths: {},
+  });
+  const graph = buildCanvasGraph({
+    nodes: [{ id: "GROUP", type: "group", label: "Szenen" }],
+    edges: [],
+  });
+
+  assert.equal(state.prune(graph), true);
+  assert.deepEqual(state.toData().hiddenGroupLabels, ["Szenen"]);
+});
+
+void test("retains a filtered label while any duplicate group still exists", () => {
+  const state = BranchCollapseState.fromData({
+    hiddenGroupLabels: ["Orte"],
+    revealedBranches: {},
+    visibleDepths: {},
+  });
+  const graph = buildCanvasGraph({
+    nodes: [
+      { id: "REMAINING", type: "group", label: "Orte" },
+      { id: "RENAMED", type: "group", label: "Schauplätze" },
+    ],
+    edges: [],
+  });
+
+  assert.equal(state.prune(graph), false);
+  assert.deepEqual(state.toData().hiddenGroupLabels, ["Orte"]);
+});
+
 void test("collapses group contents independently of directed branches", () => {
   const graph = buildCanvasGraph({
     nodes: [

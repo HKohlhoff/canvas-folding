@@ -172,6 +172,25 @@ void test("retains and normalizes persisted group folds without branch restricti
   );
 });
 
+void test("migrates version 2 data and retains normalized group filters", () => {
+  const data = normalizePluginData({
+    dataVersion: 2,
+    canvasStates: {
+      "Folder/Test.canvas": {
+        hiddenGroupLabels: [" Orte ", "Orte", "Szenen", 4],
+        revealedBranches: {},
+        visibleDepths: {},
+      },
+    },
+  });
+
+  assert.equal(data.dataVersion, 3);
+  assert.deepEqual(
+    data.canvasStates["Folder/Test.canvas"]?.hiddenGroupLabels,
+    ["Orte", "Szenen"],
+  );
+});
+
 void test("removes saved states for deleted files and folders", () => {
   const states = new Map([
     ["Folder/A.canvas", 1],
