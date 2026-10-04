@@ -1,6 +1,6 @@
 {
   "name": "canvas-folding",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Collapse and expand hierarchical branches in Canvas.",
   "main": "main.js",
   "type": "module",

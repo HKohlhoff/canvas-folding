@@ -2,6 +2,7 @@ const PLUGIN_UI_SELECTOR =
   ".canvas-folding-toolbar, .canvas-folding-branch-control, .canvas-folding-group-control-host, .canvas-folding-group-control";
 const IGNORED_CANVAS_CLASSES = new Set([
   "canvas-folding-dimmed",
+  "canvas-folding-has-group-control",
   "canvas-folding-hidden",
   "mobile-tap",
 ]);

@@ -186,6 +186,7 @@ void test("renders a group control directly after the group label", () => {
     "canvas-folding-group-control-host",
   );
   const groupButton = requireChild(groupHost, "canvas-folding-group-control");
+  assert.equal(entry.host.classes.has("canvas-folding-has-group-control"), true);
   assert.equal(
     groupHost.styleProperties.get("--canvas-folding-group-label-width"),
     "120px",
@@ -262,6 +263,7 @@ void test("replaces its framed group control cleanly across Advanced Canvas togg
   nodeView.externalGroupControl = new FakeElement("div");
   syncGroup();
   assert.equal(firstHost.removed, true);
+  assert.equal(entry.host.classes.has("canvas-folding-has-group-control"), false);
 
   delete nodeView.externalGroupControl;
   syncGroup();
@@ -270,6 +272,7 @@ void test("replaces its framed group control cleanly across Advanced Canvas togg
       .length,
     1,
   );
+  assert.equal(entry.host.classes.has("canvas-folding-has-group-control"), true);
 });
 
 void test("shows a readable hidden-node count on collapsed branches", () => {

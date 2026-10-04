@@ -25,7 +25,9 @@ void test("does not change the stored hidden-node set", () => {
 });
 
 void test("ignores visibility classes managed by Canvas Folding", () => {
-  const node = createElement("canvas-node canvas-folding-hidden");
+  const node = createElement(
+    "canvas-node canvas-folding-hidden canvas-folding-has-group-control",
+  );
 
   assert.equal(
     hasRelevantCanvasMutation([
