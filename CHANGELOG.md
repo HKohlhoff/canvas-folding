@@ -6,6 +6,14 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.8] – 2026-10-04
+
+### Fixed
+
+- Replace the broad CSS `:has()` selector used by group controls with a
+  targeted, lifecycle-managed marker class to avoid unnecessary selector
+  invalidation on large canvases.
+
 ## [1.2.7] – 2026-10-04
 
 ### Added

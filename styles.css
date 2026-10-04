@@ -171,7 +171,7 @@ body.is-ios .workspace-leaf-content[data-type="canvas"] .canvas-controls {
 }
 
 .workspace-leaf-content[data-type="canvas"]
-  .canvas-node:has(> .canvas-folding-group-control-host)
+  .canvas-node.canvas-folding-has-group-control
   > .collapse-button {
   display: none;
 }

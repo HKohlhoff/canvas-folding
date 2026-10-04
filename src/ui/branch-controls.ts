@@ -14,6 +14,8 @@ import {
 
 type NodeControlKind = "branch" | "focus" | "group";
 
+const GROUP_CONTROL_NODE_CLASS = "canvas-folding-has-group-control";
+
 interface ControlEntry {
   activateBranch: () => void;
   activateFocus: () => void;
@@ -126,6 +128,7 @@ export class CanvasNodeControlManager {
           groupModelsByNodeId,
         ))
       ) {
+        host.classList.remove(GROUP_CONTROL_NODE_CLASS);
         entry.groupHost?.remove();
         entry.container.remove();
         this.entries.delete(host);
@@ -155,7 +158,12 @@ export class CanvasNodeControlManager {
         onContextMenu(context, nodeView.id, position);
       };
       this.syncFocusButton(entry, focusModel);
-      this.syncGroupButton(entry, groupModel, nodeView.groupLabelElement);
+      this.syncGroupButton(
+        entry,
+        groupModel,
+        nodeView.groupLabelElement,
+        nodeView.element,
+      );
       this.syncBranchButton(entry, branchModel);
     }
 
@@ -178,7 +186,8 @@ export class CanvasNodeControlManager {
   }
 
   removeAll(): void {
-    for (const entry of this.entries.values()) {
+    for (const [host, entry] of this.entries) {
+      host.classList.remove(GROUP_CONTROL_NODE_CLASS);
       entry.groupHost?.remove();
       entry.container.remove();
     }
@@ -190,6 +199,7 @@ export class CanvasNodeControlManager {
     const affectedLeaves = new Set<object>();
     for (const [host, entry] of this.entries) {
       if (entry.container.isConnected) continue;
+      host.classList.remove(GROUP_CONTROL_NODE_CLASS);
       entry.groupHost?.remove();
       entry.container.remove();
       this.entries.delete(host);
@@ -207,6 +217,7 @@ export class CanvasNodeControlManager {
     const removedLeaves = new Set<object>();
     for (const [host, entry] of this.entries) {
       if (attachedLeaves.has(entry.leaf)) continue;
+      host.classList.remove(GROUP_CONTROL_NODE_CLASS);
       entry.groupHost?.remove();
       entry.container.remove();
       this.entries.delete(host);
@@ -278,8 +289,10 @@ export class CanvasNodeControlManager {
     entry: ControlEntry,
     model: GroupControlModel | undefined,
     groupLabelElement: CanvasNodeGroupLabelHandle | undefined,
+    nodeElement: CanvasNodeElementHandle,
   ): void {
     if (model === undefined || groupLabelElement === undefined) {
+      nodeElement.classList.remove(GROUP_CONTROL_NODE_CLASS);
       entry.groupHost?.remove();
       entry.groupButton = null;
       entry.groupHost = null;
@@ -296,6 +309,7 @@ export class CanvasNodeControlManager {
       entry.groupButton = button;
       entry.groupHost = host;
     }
+    nodeElement.classList.toggle(GROUP_CONTROL_NODE_CLASS, true);
     if (
       entry.groupLabelElement !== groupLabelElement ||
       groupLabelElement.nextElementSibling !== entry.groupHost

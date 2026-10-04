@@ -39,8 +39,9 @@ void test("places the group control beside the native group label", () => {
   );
   assert.match(
     styles,
-    /\.canvas-node:has\(> \.canvas-folding-group-control-host\)[\s\S]+> \.collapse-button \{[\s\S]+display: none;/,
+    /\.canvas-node\.canvas-folding-has-group-control[\s\S]+> \.collapse-button \{[\s\S]+display: none;/,
   );
+  assert.doesNotMatch(styles, /:has\(/);
   assert.match(
     styles,
     /\.canvas-node\.canvas-folding-group-collapsed[\s\S]+\.canvas-node-container \{[\s\S]+display: none;/,
