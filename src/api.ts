@@ -53,11 +53,16 @@ export function createCanvasFoldStateSnapshot(
   graph: CanvasGraph,
 ): CanvasFoldStateSnapshot {
   const state = BranchCollapseState.fromData(data);
+  const hiddenNodeIds = new Set([
+    ...state.getHiddenNodeIds(graph),
+    ...state.getGroupHiddenNodeIds(graph),
+  ]);
   const visibility = deriveCanvasVisibility(
     graph,
-    state.getHiddenNodeIds(graph),
+    hiddenNodeIds,
     new Set(),
     state.getRestrictedEdgeIds(graph),
+    state.getCollapsedGroupIds(),
   );
   return Object.freeze({
     canvasPath,

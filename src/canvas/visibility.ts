@@ -10,6 +10,7 @@ import { deriveCanvasVisibility } from "../tree/visibility";
 
 const HIDDEN_CLASS = "canvas-folding-hidden";
 const DIMMED_CLASS = "canvas-folding-dimmed";
+const COLLAPSED_GROUP_CLASS = "canvas-folding-group-collapsed";
 const FOCUS_OPACITY_PROPERTY = "--canvas-folding-focus-opacity";
 
 export interface VisibilityResult {
@@ -25,6 +26,10 @@ export class CanvasVisibilityManager {
     ManagedInteractionLayer
   >();
   private readonly managedElements = new Map<CanvasElementHandle, object>();
+  private readonly collapsedGroupElements = new Map<
+    CanvasElementHandle,
+    object
+  >();
 
   constructor(private readonly manageInteractionLayer = true) {}
 
@@ -34,6 +39,7 @@ export class CanvasVisibilityManager {
     dimmedNodeIds: ReadonlySet<string> = new Set(),
     focusOpacity = 20,
     restrictedEdgeIds: ReadonlySet<string> = new Set(),
+    preservedGroupIds: ReadonlySet<string> = new Set(),
   ): VisibilityResult {
     const currentElements = new Set([
       ...context.nodeViews.map((nodeView) => nodeView.element),
@@ -52,6 +58,7 @@ export class CanvasVisibilityManager {
       hiddenNodeIds,
       dimmedNodeIds,
       restrictedEdgeIds,
+      preservedGroupIds,
     );
     const storedNodeIds = new Set(context.data.nodes.map((node) => node.id));
     const storedEdgeIds = new Set(context.data.edges.map((edge) => edge.id));
@@ -107,6 +114,11 @@ export class CanvasVisibilityManager {
         focusOpacity,
         context.leaf,
       );
+      this.setGroupCollapsed(
+        nodeView.element,
+        preservedGroupIds.has(nodeView.id),
+        context.leaf,
+      );
       if (hidden) {
         hiddenNodeCount += 1;
       }
@@ -136,6 +148,10 @@ export class CanvasVisibilityManager {
       this.restoreElement(element);
     }
     this.managedElements.clear();
+    for (const element of this.collapsedGroupElements.keys()) {
+      this.restoreElement(element);
+    }
+    this.collapsedGroupElements.clear();
 
     for (const [layer, managed] of this.interactionLayers) {
       this.restoreInteractionLayer(layer, managed);
@@ -148,6 +164,12 @@ export class CanvasVisibilityManager {
       if (attachedLeaves.has(leaf)) continue;
       this.restoreElement(element);
       this.managedElements.delete(element);
+    }
+
+    for (const [element, leaf] of this.collapsedGroupElements) {
+      if (attachedLeaves.has(leaf)) continue;
+      this.restoreElement(element);
+      this.collapsedGroupElements.delete(element);
     }
 
     for (const [layer, managed] of this.interactionLayers) {
@@ -232,11 +254,18 @@ export class CanvasVisibilityManager {
         this.managedElements.delete(element);
       }
     }
+    for (const [element, ownerLeaf] of this.collapsedGroupElements) {
+      if (ownerLeaf === leaf && !currentElements.has(element)) {
+        this.restoreElement(element);
+        this.collapsedGroupElements.delete(element);
+      }
+    }
   }
 
   private restoreElement(element: CanvasElementHandle): void {
     element.classList.remove(HIDDEN_CLASS);
     element.classList.remove(DIMMED_CLASS);
+    element.classList.remove(COLLAPSED_GROUP_CLASS);
     element.style.removeProperty(FOCUS_OPACITY_PROPERTY);
   }
 
@@ -266,6 +295,16 @@ export class CanvasVisibilityManager {
     } else {
       element.style.removeProperty(FOCUS_OPACITY_PROPERTY);
     }
+  }
+
+  private setGroupCollapsed(
+    element: CanvasElementHandle,
+    collapsed: boolean,
+    leaf: object,
+  ): void {
+    element.classList.toggle(COLLAPSED_GROUP_CLASS, collapsed);
+    if (collapsed) this.collapsedGroupElements.set(element, leaf);
+    else this.collapsedGroupElements.delete(element);
   }
 }
 

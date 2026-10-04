@@ -18,7 +18,9 @@ import {
 import {
   CanvasLiveSync,
   getLiveHiddenNodeIds,
+  StylesheetLiveSync,
 } from "./canvas/live-sync";
+import { CanvasGroupGeometryManager } from "./canvas/group-geometry";
 import {
   CanvasVisibilityManager,
   type VisibilityResult,
@@ -67,6 +69,7 @@ import { openPluginReadme } from "./ui/readme";
 import {
   buildBranchControlModels,
   buildFocusControlModels,
+  buildGroupControlModels,
   formatDescendantCount,
   getExternallyCollapsedDescendantCount,
   getRenderedDescendantDepths,
@@ -93,6 +96,7 @@ export default class CanvasFoldingPlugin extends Plugin {
   private readonly nodeControls = new CanvasNodeControlManager();
   private readonly canvasToolbar = new CanvasToolbarManager();
   private readonly canvasLiveSync = new CanvasLiveSync();
+  private readonly stylesheetLiveSync = new StylesheetLiveSync();
   private activeCanvasPath: string | null = null;
   private branchControlsVisible = DEFAULT_SETTINGS.showBranchControls;
   private focusControlsVisible = DEFAULT_SETTINGS.showFocusControls;
@@ -126,6 +130,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     },
   );
   private readonly visibility = new CanvasVisibilityManager(Platform.isDesktop);
+  private readonly groupGeometry = new CanvasGroupGeometryManager();
 
   async onload(): Promise<void> {
     await this.loadPluginData();
@@ -144,6 +149,9 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.focusControlsVisible = this.settings.showFocusControls;
     this.canvasToolbarVisible = this.settings.showCanvasToolbar;
     this.rememberOpenedCanvas(this.app.workspace.getActiveFile());
+    this.stylesheetLiveSync.watch(document.head, () => {
+      this.scheduleActiveCanvasRefresh(true);
+    });
 
     this.addSettingTab(new CanvasFoldingSettingTab(this.app, this));
 
@@ -327,7 +335,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
         this.cleanupDetachedSessionStates();
-        this.refreshActiveCanvasState();
+        this.scheduleActiveCanvasRefresh(true);
       }),
     );
     this.app.workspace.onLayoutReady(() => {
@@ -420,9 +428,11 @@ export default class CanvasFoldingPlugin extends Plugin {
       this.liveCanvasFollowUpTimer = null;
     }
     this.canvasLiveSync.disconnect();
+    this.stylesheetLiveSync.disconnect();
     this.nodeControls.removeAll();
     this.canvasToolbar.removeAll();
     this.visibility.restoreAll();
+    this.groupGeometry.restoreAll();
     this.collapseStates.clear();
   }
 
@@ -952,8 +962,8 @@ export default class CanvasFoldingPlugin extends Plugin {
 
     const result = this.applyVisibilityState(context, graph, state);
     this.syncNodeControls(context, graph, state);
-    this.debug("Expanded all branches", result);
-    this.notifySuccess("Expanded all branches.");
+    this.debug("Expanded all branches and groups", result);
+    this.notifySuccess("Expanded all branches and groups.");
   }
 
   private collapseAllBranches(context: ActiveCanvasContext): void {
@@ -1026,6 +1036,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     }
     const existing = statesByPath.get(context.key);
     if (existing !== undefined) {
+      this.releaseGroupsOwnedByExternalControls(context, existing);
       return existing;
     }
 
@@ -1034,7 +1045,21 @@ export default class CanvasFoldingPlugin extends Plugin {
       : undefined;
     const state = BranchCollapseState.fromData(savedState);
     statesByPath.set(context.key, state);
+    this.releaseGroupsOwnedByExternalControls(context, state);
     return state;
+  }
+
+  private releaseGroupsOwnedByExternalControls(
+    context: ActiveCanvasContext,
+    state: BranchCollapseState,
+  ): void {
+    let changed = false;
+    for (const nodeView of context.nodeViews) {
+      if (nodeView.externalGroupControl !== undefined) {
+        changed = state.expandGroup(nodeView.id) || changed;
+      }
+    }
+    if (changed) this.storeCanvasState(context.key, state);
   }
 
   private cleanupDetachedSessionStates(): void {
@@ -1050,6 +1075,7 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.nodeControls.removeLeavesExcept(attachedLeaves);
     this.canvasToolbar.removeLeavesExcept(attachedLeaves);
     this.visibility.restoreLeavesExcept(attachedLeaves);
+    this.groupGeometry.restoreLeavesExcept(attachedLeaves);
   }
 
   private notifySuccess(message: string): void {
@@ -1063,8 +1089,9 @@ export default class CanvasFoldingPlugin extends Plugin {
     const state = this.getCollapseState(context, graph);
     const visibilitySummary = summarizeCanvasVisibility(
       graph,
-      state.getHiddenNodeIds(graph),
+      this.getCombinedHiddenNodeIds(graph, state),
       state.getDimmedNodeIds(graph),
+      state.getCollapsedGroupIds(),
     );
     const persistenceStatus = !this.settings.rememberCanvasStates
       ? "current state is kept for this tab only"
@@ -1091,6 +1118,10 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.canvasLiveSync.watch(context.toolbarHost, () => {
       this.scheduleActiveCanvasRefresh(true);
     });
+    if (context.restoreCollapsedGroups?.() === true) {
+      this.scheduleActiveCanvasRefresh(true);
+      return;
+    }
     const graph = buildCanvasGraph(context.data);
     const state = this.getCollapseState(context, graph);
     // Canvas runtime data can be transiently empty while a view opens. Stale
@@ -1128,10 +1159,24 @@ export default class CanvasFoldingPlugin extends Plugin {
     this.syncToolbar(context, graph, state);
     if (!this.branchControlsVisible && !this.focusControlsVisible) {
       this.nodeControls.removeAll();
+      this.groupGeometry.refresh(context);
       return;
     }
 
     const hiddenNodeIds = state.getHiddenNodeIds(graph);
+    const groupHiddenNodeIds = state.getGroupHiddenNodeIds(graph);
+    const collapsedGroupIds = state.getCollapsedGroupIds();
+    const combinedHiddenNodeIds = new Set([
+      ...hiddenNodeIds,
+      ...groupHiddenNodeIds,
+    ]);
+    const effectiveHiddenNodeIds = deriveCanvasVisibility(
+      graph,
+      combinedHiddenNodeIds,
+      state.getDimmedNodeIds(graph),
+      state.getRestrictedEdgeIds(graph),
+      collapsedGroupIds,
+    ).hiddenNodeIds;
     this.nodeControls.sync(
       context,
       this.branchControlsVisible
@@ -1141,14 +1186,18 @@ export default class CanvasFoldingPlugin extends Plugin {
                 (nodeView) => nodeView.externallyCollapsedNodeIds ?? [],
               ),
             ),
-            groupHiddenNodeIds: getNodeIdsHiddenByGroups(
-              graph.nodes,
-              hiddenNodeIds,
-            ),
+            groupHiddenNodeIds: new Set([
+              ...getNodeIdsHiddenByGroups(graph.nodes, hiddenNodeIds),
+              ...groupHiddenNodeIds,
+            ]),
+            hiddenNodeIds: effectiveHiddenNodeIds,
           })
         : [],
       this.focusControlsVisible
-        ? buildFocusControlModels(graph, state)
+        ? buildFocusControlModels(graph, state, {
+            collapsedGroupIds,
+            hiddenNodeIds: effectiveHiddenNodeIds,
+          })
         : [],
       (controlContext, nodeId) => {
         this.toggleBranchFromControl(
@@ -1169,7 +1218,36 @@ export default class CanvasFoldingPlugin extends Plugin {
           event,
         );
       },
+      this.branchControlsVisible
+        ? buildGroupControlModels(
+            graph,
+            collapsedGroupIds,
+            effectiveHiddenNodeIds,
+          )
+        : [],
+      (controlContext, nodeId) => {
+        this.toggleGroupFromControl(
+          this.refreshControlContext(controlContext),
+          nodeId,
+        );
+      },
     );
+    this.groupGeometry.refresh(context);
+  }
+
+  private syncGroupGeometry(
+    context: ActiveCanvasContext,
+    collapsedGroupIds: ReadonlySet<string>,
+  ): void {
+    const independentlyCollapsedGroupIds = new Set(
+      context.nodeViews
+        .filter((nodeView) =>
+          nodeView.externalGroupControl === undefined &&
+          collapsedGroupIds.has(nodeView.id),
+        )
+        .map((nodeView) => nodeView.id),
+    );
+    this.groupGeometry.sync(context, independentlyCollapsedGroupIds);
   }
 
   private syncToolbar(
@@ -1421,18 +1499,46 @@ export default class CanvasFoldingPlugin extends Plugin {
     );
   }
 
+  private toggleGroupFromControl(
+    context: ActiveCanvasContext,
+    groupId: string,
+  ): void {
+    const graph = buildCanvasGraph(context.data);
+    const group = graph.nodes.find((node) => node.id === groupId);
+    if (group?.type !== "group") {
+      this.syncNodeControls(context, graph);
+      return;
+    }
+    const state = this.getCollapseState(context, graph);
+    const expanding = state.isGroupCollapsed(groupId);
+    if (expanding) state.expandGroup(groupId);
+    else state.collapseGroup(groupId);
+    this.storeCanvasState(context.key, state);
+
+    const result = expanding
+      ? this.applyVisibilityState(context, graph, state)
+      : this.applyCollapsedState(context, graph, state);
+    this.syncNodeControls(context, graph, state);
+    this.debug(expanding ? "Expanded group control" : "Collapsed group control", {
+      groupId,
+      ...result,
+    });
+    this.notifySuccess(expanding ? "Expanded group." : "Collapsed group.");
+  }
+
   private applyCollapsedState(
     context: ActiveCanvasContext,
     graph: ReturnType<typeof buildCanvasGraph>,
     state: BranchCollapseState,
   ): VisibilityResult & { deselectedItemCount: number } {
-    const hiddenNodeIds = state.getHiddenNodeIds(graph);
+    const hiddenNodeIds = this.getCombinedHiddenNodeIds(graph, state);
     const dimmedNodeIds = state.getDimmedNodeIds(graph);
     const visibility = deriveCanvasVisibility(
       graph,
       hiddenNodeIds,
       dimmedNodeIds,
       state.getRestrictedEdgeIds(graph),
+      state.getCollapsedGroupIds(),
     );
     const hiddenItemIds = new Set([
       ...visibility.hiddenNodeIds,
@@ -1442,14 +1548,17 @@ export default class CanvasFoldingPlugin extends Plugin {
     ]);
     const deselectedItemCount = context.deselectItems(hiddenItemIds);
 
+    const result = this.visibility.apply(
+      context,
+      hiddenNodeIds,
+      dimmedNodeIds,
+      this.settings.focusBackgroundOpacity,
+      state.getRestrictedEdgeIds(graph),
+      state.getCollapsedGroupIds(),
+    );
+    this.syncGroupGeometry(context, state.getCollapsedGroupIds());
     return {
-      ...this.visibility.apply(
-        context,
-        hiddenNodeIds,
-        dimmedNodeIds,
-        this.settings.focusBackgroundOpacity,
-        state.getRestrictedEdgeIds(graph),
-      ),
+      ...result,
       deselectedItemCount,
     };
   }
@@ -1459,13 +1568,16 @@ export default class CanvasFoldingPlugin extends Plugin {
     graph: ReturnType<typeof buildCanvasGraph>,
     state: BranchCollapseState,
   ): VisibilityResult {
-    return this.visibility.apply(
+    const result = this.visibility.apply(
       context,
-      state.getHiddenNodeIds(graph),
+      this.getCombinedHiddenNodeIds(graph, state),
       state.getDimmedNodeIds(graph),
       this.settings.focusBackgroundOpacity,
       state.getRestrictedEdgeIds(graph),
+      state.getCollapsedGroupIds(),
     );
+    this.syncGroupGeometry(context, state.getCollapsedGroupIds());
+    return result;
   }
 
   private applyLiveVisibilityState(
@@ -1473,16 +1585,29 @@ export default class CanvasFoldingPlugin extends Plugin {
     graph: ReturnType<typeof buildCanvasGraph>,
     state: BranchCollapseState,
   ): VisibilityResult {
-    return this.visibility.apply(
+    const result = this.visibility.apply(
       context,
       getLiveHiddenNodeIds(
-        state.getHiddenNodeIds(graph),
+        this.getCombinedHiddenNodeIds(graph, state),
         context.selectedNodeIds,
       ),
       state.getDimmedNodeIds(graph),
       this.settings.focusBackgroundOpacity,
       state.getRestrictedEdgeIds(graph),
+      state.getCollapsedGroupIds(),
     );
+    this.syncGroupGeometry(context, state.getCollapsedGroupIds());
+    return result;
+  }
+
+  private getCombinedHiddenNodeIds(
+    graph: ReturnType<typeof buildCanvasGraph>,
+    state: BranchCollapseState,
+  ): ReadonlySet<string> {
+    return new Set([
+      ...state.getHiddenNodeIds(graph),
+      ...state.getGroupHiddenNodeIds(graph),
+    ]);
   }
 }
 

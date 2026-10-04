@@ -16,6 +16,7 @@ import {
 import type {
   BranchControlModel,
   FocusControlModel,
+  GroupControlModel,
 } from "../../src/ui/control-model";
 
 const BRANCH_MODEL: BranchControlModel = {
@@ -26,6 +27,13 @@ const BRANCH_MODEL: BranchControlModel = {
 const FOCUS_MODEL: FocusControlModel = {
   active: false,
   descendantCount: 1,
+  nodeId: "A",
+};
+const GROUP_MODEL: GroupControlModel = {
+  collapsed: false,
+  containedGroupCount: 0,
+  containedItemCount: 1,
+  containedNodeCount: 1,
   nodeId: "A",
 };
 
@@ -148,6 +156,120 @@ void test("renders focus before branch and keeps their labels independent", () =
   );
   assert.equal(focusButton.tabIndex, 0);
   assert.equal(branchButton.tabIndex, -1);
+});
+
+void test("renders a group control directly after the group label", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+
+  manager.sync(
+    entry.context,
+    [BRANCH_MODEL],
+    [FOCUS_MODEL],
+    () => undefined,
+    () => undefined,
+    () => undefined,
+    [GROUP_MODEL],
+    () => undefined,
+  );
+
+  const container = requireContainer(entry.host);
+  assert.deepEqual(
+    container.children.map((child) => child.className),
+    [
+      "canvas-folding-focus-control",
+      "canvas-folding-branch-control",
+    ],
+  );
+  const groupHost = requireChild(
+    entry.groupLabel.adjacentElements,
+    "canvas-folding-group-control-host",
+  );
+  const groupButton = requireChild(groupHost, "canvas-folding-group-control");
+  assert.equal(
+    groupHost.styleProperties.get("--canvas-folding-group-label-width"),
+    "120px",
+  );
+  assert.equal(
+    groupHost.styleProperties.get("--canvas-folding-group-label-height"),
+    "36px",
+  );
+  assert.equal(groupButton.textContent, "−");
+  assert.equal(groupButton.attributes.get("aria-expanded"), "true");
+  assert.equal(groupButton.attributes.get("aria-label"), "Collapse group with 1 contained node");
+
+  manager.sync(
+    entry.context,
+    [BRANCH_MODEL],
+    [FOCUS_MODEL],
+    () => undefined,
+    () => undefined,
+    () => undefined,
+    [GROUP_MODEL],
+    () => undefined,
+  );
+  assert.equal(entry.groupLabel.children.length, 0);
+  assert.equal(entry.groupLabel.adjacentElements.length, 1);
+});
+
+void test("defers group folding to an existing Advanced Canvas control", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+  const nodeView = entry.context.nodeViews[0];
+  assert.ok(nodeView !== undefined);
+  nodeView.externalGroupControl = new FakeElement("div");
+
+  manager.sync(
+    entry.context,
+    [],
+    [FOCUS_MODEL],
+    () => undefined,
+    () => undefined,
+    () => undefined,
+    [GROUP_MODEL],
+    () => undefined,
+  );
+
+  const container = requireContainer(entry.host);
+  assert.deepEqual(
+    container.children.map((child) => child.className),
+    ["canvas-folding-focus-control"],
+  );
+});
+
+void test("replaces its framed group control cleanly across Advanced Canvas toggles", () => {
+  const manager = new CanvasNodeControlManager();
+  const entry = createContext("test.canvas", {});
+  const syncGroup = (): void => manager.sync(
+    entry.context,
+    [],
+    [FOCUS_MODEL],
+    () => undefined,
+    () => undefined,
+    () => undefined,
+    [GROUP_MODEL],
+    () => undefined,
+  );
+
+  syncGroup();
+  const firstHost = requireChild(
+    entry.groupLabel.adjacentElements,
+    "canvas-folding-group-control-host",
+  );
+
+  const nodeView = entry.context.nodeViews[0];
+  assert.ok(nodeView !== undefined);
+  nodeView.externalGroupControl = new FakeElement("div");
+  syncGroup();
+  assert.equal(firstHost.removed, true);
+
+  delete nodeView.externalGroupControl;
+  syncGroup();
+  assert.equal(
+    entry.groupLabel.adjacentElements.filter((element) => !element.removed)
+      .length,
+    1,
+  );
 });
 
 void test("shows a readable hidden-node count on collapsed branches", () => {
@@ -392,10 +514,13 @@ function createContext(
   leaf: object,
 ): {
   context: ActiveCanvasContext;
+  groupLabel: FakeElement;
   host: FakeNodeElement;
 } {
   const host = new FakeNodeElement();
+  const groupLabel = new FakeElement("div");
   return {
+    groupLabel,
     host,
     context: {
       data: {
@@ -410,7 +535,11 @@ function createContext(
       key,
       leaf,
       nodeInteractionLayer: null,
-      nodeViews: [{ element: host, id: "A" }],
+      nodeViews: [{
+        element: host,
+        groupLabelElement: groupLabel as unknown as ActiveCanvasContext["nodeViews"][number]["groupLabelElement"],
+        id: "A",
+      }],
       selectedNodeIds: [],
       toolbarHost: { querySelector: () => null } as unknown as HTMLElement,
     },
@@ -422,8 +551,14 @@ function requireContainer(host: FakeNodeElement): FakeElement {
   return host.container;
 }
 
-function requireChild(container: FakeElement, className: string): FakeElement {
-  const child = container.children.find((candidate) => candidate.className === className);
+function requireChild(
+  container: FakeElement | readonly FakeElement[],
+  className: string,
+): FakeElement {
+  const children: readonly FakeElement[] = container instanceof FakeElement
+    ? container.children
+    : container;
+  const child = children.find((candidate) => candidate.className === className);
   assert.ok(child !== undefined);
   return child;
 }
@@ -476,9 +611,11 @@ class FakeNodeElement implements CanvasNodeElementHandle {
     this.container = element;
     return element as unknown as HTMLElementTagNameMap[K];
   }
+
 }
 
 class FakeElement {
+  readonly adjacentElements: FakeElement[] = [];
   readonly attributes = new Map<string, string>();
   readonly children: FakeElement[] = [];
   readonly classes = new Set<string>();
@@ -491,6 +628,21 @@ class FakeElement {
   title = "";
   type = "";
   readonly ownerDocument = {} as Document;
+  readonly styleProperties = new Map<string, string>();
+  readonly style = {
+    removeProperty: (property: string) => {
+      const value = this.styleProperties.get(property) ?? "";
+      this.styleProperties.delete(property);
+      return value;
+    },
+    setProperty: (property: string, value: string) => {
+      this.styleProperties.set(property, value);
+    },
+  };
+  nextElementSibling: FakeElement | null = null;
+  offsetHeight = 36;
+  offsetWidth = 120;
+  parentElement: FakeElement | null = null;
 
   constructor(readonly tagName: string) {}
 
@@ -503,8 +655,14 @@ class FakeElement {
   }
 
   appendChild(child: FakeElement): FakeElement {
+    child.detachFromParent();
     if (!this.children.includes(child)) this.children.push(child);
+    child.parentElement = this;
     return child;
+  }
+
+  contains(child: FakeElement | null): boolean {
+    return child !== null && this.children.includes(child);
   }
 
   createEl<K extends keyof HTMLElementTagNameMap>(
@@ -512,7 +670,15 @@ class FakeElement {
   ): HTMLElementTagNameMap[K] {
     const element = new FakeElement(tag);
     this.children.push(element);
+    element.parentElement = this;
     return element as unknown as HTMLElementTagNameMap[K];
+  }
+
+  createDiv(): HTMLDivElement {
+    const element = new FakeElement("div");
+    this.children.push(element);
+    element.parentElement = this;
+    return element as unknown as HTMLDivElement;
   }
 
   focus(): void {
@@ -524,13 +690,35 @@ class FakeElement {
   }
 
   insertBefore(child: FakeElement, before: FakeElement): FakeElement {
+    child.detachFromParent();
     this.children.splice(this.children.indexOf(before), 0, child);
+    child.parentElement = this;
     return child;
   }
 
+  insertAdjacentElement(
+    position: InsertPosition,
+    element: FakeElement,
+  ): FakeElement {
+    assert.equal(position, "afterend");
+    element.detachFromParent();
+    this.adjacentElements.push(element);
+    this.nextElementSibling = element;
+    element.parentElement = this.parentElement;
+    return element;
+  }
+
   remove(): void {
+    this.detachFromParent();
     this.removed = true;
     this.isConnected = false;
+  }
+
+  private detachFromParent(): void {
+    if (this.parentElement === null) return;
+    const index = this.parentElement.children.indexOf(this);
+    if (index >= 0) this.parentElement.children.splice(index, 1);
+    this.parentElement = null;
   }
 
   removeAttribute(name: string): void {

@@ -5,6 +5,7 @@ import {
   CanvasLiveSync,
   getLiveHiddenNodeIds,
   hasRelevantCanvasMutation,
+  StylesheetLiveSync,
   type CanvasMutationRecord,
 } from "../../src/canvas/live-sync";
 
@@ -58,14 +59,16 @@ void test("detects Obsidian selection class changes", () => {
 
 void test("ignores child changes created by plugin controls", () => {
   const canvasNode = createElement("canvas-node");
-  const control = createElement(
-    "canvas-folding-branch-control",
+  const branchControl = createElement("canvas-folding-branch-control", canvasNode);
+  const groupControlHost = createElement(
+    "canvas-folding-group-control-host",
     canvasNode,
   );
+  const groupControl = createElement("canvas-folding-group-control", canvasNode);
 
   assert.equal(
     hasRelevantCanvasMutation([
-      childMutation(canvasNode, [control]),
+      childMutation(canvasNode, [branchControl, groupControlHost, groupControl]),
     ]),
     false,
   );
@@ -107,6 +110,26 @@ void test("disconnects the canvas observer during cleanup", () => {
   liveSync.disconnect();
 
   assert.equal(observers.length, 1);
+  assert.equal(observers[0]?.observeCount, 1);
+  assert.equal(observers[0]?.disconnectCount, 1);
+});
+
+void test("refreshes when loaded plugin styles change", () => {
+  const observers: FakeMutationObserver[] = [];
+  const liveSync = new StylesheetLiveSync((callback) => {
+    const observer = new FakeMutationObserver(callback);
+    observers.push(observer);
+    return observer;
+  });
+  let refreshCount = 0;
+
+  liveSync.watch({} as Node, () => {
+    refreshCount += 1;
+  });
+  observers[0]?.notify();
+  liveSync.disconnect();
+
+  assert.equal(refreshCount, 1);
   assert.equal(observers[0]?.observeCount, 1);
   assert.equal(observers[0]?.disconnectCount, 1);
 });
@@ -180,5 +203,9 @@ class FakeMutationObserver {
 
   observe(): void {
     this.observeCount += 1;
+  }
+
+  notify(): void {
+    this.callback([], this as unknown as MutationObserver);
   }
 }

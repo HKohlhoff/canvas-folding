@@ -6,6 +6,30 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.7] – 2026-10-04
+
+### Added
+
+- Add independent `−`/`+` controls beside every standard Canvas group name,
+  including empty and nested groups.
+- Hide a collapsed group's frame, fully contained nodes and groups, incident
+  edges, and edge labels while keeping external connections anchored to the
+  compact group header.
+
+### Changed
+
+- Keep group folding separate from directed branch folding while allowing
+  **Expand all branches** to open both kinds of fold.
+- Defer to Advanced Canvas whenever it owns a group's folding control and
+  coordinate control, content, and edge-geometry hand-off without introducing
+  a plugin dependency.
+- Clarify that Canvas Folding stores its own state outside Canvas files and may
+  normalize an Advanced Canvas collapsed representation when control returns.
+
+### Fixed
+
+- Prevent repeated edge-geometry refreshes from freezing Canvas on iPadOS.
+
 ## [1.2.6] – 2026-09-29
 
 ### Changed

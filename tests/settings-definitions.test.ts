@@ -10,11 +10,12 @@ void test("starts settings with a non-destructive Canvas notice", () => {
   const definitions = getCanvasFoldingSettingDefinitions();
   const notice = definitions[0];
   assert.ok(notice !== undefined && !("type" in notice));
-  assert.equal(notice.name, "Canvas files are never modified");
+  assert.equal(notice.name, "Canvas Folding state stays outside Canvas files");
   if (typeof notice.desc !== "string") {
     assert.fail("The Canvas safety notice must use a text description.");
   }
-  assert.match(notice.desc, /never writes.*\.canvas files/i);
+  assert.match(notice.desc, /does not write its own folding state.*\.canvas files/i);
+  assert.match(notice.desc, /Advanced Canvas.*normalize/i);
 });
 
 void test("orders behavior settings by the user workflow", () => {

@@ -46,6 +46,56 @@ void test("recognizes a collapsed group even without readable collapsed children
   assert.equal(nodeViews[0]?.externallyCollapsedNodeIds, undefined);
 });
 
+void test("recognizes an external group control without depending on its plugin", () => {
+  const collapseEl = createElement();
+  const nodeViews = extractCanvasNodeViews([
+    {
+      collapseEl,
+      getData: () => ({ type: "group" }),
+      id: "GROUP",
+      nodeEl: createNodeElement(),
+    },
+  ]);
+
+  assert.equal(nodeViews[0]?.externalGroupControl, collapseEl);
+});
+
+void test("ignores an unstyled connected group control after plugin disable", () => {
+  const collapseEl = {
+    ...createElement(),
+    isConnected: true,
+    ownerDocument: {
+      defaultView: {
+        getComputedStyle: () => ({ position: "static" }),
+      },
+    },
+  };
+  const nodeViews = extractCanvasNodeViews([
+    {
+      collapseEl,
+      getData: () => ({ type: "group" }),
+      id: "GROUP",
+      nodeEl: createNodeElement(),
+    },
+  ]);
+
+  assert.equal(nodeViews[0]?.externalGroupControl, undefined);
+});
+
+void test("recognizes the native group label as a control host", () => {
+  const labelEl = createGroupLabelElement();
+  const nodeViews = extractCanvasNodeViews([
+    {
+      getData: () => ({ type: "group" }),
+      id: "GROUP",
+      labelEl,
+      nodeEl: createNodeElement(),
+    },
+  ]);
+
+  assert.equal(nodeViews[0]?.groupLabelElement, labelEl);
+});
+
 void test("extracts all visible and interactive elements from an edge", () => {
   const line = createElement();
   const arrow = createElement();
@@ -154,5 +204,20 @@ function createNodeElement(): CanvasElementHandle & {
     ...createElement(),
     createDiv: () => ({}) as HTMLDivElement,
     createEl: () => ({}) as HTMLElement,
+  };
+}
+
+function createGroupLabelElement(): CanvasElementHandle & {
+  insertAdjacentElement(where: InsertPosition, element: Element): Element;
+  nextElementSibling: Element | null;
+  offsetHeight: number;
+  offsetWidth: number;
+} {
+  return {
+    ...createElement(),
+    insertAdjacentElement: (_where, element) => element,
+    nextElementSibling: null,
+    offsetHeight: 36,
+    offsetWidth: 120,
   };
 }

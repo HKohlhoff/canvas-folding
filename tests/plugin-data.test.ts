@@ -155,6 +155,23 @@ void test("retains a persisted branch focus without collapse restrictions", () =
   assert.equal(data.canvasStates["Folder/Test.canvas"]?.focusedNodeId, "node-a");
 });
 
+void test("retains and normalizes persisted group folds without branch restrictions", () => {
+  const data = normalizePluginData({
+    canvasStates: {
+      "Folder/Test.canvas": {
+        collapsedGroups: ["group-a", "group-a", 4],
+        revealedBranches: {},
+        visibleDepths: {},
+      },
+    },
+  });
+
+  assert.deepEqual(
+    data.canvasStates["Folder/Test.canvas"]?.collapsedGroups,
+    ["group-a"],
+  );
+});
+
 void test("removes saved states for deleted files and folders", () => {
   const states = new Map([
     ["Folder/A.canvas", 1],

@@ -65,6 +65,29 @@ void test("restores only the class managed by Canvas Folding", () => {
   assert.equal(elements.nodeB.has("existing-class"), true);
 });
 
+void test("hides only the frame of an explicitly collapsed group", () => {
+  const elements = createContext();
+  const manager = new CanvasVisibilityManager();
+  const group = elements.context.data.nodes[0];
+  assert.ok(group !== undefined);
+  group.type = "group";
+
+  manager.apply(
+    elements.context,
+    new Set(["B"]),
+    new Set(),
+    20,
+    new Set(),
+    new Set(["A"]),
+  );
+
+  assert.equal(elements.nodeA.has("canvas-folding-hidden"), false);
+  assert.equal(elements.nodeA.has("canvas-folding-group-collapsed"), true);
+
+  manager.apply(elements.context, new Set());
+  assert.equal(elements.nodeA.has("canvas-folding-group-collapsed"), false);
+});
+
 void test("restores managed classes from replaced render elements", () => {
   const elements = createContext();
   const manager = new CanvasVisibilityManager();

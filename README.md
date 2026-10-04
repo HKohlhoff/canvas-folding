@@ -1,8 +1,8 @@
 # Canvas Folding
 
 Canvas Folding adds hierarchical folding, level views, and branch focus to the
-standard Obsidian Canvas. It changes only the current view: nodes, edges,
-content, positions, and the `.canvas` file itself remain untouched.
+standard Obsidian Canvas. Its own branch, group, and focus states remain outside
+the `.canvas` file.
 
 Requires Obsidian 1.13.0 or later. Canvas Folding works on desktop and mobile
 and has no dependency on Advanced Canvas.
@@ -30,6 +30,8 @@ by buying me a coffee.
 
 - Collapse or expand one or more selected branches recursively in one action.
 - Collapse every rooted branch while keeping roots and isolated nodes visible.
+- Collapse or expand every Canvas group by geometric containment, including
+  empty and nested groups.
 - Show the complete Canvas through a chosen global level.
 - Show one node, a limited number of levels, or an entire branch from a node
   control.
@@ -138,7 +140,7 @@ reachable through multiple roots or paths, its shortest directed distance from
 any root determines its level. A Canvas without a root has no global level
 view, but its individual branch controls remain available.
 
-Parent nodes receive a directly visible folding control inside their
+Parent nodes receive a directly visible branch-folding control inside their
 upper-right corner. When descendants are hidden, it displays the total number
 of hidden nodes and groups. The tooltip reports both categories separately:
 
@@ -151,9 +153,16 @@ of hidden nodes and groups. The tooltip reports both categories separately:
   branch still reaches them. Folding hides only exclusive descendants and the
   connections belonging to the collapsed branch.
 
+Every group also receives its own `−`/`+` control in a square, group-colored
+frame matching the group-name height directly to the right of its name.
+Collapsing it hides every
+fully contained node and nested group together with all incident edges and edge
+labels. Empty groups can be collapsed too. Group-folding and directed
+branch-folding states stay independent; **Expand all branches** clears both.
+
 Every visible, expanded node and group also receives a focus control. A
-collapsed parent shows only its folding control; its focus control returns when
-the branch is expanded, provided focus controls are enabled. Folding controls
+collapsed parent or group shows only its applicable folding controls; its focus
+control returns when it is expanded, provided focus controls are enabled. Folding controls
 and focus controls can be hidden independently through the toolbar or command
 palette. Hiding either kind of control changes only the interface: it does not
 expand branches or end an active focus.
@@ -165,9 +174,11 @@ node border available for native resizing. Folded branches keep their count or
 When a group is focused, its geometrically contained items belong to the focus
 area even when they have no directed edge from that group.
 
-When Advanced Canvas collapses one of its groups, Canvas Folding removes both
-of its controls from that compact group representation. The controls return
-after Advanced Canvas expands the group again.
+When Advanced Canvas provides its own group-folding control, it remains the
+sole group control for that group. Canvas Folding does not duplicate or override
+it, and releases any separate Canvas Folding group state for that group. Branch
+and focus controls remain available while the group is expanded and return
+after Advanced Canvas expands a compact group representation.
 
 Hidden nodes also hide every incident edge, including edge labels. A collapsed
 branch connection can remain hidden while its shared endpoint stays visible
@@ -316,8 +327,9 @@ separately available under [`manual-tests/`](manual-tests/README.md).
 
 ## Settings
 
-The settings page starts with a reminder that Canvas Folding never modifies
-Canvas files.
+The settings page starts with a reminder that Canvas Folding stores its own
+folding state outside Canvas files. It also explains the one-time normalization
+that can be needed when control returns from a collapsed Advanced Canvas group.
 
 - **Show canvas toolbar initially** controls the toolbar's state when the plugin
   loads. Commands can change it at any time.
@@ -356,8 +368,10 @@ external services. The Ko-fi image in this README is documentation content and
 is not loaded or contacted by the installed plugin.
 
 When persistence is enabled, local plugin data contains vault-relative Canvas
-paths, node IDs, and visibility settings. Canvas files themselves are never
-modified by Canvas Folding.
+paths, node IDs, and visibility settings. Canvas Folding does not write its own
+folding state or layout into Canvas files. If Advanced Canvas is disabled while
+one of its groups is collapsed, Canvas Folding may normalize that external
+collapsed representation once so the original nodes and edges remain available.
 
 ## Compatibility and limitations
 
@@ -373,26 +387,31 @@ modified by Canvas Folding.
 
 ### Using Canvas Folding with Advanced Canvas
 
-Canvas Folding and Advanced Canvas can hide content independently. Canvas
-Folding hides directed branches only in the current view and keeps its state in
-the open tab or, optionally, in Canvas Folding's `data.json`. Advanced Canvas'
-collapsible groups have their own controls and store their group state in the
-Canvas data.
+Canvas Folding keeps directed branch folds and its own group folds only in the
+current view or, optionally, in Canvas Folding's `data.json`. Advanced Canvas'
+collapsible groups have their own controls, history, copy behavior and drag
+preview, and store their group state in the Canvas data. When that Advanced
+Canvas control is present, Canvas Folding defers group folding for the affected
+group to Advanced Canvas instead of showing a duplicate switch.
 
 When both mechanisms are used, check which control owns the hidden content:
 
 - A numbered Canvas Folding control means that Folding currently hides that
   many nodes and groups below the branch. Its tooltip separates both counts.
+- A Canvas Folding group `−`/`+` appears only when no external group control is
+  already responsible for that group.
 - A Canvas Folding `−` can remain visible while an Advanced Canvas group hides
   descendants inside it; the control's tooltip explains this case.
 - On touch devices, long-press that control to see an Advanced Canvas notice
   with the hidden-descendant count at the top of the branch display menu.
 - Expanding one mechanism does not automatically expand the other.
 
-After enabling or disabling Advanced Canvas while one of its groups is
-collapsed, close and reopen the Canvas before continuing to edit. The already
-open view can temporarily retain Advanced Canvas group controls or show an
-empty group frame. Reopening rebuilds the Canvas view from the stored data.
+Enabling or disabling Advanced Canvas is handled in the open Canvas. Canvas
+Folding removes duplicate controls, restores complete group content when
+control returns from a collapsed Advanced Canvas group, and recalculates its
+compact edge geometry. This hand-off requires substantial internal coordination
+because both plugins use different group-state and rendering models, but it
+introduces no dependency between them.
 
 ## Public API
 
