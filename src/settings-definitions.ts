@@ -14,8 +14,8 @@ export function getCanvasFoldingSettingDefinitions(
 ): SettingDefinitionItem<CanvasFoldingSettingKey>[] {
   return [
     {
-      name: "Canvas files are never modified",
-      desc: "Canvas Folding changes only the current view. It never writes folding state, layout, or other data to your .canvas files.",
+      name: "Canvas Folding state stays outside Canvas files",
+      desc: "Canvas Folding does not write its own folding state or layout to your .canvas files. If Advanced Canvas is disabled while one of its groups is collapsed, Canvas Folding may normalize that external collapsed representation once so the original content remains available.",
       searchable: false,
     },
     {
@@ -64,7 +64,7 @@ export function getCanvasFoldingSettingDefinitions(
         },
         {
           name: "Remember canvas states between sessions",
-          desc: "Canvas Folding remembers states in each open tab for back navigation. Enable this to also restore them in newly opened tabs and after Obsidian or the plugin restarts. Turning this off keeps existing saved states unchanged; turning it on again restores them. Canvas files remain unchanged.",
+          desc: "Canvas Folding remembers states in each open tab for back navigation. Enable this to also restore them in newly opened tabs and after Obsidian or the plugin restarts. Turning this off keeps existing saved states unchanged; turning it on again restores them. Canvas Folding states remain outside Canvas files.",
           control: {
             type: "toggle",
             key: "rememberCanvasStates",
