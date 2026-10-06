@@ -6,6 +6,16 @@ The format follows the spirit of Keep a Changelog, with the newest release first
 
 ## [Unreleased]
 
+## [1.2.9] – 2026-10-06
+
+### Changed
+
+- Refresh to Obsidian API 1.14 and update transitive development dependencies used for
+  current build validation without changing the supported Obsidian 1.13
+  baseline, runtime behavior, or public Canvas Folding API v1.
+- Record successful package- and single-HTML integration checks with Canvas
+  HTML Exporter, including folding behavior.
+
 ## [1.2.8] – 2026-10-04
 
 ### Fixed

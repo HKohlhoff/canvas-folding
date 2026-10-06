@@ -1,6 +1,6 @@
 {
   "name": "canvas-folding",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Collapse and expand hierarchical branches in Canvas.",
   "main": "main.js",
   "type": "module",
@@ -35,13 +35,16 @@
   "author": "Holger Kohlhoff",
   "license": "GPL-3.0-or-later",
   "dependencies": {},
+  "overrides": {
+    "moment": "2.31.0"
+  },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "esbuild": "^0.28.2",
     "eslint": "^10.9.1",
     "eslint-plugin-obsidianmd": "^0.4.2",
     "globals": "^17.11.0",
-    "obsidian": "^1.13.1",
+    "obsidian": "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/9abd9605ce081383674aae1ed111c456edde0688",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0"
   },
