@@ -1,28 +1,18 @@
-export const CURRENT_RELEASE_NOTES_ID = "release-1.2.8";
-export const CURRENT_RELEASE_NOTES_VERSION = "1.2.8";
+export const CURRENT_RELEASE_NOTES_ID = "release-1.2.9";
+export const CURRENT_RELEASE_NOTES_VERSION = "1.2.9";
 
-export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding ${CURRENT_RELEASE_NOTES_VERSION}: fold Canvas groups
+export const CURRENT_RELEASE_NOTES_MARKDOWN = `# Canvas Folding ${CURRENT_RELEASE_NOTES_VERSION}: compatibility maintenance
 
-This update adds independent folding for every standard Canvas group, including empty and nested groups.
+This maintenance update refreshes the development and build dependencies used to validate Canvas Folding with Obsidian API 1.14. The plugin's folding behavior, stored Canvas states, mobile support, and public API v1 remain unchanged.
 
-## Highlights
+## What was verified
 
-- **Group controls beside the name:** each group receives its own framed \`−\`/\`+\` control directly to the right of the group name.
-- **Complete group folding:** collapsing a group hides its frame, every fully contained node and subgroup, and their edges and edge labels. External connections remain attached to the compact group header.
-- **Independent folding states:** group folds and directed branch folds remain separate. **Expand all branches** opens both.
-- **Advanced Canvas keeps priority:** when the Advanced Canvas plugin is active, its familiar switches remain to the left of the group names. Canvas Folding does not show its new right-hand group switches and internally disables its own group-folding mechanism. Branch folding and focus remain independent.
-- **Desktop and mobile:** the group controls and edge handling were verified on desktop and iPadOS.
+- Branch and group folding continue to work with Canvas HTML Exporter package and single-HTML exports.
+- Focus, level views, group controls, and persisted states retain their existing behavior.
+- Canvas Folding remains compatible with Obsidian 1.13 and later; the newer API package is used only for development and build validation.
+- The production plugin remains local, mobile-compatible, and free of network behavior.
 
-This clear separation looks deliberately simple in the interface, but switching Advanced Canvas on or off requires substantial internal coordination because the two plugins use different group-state and rendering models. Canvas Folding transfers control without duplicate switches, missing content, or stale edge geometry—and without depending on Advanced Canvas or changing its code.
-
-## Using the update
-
-1. Click or tap the \`−\` beside a group name to collapse the group.
-2. Use the remaining \`+\` to expand it again.
-3. Use **Expand all branches** to open every Canvas Folding branch and group at once.
-4. When the Advanced Canvas plugin is active, use its usual switch to the left of the group name instead.
-
-Canvas Folding stores its own branch, group, and focus states outside Canvas files. When control returns from an Advanced Canvas group that was collapsed while Advanced Canvas was active, Canvas Folding may normalize that external collapsed representation once so all original group content remains available.
+No setting changes or migrations are required. Existing Canvas files and persisted folding states are preserved.
 
 This update description appears automatically once. You can reopen it at any time with **Show last update** at the bottom of the Canvas Folding settings. Closing it leaves no note or other content file in your Vault.
 
