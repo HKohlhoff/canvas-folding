@@ -15,12 +15,11 @@ void test("keeps the transient update note and repository Markdown synchronized"
   assert.equal(CURRENT_RELEASE_NOTES_ID, `release-${manifest.version}`);
   assert.equal(CURRENT_RELEASE_NOTES_VERSION, manifest.version);
   assert.ok(CURRENT_RELEASE_NOTES_MARKDOWN.includes(`Canvas Folding ${manifest.version}`));
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Group controls beside the name/);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Complete group folding/);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Advanced Canvas keeps priority/);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /switches remain to the left/);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /internally disables its own group-folding mechanism/);
-  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /substantial internal coordination/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /compatibility maintenance/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Obsidian API 1\.14/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /package and single-HTML exports/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /public API v1 remain unchanged/);
+  assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /persisted folding states are preserved/);
   assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /Show last update/);
   assert.match(CURRENT_RELEASE_NOTES_MARKDOWN, /leaves no note or other content file in your Vault/);
   assert.equal(
